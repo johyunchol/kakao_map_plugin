@@ -16,16 +16,13 @@ class RoadView8ButtonScreen extends StatefulWidget {
 class _RoadView8ButtonScreenState extends State<RoadView8ButtonScreen> {
   late KakaoMapController mapController;
 
-  bool draggable = true;
-  bool zoomable = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: KakaoRoadMap(),
     );
   }
 }

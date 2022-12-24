@@ -29,6 +29,18 @@ class KakaoMapController {
     }
   }
 
+  addRectangle({List<Rectangle>? rectangles}) async {
+    if (rectangles != null) {
+      clearCircle();
+      for (var rectangle in rectangles) {
+        final rectangleString =
+            "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}');";
+
+        await _webViewController.runJavascript(rectangleString);
+      }
+    }
+  }
+
   addPolygon({List<Polygon>? polygons}) async {
     if (polygons != null) {
       clearPolygon();
@@ -47,6 +59,18 @@ class KakaoMapController {
         final markerString =
             "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc ?? ''}', '${marker.infoWindowContent ?? ''}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow})";
         await _webViewController.runJavascript(markerString);
+      }
+    }
+  }
+
+  addClusterer({List<Clusterer>? clusterers}) async {
+    if (clusterers != null) {
+      // clearMarker();
+
+      for (var clusterer in clusterers) {
+        // final markerString =
+        //     "addClusterer('${jsonEncode(clusterer.latLng)}', ${clusterer.draggable}, '${clusterer.width}', '${clusterer.height}', '${clusterer.offsetX}', '${clusterer.offsetY}', '${clusterer.clustererImageSrc ?? ''}', '${clusterer.infoWindowContent ?? ''}', ${clusterer.infoWindowRemovable}, ${clusterer.infoWindowFirstShow})";
+        // await _webViewController.runJavascript(clustererString);
       }
     }
   }

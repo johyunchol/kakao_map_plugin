@@ -22,6 +22,10 @@ part 'src/basic/kakao_map_controller.dart';
 part 'src/basic/marker.dart';
 part 'src/basic/polygon.dart';
 part 'src/basic/polyline.dart';
+part 'src/basic/rectangle.dart';
+
+part 'src/constants/wrapper.dart';
+
 part 'src/model/lat_lng.dart';
 part 'src/model/lat_lng_bounds.dart';
 part 'src/repository/auth_repository.dart';

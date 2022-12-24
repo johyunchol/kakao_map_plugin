@@ -57,7 +57,7 @@ class _Overlay12MarkersEvent1ScreenState extends State<Overlay12MarkersEvent1Scr
         }),
         markers: markers.toList(),
         center: LatLng(33.450705, 126.570677),
-        onMarkerClick: (markerId, latLng, zoomLevel) {
+        onMarkerTap: (markerId, latLng, zoomLevel) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('marker click:\n\n$latLng')));
         },
       ),

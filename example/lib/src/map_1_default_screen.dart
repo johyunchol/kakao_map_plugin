@@ -22,7 +22,11 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: KakaoMap(
+        onMapTap: (latLng) {
+          print(latLng);
+        },
+      ),
     );
   }
 }

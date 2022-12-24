@@ -16,7 +16,7 @@ class Map7DraggableScreen extends StatefulWidget {
 }
 
 class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
-  late Completer<KakaoMapController> mapController;
+  late KakaoMapController mapController;
 
   bool isDraggable = true;
 
@@ -29,7 +29,7 @@ class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
       body: Stack(
         children: [
           KakaoMap(onMapCreated: ((controller) async {
-            mapController.complete(controller);
+            mapController = controller;
           })),
           Row(
             children: [
@@ -37,7 +37,7 @@ class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
                 onPressed: () async {
                   isDraggable = !isDraggable;
 
-                  (await mapController.future).setDraggable(isDraggable);
+                  await mapController.setDraggable(isDraggable);
                   setState(() {});
                 },
                 color: isDraggable ? Colors.blue : Colors.grey,

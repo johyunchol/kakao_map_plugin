@@ -51,7 +51,7 @@ class _Overlay5MarkerInfoWindowScreenState extends State<Overlay5MarkerInfoWindo
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),
-        onMarkerClick: ((markerId, latLng, zoomLevel) {
+        onMarkerTap: ((markerId, latLng, zoomLevel) {
 
         }),
       ),

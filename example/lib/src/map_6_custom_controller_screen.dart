@@ -51,8 +51,8 @@ class _Map6CustomControllerScreenState extends State<Map6CustomControllerScreen>
 
                         mapController.setMapTypeId(MapType.roadMap);
                       },
-                      child: Text('지도'),
                       color: isDefaultMap ? Colors.blue : Colors.grey,
+                      child: const Text('지도'),
                     ),
                     MaterialButton(
                       onPressed: () {
@@ -62,8 +62,8 @@ class _Map6CustomControllerScreenState extends State<Map6CustomControllerScreen>
 
                         mapController.setMapTypeId(MapType.skyView);
                       },
-                      child: Text('스카이뷰'),
                       color: isDefaultMap ? Colors.grey : Colors.blue,
+                      child: const Text('스카이뷰'),
                     ),
                   ],
                 ),

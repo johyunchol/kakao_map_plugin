@@ -19,6 +19,7 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
   Set<Circle> circles = {};
   Set<Polyline> polylines = {};
   Set<Polygon> polygons = {};
+  Set<Rectangle> rectangles = {};
 
   @override
   void initState() {
@@ -80,11 +81,29 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
             ),
           );
 
+          rectangles.add(
+            Rectangle(
+              rectangleId: 'rectangle_${rectangles.length}',
+              rectangleBounds: LatLngBounds(
+                LatLng(33.42133510810506, 126.53159381623066),
+                LatLng(33.44955812811862, 126.5713551811832),
+              ),
+              strokeWidth: 6,
+              strokeColor: Colors.blue,
+              strokeOpacity: 1,
+              strokeStyle: StrokeStyle.dot,
+              fillColor: Colors.black,
+              fillOpacity: 0.7,
+            ),
+          );
+
           setState(() {});
+
         }),
         circles: circles.toList(),
         polylines: polylines.toList(),
         polygons: polygons.toList(),
+        rectangles: rectangles.toList(),
         center: LatLng(33.450701, 126.570667),
       ),
     );

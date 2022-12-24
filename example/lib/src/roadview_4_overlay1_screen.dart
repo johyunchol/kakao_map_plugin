@@ -16,16 +16,13 @@ class RoadView4Overlay1Screen extends StatefulWidget {
 class _RoadView4Overlay1ScreenState extends State<RoadView4Overlay1Screen> {
   late KakaoMapController mapController;
 
-  bool draggable = true;
-  bool zoomable = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: KakaoRoadMap(),
     );
   }
 }

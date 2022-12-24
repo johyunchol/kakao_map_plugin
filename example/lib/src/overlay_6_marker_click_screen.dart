@@ -47,7 +47,7 @@ class _Overlay6MarkerClickScreenState extends State<Overlay6MarkerClickScreen> {
           setState(() { });
         }),
         markers: markers.toList(),
-        onMarkerClick: ((markerId, latLng, zoomLevel) {
+        onMarkerTap: ((markerId, latLng, zoomLevel) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('marker click:\n\n$latLng')));
 
         }),

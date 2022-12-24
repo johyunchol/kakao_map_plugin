@@ -17,3 +17,4 @@ class Polygon extends BaseDraw {
     super.fillOpacity,
   });
 }
+

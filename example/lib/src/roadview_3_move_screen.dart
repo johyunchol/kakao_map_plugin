@@ -16,16 +16,13 @@ class RoadView3MoveScreen extends StatefulWidget {
 class _RoadView3MoveScreenState extends State<RoadView3MoveScreen> {
   late KakaoMapController mapController;
 
-  bool draggable = true;
-  bool zoomable = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: KakaoRoadMap(),
     );
   }
 }

@@ -6,7 +6,7 @@ typedef OnMapTap = void Function(LatLng latLng);
 
 typedef OnMapDoubleTap = void Function(LatLng latLng);
 
-typedef OnMarkerClick = void Function(String markerId, LatLng latLng, int zoomLevel);
+typedef OnMarkerTap = void Function(String markerId, LatLng latLng, int zoomLevel);
 
 typedef OnCameraIdle = void Function(LatLng latLng, int zoomLevel);
 

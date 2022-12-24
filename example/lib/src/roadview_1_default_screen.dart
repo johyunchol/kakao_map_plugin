@@ -16,9 +16,6 @@ class RoadView1DefaultScreen extends StatefulWidget {
 class _RoadView1DefaultScreenState extends State<RoadView1DefaultScreen> {
   late KakaoMapController mapController;
 
-  bool draggable = true;
-  bool zoomable = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

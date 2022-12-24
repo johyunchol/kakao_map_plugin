@@ -29,9 +29,11 @@ dependencies:
 
 1. javascript key 등록
 
+* Singleton 으로 되어 있어서 KakaoMap 위젯이 호출 되기 전에만 initialize 하면 됩니다. 여기서는 main 함수에서 호출하도록 했습니다.
+* example 에서는 flutter_dotenv 라이브러리를 사용하였습니다. 바로 실행해 보시려면 `example/assets/env/.env.sample`을 복사하여 `example/assets/env/.env`로 만들어주시고 `.env` 파일 내부에 `APP_KEY=`뒤에 본인의 javascript key 를 넣으시면 됩니다.
+
 ``` dart
 void main() {
-
   AuthRepository.initialize(appKey: 'javascript key');
 }
 ```
@@ -56,9 +58,9 @@ AndroidManifest.xml 에 INTERNET 권한 및 usesCleartextTraffic="true" 설정
 
 Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_preview 설정
 
-```
+``` xml
 <dict>
-	<key>NSAppTransportSecurity</key>
+    <key>NSAppTransportSecurity</key>
       <dict>
         <key>NSAllowsArbitraryLoads</key>
         <true/>
@@ -120,12 +122,13 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
     );
     ```
 
-* Circle, Polyline, Polygon 예제
+* Circle, Polyline, Polygon, Rectangle 예제
 
     ``` dart
     Set<Circle> circles = {};
     Set<Polyline> polylines = {};
     Set<Polygon> polygons = {};
+    Set<Rectangle> rectangles = {};
   
     Scaffold(
       appBar: AppBar(
@@ -179,13 +182,32 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
               fillOpacity: 0.3,
             ),
           );
+  
+          rectangles.add(
+            Rectangle(
+              rectangleId: 'rectangle_${rectangles.length}',
+              rectangleBounds: LatLngBounds(
+                LatLng(33.42133510810506, 126.53159381623066),
+                LatLng(33.44955812811862, 126.5713551811832),
+              ),
+              strokeWidth: 6,
+              strokeColor: Colors.blue,
+              strokeOpacity: 1,
+              strokeStyle: StrokeStyle.dot,
+              fillColor: Colors.black,
+              fillOpacity: 0.7,
+            ),
+          );
 
           setState(() {});
         }),
         circles: circles.toList(),
         polylines: polylines.toList(),
         polygons: polygons.toList(),
+        rectangles: rectangles.toList(),
         center: LatLng(33.450701, 126.570667),
       ),
     );
     ```
+
+더 많은 카카오지도 샘플소스는 **[여기](://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.

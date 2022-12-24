@@ -1,6 +1,6 @@
 name: kakao_map_plugin
 description: This is a Kakao map Flutter plugin project.
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/johyunchol/kakao_map_plugin
 
 environment:

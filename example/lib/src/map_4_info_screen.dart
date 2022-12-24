@@ -36,7 +36,6 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
               final bounds = await mapController.getBounds();
               final swLatLng = bounds.getSouthWest();
               final neLatLng = bounds.getNorthEast();
-              final boundsStr = bounds.toString();
 
               message += '지도 중심좌표는 위도 ${center.latitude}, 경도 ${center.longitude}\n';
               message += '지도 레벨은 $level\n';

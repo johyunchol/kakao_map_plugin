@@ -16,16 +16,13 @@ class RoadView6CustomOverlayScreen extends StatefulWidget {
 class _RoadView6CustomOverlayScreenState extends State<RoadView6CustomOverlayScreen> {
   late KakaoMapController mapController;
 
-  bool draggable = true;
-  bool zoomable = true;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: KakaoRoadMap(),
     );
   }
 }
