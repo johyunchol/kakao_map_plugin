@@ -22,7 +22,25 @@ class _RoadView2DefaultScreenState extends State<RoadView2DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: MediaQuery.of(context).orientation == Orientation.portrait ? _portrait() : _landscape(),
+    );
+  }
+
+  _portrait() {
+    return Column(
+      children: [
+        Expanded(child: KakaoMap()),
+        Expanded(child: KakaoRoadMap()),
+      ],
+    );
+  }
+
+  _landscape() {
+    return Row(
+      children: [
+        Expanded(child: KakaoMap()),
+        Expanded(child: KakaoRoadMap()),
+      ],
     );
   }
 }

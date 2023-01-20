@@ -23,6 +23,16 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
         title: Text(widget.title ?? selectedTitle),
       ),
       body: KakaoMap(
+        onMapCreated: ((controller) async {
+          mapController = controller;
+
+          final center = await mapController.getCenter();
+          final level = await mapController.getLevel();
+
+          print(center.latitude);
+          print(center.longitude);
+          print(level);
+        }),
         onMapTap: (latLng) {
           print(latLng);
         },

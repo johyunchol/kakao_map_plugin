@@ -18,13 +18,27 @@ class _RoadView9ToggleButtonScreenState
     extends State<RoadView9ToggleButtonScreen> {
   late KakaoMapController mapController;
 
+  bool isRoadMap = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: Stack(
+        children: [
+          isRoadMap ? KakaoRoadMap() : KakaoMap(),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                isRoadMap = !isRoadMap;
+              });
+            },
+            child: Text(isRoadMap ? '지도 보기' : '로드맵 보기'),
+          ),
+        ],
+      ),
     );
   }
 }
