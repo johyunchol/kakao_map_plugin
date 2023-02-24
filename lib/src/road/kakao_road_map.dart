@@ -6,7 +6,7 @@ class KakaoRoadMap extends StatefulWidget {
   final LatLng? center;
   final List<Marker>? markers;
 
-  KakaoRoadMap({
+  const KakaoRoadMap({
     Key? key,
     this.onMapCreated,
     this.currentLevel = 3,
@@ -21,14 +21,41 @@ class KakaoRoadMap extends StatefulWidget {
 class _KakaoRoadMapState extends State<KakaoRoadMap> {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
+  late WebViewController _webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    late final PlatformWebViewControllerCreationParams params;
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
+    }
+
+    final WebViewController controller = WebViewController.fromPlatformCreationParams(params);
+
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadHtmlString(_loadMap());
+
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
+    }
+
+    _webViewController = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
     getMarkers();
-    return WebView(
-      initialUrl: _loadMap(),
-      javascriptMode: JavascriptMode.unrestricted,
-      debuggingEnabled: true,
+    return WebViewWidget(
+      controller: _webViewController,
       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
         Factory(() => EagerGestureRecognizer()),
       },
@@ -53,7 +80,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> {
     json = jsonEncode(mapList);
   }
 
-  _loadMap() {
+  String _loadMap() {
     return _htmlWrapper('''<script>
   const container = document.getElementById('map'); //로드뷰를 표시할 div
   let roadview = new kakao.maps.Roadview(container); //로드뷰 객체

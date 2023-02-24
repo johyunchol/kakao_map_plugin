@@ -1,14 +1,14 @@
 part of kakao_map_plugin;
 
 enum ControlPosition {
-  TOPLEFT(0),
-  TOP(1),
-  TOPRIGHT(2),
-  BOTTOMLEFT(3),
-  BOTTOM(4),
-  BOTTOMRIGHT(5),
-  LEFT(6),
-  RIGHT(7);
+  topLeft(0),
+  top(1),
+  topRight(2),
+  bottomLeft(3),
+  bottom(4),
+  bottomRight(5),
+  left(6),
+  right(7);
 
   const ControlPosition(this.id);
 
@@ -16,6 +16,6 @@ enum ControlPosition {
 
   factory ControlPosition.getById(int controlPositionId) {
     return ControlPosition.values
-        .firstWhere((value) => value.id == controlPositionId, orElse: () => ControlPosition.TOP);
+        .firstWhere((value) => value.id == controlPositionId, orElse: () => ControlPosition.top);
   }
 }

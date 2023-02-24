@@ -16,12 +16,12 @@ class Static2MarkerScreen extends StatefulWidget {
 class _Static2MarkerScreenState extends State<Static2MarkerScreen> {
   late KakaoMapController mapController;
 
+  LatLng center = LatLng(33.450701, 126.570667);
   Set<Marker> markers = {};
 
   @override
   void initState() {
-    markers.add(Marker(markerId: 'markerId', latLng: LatLng(33.450701, 126.570667)));
-    markers.add(Marker(markerId: 'markerId', latLng: LatLng(33.440701, 126.570667)));
+    markers.add(Marker(markerId: 'markerId', latLng: center));
     super.initState();
   }
 
@@ -33,6 +33,7 @@ class _Static2MarkerScreenState extends State<Static2MarkerScreen> {
       ),
       body: KakaoStaticMap(
         markers: markers.toList(),
+        center: center,
         currentLevel: 6,
       ),
     );

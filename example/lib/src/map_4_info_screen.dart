@@ -46,7 +46,7 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
               setState(() {});
             }),
             mapTypeControl: true,
-            mapTypeControlPosition: ControlPosition.TOPRIGHT,
+            mapTypeControlPosition: ControlPosition.topRight,
           ),
           Align(
             alignment: Alignment.bottomLeft,

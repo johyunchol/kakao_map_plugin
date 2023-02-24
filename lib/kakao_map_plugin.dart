@@ -1,14 +1,14 @@
 library kakao_map_plugin;
 
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 part 'src/basic/base_draw.dart';
 part 'src/basic/callbacks.dart';

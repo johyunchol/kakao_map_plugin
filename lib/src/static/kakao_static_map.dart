@@ -6,7 +6,7 @@ class KakaoStaticMap extends StatefulWidget {
   final LatLng? center;
   final List<Marker>? markers;
 
-  KakaoStaticMap({
+  const KakaoStaticMap({
     Key? key,
     this.onMapCreated,
     this.currentLevel = 3,
@@ -21,21 +21,48 @@ class KakaoStaticMap extends StatefulWidget {
 class _KakaoStaticMapState extends State<KakaoStaticMap> {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
+  late WebViewController _webViewController;
+
+  @override
+  void initState() {
+    super.initState();
+    initMarkers();
+
+    late final PlatformWebViewControllerCreationParams params;
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
+    }
+
+    final WebViewController controller = WebViewController.fromPlatformCreationParams(params);
+
+    controller
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadHtmlString(_loadMap());
+
+    if (controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
+    }
+
+    _webViewController = controller;
+  }
 
   @override
   Widget build(BuildContext context) {
-    getMarkers();
-    return WebView(
-      initialUrl: _loadMap(),
-      javascriptMode: JavascriptMode.unrestricted,
-      debuggingEnabled: true,
+    return WebViewWidget(
+      controller: _webViewController,
       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
         Factory(() => EagerGestureRecognizer()),
       },
     );
   }
 
-  getMarkers() {
+  initMarkers() {
     int length = widget.markers?.length ?? 0;
 
     for (int i = 0; i < length; i++) {
@@ -53,23 +80,9 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
     json = jsonEncode(mapList);
   }
 
-  _loadMap() {
-    return Uri.dataFromString('''<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
-  <script type="text/javascript"
-          src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=true&appkey=${AuthRepository.instance.appKey}&libraries=services,clusterer,drawing'></script>
-</head>
-
-<body style="margin: 0;">
-<div id="map" style="width: 100vw; height: 100vh;"></div>
-
-<script>
+  String _loadMap() {
+    return _htmlWrapper("""<script>
   let map = null;
-
-  getMarkers();
 
   window.onload = function () {
     const staticMapContainer = document.getElementById('map');
@@ -89,30 +102,25 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
   }
 
   function getMarkers() {
-  
-  let markers = [];
-  const list = $json;
-  
-  for(let i = 0; i < list.length; i++) {
-    const item = list[i];
-    const obj = {
-      'position': new kakao.maps.LatLng(item.latitude, item.longitude),
+
+    let markers = [];
+    const list = $json;
+
+    for (let i = 0; i < list.length; i++) {
+      const item = list[i];
+      const obj = {
+        'position': new kakao.maps.LatLng(item.latitude, item.longitude),
+      }
+
+      if (item.text !== null && item.text !== '') {
+        obj['text'] = item.text;
+      }
+
+      markers.push(obj);
     }
-    
-    if (item.text !== null && item.text !== '') {
-      obj['text'] = item.text;
-    }
-    
-    markers.push(obj);
-  }
-  
+
     return markers;
   }
-
-</script>
-</body>
-
-</html>
-''', mimeType: 'text/html', encoding: Encoding.getByName('utf-8')).toString();
+</script>""");
   }
 }

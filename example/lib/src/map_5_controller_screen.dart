@@ -31,9 +31,9 @@ class _Map5ControllerScreenState extends State<Map5ControllerScreen> {
           setState(() {});
         }),
         mapTypeControl: true,
-        mapTypeControlPosition: ControlPosition.TOPRIGHT,
+        mapTypeControlPosition: ControlPosition.topRight,
         zoomControl: true,
-        zoomControlPosition: ControlPosition.RIGHT,
+        zoomControlPosition: ControlPosition.right,
       ),
     );
   }
