@@ -210,4 +210,10 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
     );
     ```
 
-더 많은 카카오지도 샘플소스는 **[여기](://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.
+더 많은 카카오지도 샘플소스는 **[여기](https://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.
+
+---
+
+## 실행화면
+
+![example](./assets/videos/example.gif)

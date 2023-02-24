@@ -57,7 +57,7 @@ class KakaoMapController {
 
       for (var marker in markers) {
         final markerString =
-            "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc ?? ''}', '${marker.infoWindowContent ?? ''}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow})";
+            "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow})";
         await _webViewController.runJavascript(markerString);
       }
     }
