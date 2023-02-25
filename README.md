@@ -216,4 +216,4 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
 
 ## 실행화면
 
-![example](./assets/videos/example.gif)
+![example](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/videos/example.gif?raw=true)

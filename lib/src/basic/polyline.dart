@@ -1,7 +1,10 @@
 part of kakao_map_plugin;
 
 class Polyline extends BaseDraw {
+  /// polyline unique id
   final String polylineId;
+
+  /// polyline paths
   final List<LatLng>? points;
 
   Polyline({

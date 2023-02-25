@@ -1,7 +1,11 @@
 part of kakao_map_plugin;
 
+/// kakao map boundary
 class LatLngBounds {
+  /// south west
   LatLng sw;
+
+  /// north east
   LatLng ne;
 
   LatLngBounds(this.sw, this.ne);

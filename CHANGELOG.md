@@ -1,15 +1,15 @@
 ## 0.1.1
 
-* ControlPosition enum 변수 대문자 -> lowerCamelCase 변경
-* webview_flutter 패키지 최신버전으로 업데이트
-* webview_flutter_android, webview_flutter_wkwebview 추가
-* webview_flutter 패키지 버전 업데이트로 인한 마이그레이션 진행
+* Changed ControlPosition enum variables from upper camel case to lower camel case
+* Updated webview_flutter package to the latest version
+* Added webview_flutter_android and webview_flutter_wkwebview
+* Migrated to the new version of webview_flutter package
 
 ## 0.1.0
 
-* 로드뷰 구현 및 샘플 추가
-* 사각형(Rectangle) 그리기 추가
-* onMarkerClick -> onMarkerTap 변경
+* Implemented and added a sample for loading views
+* Added drawing rectangles functionality
+* Changed onMarkerClick to onMarkerTap
 
 ## 0.0.1
 

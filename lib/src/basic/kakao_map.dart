@@ -68,7 +68,6 @@ class _KakaoMapState extends State<KakaoMap> {
   void initState() {
     super.initState();
 
-    // #docregion platform_features
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
@@ -164,13 +163,13 @@ class _KakaoMapState extends State<KakaoMap> {
 
         if (${widget.onZoomChangeCallback != null}) {
             // 확대 수준이 변경되기 직전 발생한다.
-            kakao.maps.event.addListener(map, 'zoom_start', function (mouseEvent) {
+            kakao.maps.event.addListener(map, 'zoom_start', function () {
                 const level = map.getLevel();
                 zoomStart.postMessage(JSON.stringify({zoomLevel: level}));
             });
 
             // 확대 수준이 변경되면 발생한다.
-            kakao.maps.event.addListener(map, 'zoom_changed', function (mouseEvent) {
+            kakao.maps.event.addListener(map, 'zoom_changed', function () {
                 const level = map.getLevel();
                 zoomChanged.postMessage(JSON.stringify({zoomLevel: level}));
             });
@@ -178,7 +177,7 @@ class _KakaoMapState extends State<KakaoMap> {
 
         if (${widget.onBoundsChangeCallback != null}) {
             // 지도 영역이 변경되면 발생한다.
-            kakao.maps.event.addListener(map, 'bounds_changed', function (mouseEvent) {
+            kakao.maps.event.addListener(map, 'bounds_changed', function () {
                 const bounds = getBounds();
                 boundsChanged.postMessage(JSON.stringify(bounds));
             });

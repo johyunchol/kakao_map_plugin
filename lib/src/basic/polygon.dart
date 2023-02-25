@@ -1,8 +1,13 @@
 part of kakao_map_plugin;
 
 class Polygon extends BaseDraw {
+  /// polygon unique id
   final String polygonId;
+
+  /// polygon paths
   final List<LatLng> points;
+
+  /// polygon outline paths
   final List<List<LatLng>>? holes;
 
   Polygon({

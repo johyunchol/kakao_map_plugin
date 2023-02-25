@@ -1,8 +1,13 @@
 part of kakao_map_plugin;
 
 class Circle extends BaseDraw {
+  /// circle unique id
   final String circleId;
+
+  /// circle center latitude, longitude
   final LatLng center;
+
+  /// circle radius
   double? radius;
 
   Circle({

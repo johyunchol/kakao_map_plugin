@@ -1,7 +1,11 @@
 part of kakao_map_plugin;
 
+/// kakao map latitude, longtitude
 class LatLng {
+  /// latitude
   double latitude;
+
+  /// longitude
   double longitude;
 
   LatLng(this.latitude, this.longitude);

@@ -1,16 +1,37 @@
 part of kakao_map_plugin;
 
 class Marker {
+  /// marker unique id
   final String markerId;
+
+  /// marker latitude, longitude
   LatLng latLng;
+
+  /// marker width
   int width = 24;
+
+  /// marker height
   int height = 30;
+
+  /// marker horizontal offset
   int offsetX = 0;
+
+  /// marker vertical offset
   int offsetY = 0;
+
+  /// marker image
   String markerImageSrc = '';
+
+  /// marker info window
   String infoWindowContent = '';
+
+  /// marker draggable
   bool draggable;
+
+  /// marker info window close button
   bool infoWindowRemovable;
+
+  /// marker info window first show flag
   bool infoWindowFirstShow;
 
   Marker({

@@ -1,8 +1,10 @@
 part of kakao_map_plugin;
 
+/// kakao app key repository
 class AuthRepository {
   static final AuthRepository _instance = AuthRepository();
 
+  /// kakao map javascript app key
   late String appKey;
 
   AuthRepository();
