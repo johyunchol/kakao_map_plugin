@@ -1,3 +1,7 @@
+## 0.1.2
+* Added Dart document comments
+* Added "generated" folder to .gitignore
+
 ## 0.1.1
 
 * Changed ControlPosition enum variables from upper camel case to lower camel case
