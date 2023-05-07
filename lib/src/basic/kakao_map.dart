@@ -563,13 +563,13 @@ class _KakaoMapState extends State<KakaoMap> {
         });
     }
 
-    function addCustomOverlay(customOverlayId, latLng, content) {
+    function addCustomOverlay(customOverlayId, latLng, content, isClickable) {
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
         let customOverlay = new kakao.maps.CustomOverlay({
             map: map,
-            clickable: true,
+            clickable: isClickable,
             content: content,
             position: markerPosition,
             xAnchor: 0.5,

@@ -10,9 +10,12 @@ class CustomOverlay {
   /// custom overlay inner content
   final String content;
 
+  final bool isClickable;
+
   CustomOverlay({
     required this.customOverlayId,
     required this.latLng,
     required this.content,
+    this.isClickable = true,
   });
 }
