@@ -1,3 +1,6 @@
+## 0.1.3
+* Add the "isClickable" option to the CustomOverlay creation.
+
 ## 0.1.2
 * Added Dart document comments
 * Added "generated" folder to .gitignore
