@@ -1,3 +1,6 @@
+## 0.1.4
+* Added callbacks to detect the drag start and end events of a marker
+
 ## 0.1.3
 * Add the "isClickable" option to the CustomOverlay creation.
 
