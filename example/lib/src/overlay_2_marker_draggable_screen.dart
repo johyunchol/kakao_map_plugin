@@ -45,6 +45,13 @@ class _Overlay2MarkerDraggableScreenState extends State<Overlay2MarkerDraggableS
 
               setState(() {});
             }),
+            onMarkerDragChangeCallback:
+                ((String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
+
+              if (markerDragType == MarkerDragType.end) {
+                mapController.panTo(latLng);
+              }
+            }),
             markers: markers.toList(),
             center: LatLng(37.3608681, 126.9306506),
           ),

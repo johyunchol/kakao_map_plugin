@@ -32,6 +32,7 @@ part 'src/repository/auth_repository.dart';
 part 'src/basic/constants/control_position.dart';
 part 'src/basic/constants/drag_type.dart';
 part 'src/basic/constants/map_type.dart';
+part 'src/basic/constants/marker_drag_type.dart';
 part 'src/basic/constants/stroke_style.dart';
 part 'src/basic/constants/zoom_type.dart';
 
