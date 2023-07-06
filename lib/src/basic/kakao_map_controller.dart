@@ -12,7 +12,7 @@ class KakaoMapController {
     if (polylines != null) {
       clearPolyline();
       for (var polyline in polylines) {
-        await _webViewController.runJavaScriptReturningResult(
+        await _webViewController.runJavaScript(
             "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}');");
       }
     }
