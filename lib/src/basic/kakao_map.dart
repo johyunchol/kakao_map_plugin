@@ -304,6 +304,15 @@ class _KakaoMapState extends State<KakaoMap> {
 
     circles = [];
   }
+  
+  function clearRectangle() {
+    for (let i = 0; i < rectangles.length; i++) {
+      rectangles[i].setMap(null);
+    }
+
+    rectangles = [];
+  }
+
 
   function clearPolygon() {
     for (let i = 0; i < polygons.length; i++) {
