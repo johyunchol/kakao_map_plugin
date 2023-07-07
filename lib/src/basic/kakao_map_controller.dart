@@ -34,7 +34,7 @@ class KakaoMapController {
   /// draw rectangles
   addRectangle({List<Rectangle>? rectangles}) async {
     if (rectangles != null) {
-      clearCircle();
+      clearRectangle();
       for (var rectangle in rectangles) {
         final rectangleString =
             "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}');";
@@ -99,6 +99,12 @@ class KakaoMapController {
   clearCircle() {
     _webViewController.runJavaScript('clearCircle();');
   }
+
+  /// clear rectagles
+  clearRectangle() {
+    _webViewController.runJavaScript('clearRectangle();');
+  }
+
 
   /// clear polygon
   clearPolygon() {
