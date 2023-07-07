@@ -4,7 +4,7 @@ version: 0.1.4
 homepage: https://github.com/johyunchol/kakao_map_plugin
 
 environment:
-  sdk: '>=2.18.4 <3.0.0'
+  sdk: '>=2.18.4 <4.0.0'
   flutter: ">=2.5.0"
 
 dependencies:

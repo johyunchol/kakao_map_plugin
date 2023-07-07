@@ -58,9 +58,26 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
                 LatLng(33.452739313807456, 126.5709308145358),
                 LatLng(33.45178067090639, 126.5726886938753)
               ],
-              strokeColor: Colors.purple,
+              strokeColor: Colors.blue,
+              strokeOpacity: 0.4,
+              strokeWidth: 15,
             ),
           );
+
+          polylines.add(
+            Polyline(
+              polylineId: 'polyline_${polylines.length}',
+              points: [
+                LatLng(33.452344169439975, 126.56878163224233),
+                LatLng(33.452739313807456, 126.5709308145358),
+                LatLng(33.45178067090639, 126.5726886938753)
+              ],
+              strokeColor: Colors.red,
+              strokeOpacity: 0.9,
+              strokeWidth: 5,
+            ),
+          );
+
 
           polygons.add(
             Polygon(
