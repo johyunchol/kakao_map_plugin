@@ -1,3 +1,6 @@
+## 0.1.7
+* Added CustomOverlay click event
+
 ## 0.1.4
 * Added callbacks to detect the drag start and end events of a marker
 
