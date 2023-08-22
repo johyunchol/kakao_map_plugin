@@ -21,9 +21,9 @@ class _Overlay21CustomOverlay1ScreenState extends State<Overlay21CustomOverlay1S
   @override
   void initState() {
     final customOverlay = CustomOverlay(
-      customOverlayId: 'customOverlay',
-      latLng: LatLng(33.450701, 126.570667),
-      content: '<p style="background-color: white; padding: 8px; border-radius: 8px;">카카오!</p>'
+        customOverlayId: UniqueKey().toString(),
+        latLng: LatLng(33.450701, 126.570667),
+        content: '<p style="background-color: white; padding: 8px; border-radius: 8px;">카카오!</p>'
     );
 
     customOverlays.add(customOverlay);
@@ -44,6 +44,9 @@ class _Overlay21CustomOverlay1ScreenState extends State<Overlay21CustomOverlay1S
           setState(() {});
         }),
         customOverlays: customOverlays,
+        onCustomOverlayTap: (String id, LatLng latLng) {
+          debugPrint('***** [callback] $id / $latLng');
+        },
         center: LatLng(33.450701, 126.570667),
       ),
     );
