@@ -10,6 +10,9 @@ typedef OnMapTap = void Function(LatLng latLng);
 typedef OnMapDoubleTap = void Function(LatLng latLng);
 
 /// kakao map marker tap callback
+typedef OnCustomOverlayTap = void Function(String customOverlayId, LatLng latLng);
+
+/// kakao map marker tap callback
 typedef OnMarkerTap = void Function(String markerId, LatLng latLng, int zoomLevel);
 
 /// kakao marker drag change callback
