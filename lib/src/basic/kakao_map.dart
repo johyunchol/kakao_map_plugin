@@ -124,7 +124,8 @@ class _KakaoMapState extends State<KakaoMap> {
         const container = document.getElementById('map');
         let center = defaultCenter;
         if (${widget.center != null}) {
-            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget.center
+            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget
+        .center
         ?.longitude});
         }
 
@@ -601,7 +602,7 @@ class _KakaoMapState extends State<KakaoMap> {
     function addCustomOverlay(customOverlayId, latLng, content, isClickable) {
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
-
+        
         content = '<div id="' + customOverlayId + '"' + content + '</div>'
 
         let customOverlay = new kakao.maps.CustomOverlay({
@@ -613,10 +614,11 @@ class _KakaoMapState extends State<KakaoMap> {
             yAnchor: 1,
             zIndex: 3
         });
-
+        
+        customOverlay.setMap(map);
+        
         if (${widget.onCustomOverlayTap != null}) {
             let element = document.getElementById(customOverlayId);
-            console.log(3, element);
             element.addEventListener('click', function () {
                   // 클릭한 위도, 경도 정보를 가져옵니다
                   let latLng = customOverlay.getPosition();
@@ -631,13 +633,7 @@ class _KakaoMapState extends State<KakaoMap> {
             });
         }
 
-        customOverlay.setMap(map);
-
         customOverlays.push(customOverlay);
-    }
-
-    function customOverlayClick() {
-        console.log('>>>>> customOverlayClick!!!!!')
     }
 
     function showInfoWindow(marker, latitude, longitude, contents = '', infoWindowRemovable) {
