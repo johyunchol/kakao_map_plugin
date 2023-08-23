@@ -10,10 +10,12 @@ class Library12DrawingGetDataScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library12DrawingGetDataScreen> createState() => _Library12DrawingGetDataScreenState();
+  State<Library12DrawingGetDataScreen> createState() =>
+      _Library12DrawingGetDataScreenState();
 }
 
-class _Library12DrawingGetDataScreenState extends State<Library12DrawingGetDataScreen> {
+class _Library12DrawingGetDataScreenState
+    extends State<Library12DrawingGetDataScreen> {
   late KakaoMapController mapController;
 
   bool draggable = true;

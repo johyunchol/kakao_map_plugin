@@ -10,10 +10,12 @@ class Overlay12MarkersEvent1Screen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay12MarkersEvent1Screen> createState() => _Overlay12MarkersEvent1ScreenState();
+  State<Overlay12MarkersEvent1Screen> createState() =>
+      _Overlay12MarkersEvent1ScreenState();
 }
 
-class _Overlay12MarkersEvent1ScreenState extends State<Overlay12MarkersEvent1Screen> {
+class _Overlay12MarkersEvent1ScreenState
+    extends State<Overlay12MarkersEvent1Screen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -58,7 +60,8 @@ class _Overlay12MarkersEvent1ScreenState extends State<Overlay12MarkersEvent1Scr
         markers: markers.toList(),
         center: LatLng(33.450705, 126.570677),
         onMarkerTap: (markerId, latLng, zoomLevel) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('marker click:\n\n$latLng')));
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('marker click:\n\n$latLng')));
         },
       ),
     );

@@ -34,7 +34,7 @@ class _Map19ZoomChangeScreenState extends State<Map19ZoomChangeScreen> {
             onZoomChangeCallback: ((zoomLevel, zoomType) {
               message = '현재 지도 레벨은 $zoomLevel 입니다';
 
-              setState(() { });
+              setState(() {});
             }),
           ),
           Align(

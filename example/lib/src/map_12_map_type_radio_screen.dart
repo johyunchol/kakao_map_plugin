@@ -22,7 +22,8 @@ class Map12MapTypeRadioScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map12MapTypeRadioScreen> createState() => _Map12MapTypeRadioScreenState();
+  State<Map12MapTypeRadioScreen> createState() =>
+      _Map12MapTypeRadioScreenState();
 }
 
 class _Map12MapTypeRadioScreenState extends State<Map12MapTypeRadioScreen> {
@@ -58,12 +59,14 @@ class _Map12MapTypeRadioScreenState extends State<Map12MapTypeRadioScreen> {
                         onPressed: () {
                           clear();
 
-                          mapController.addOverlayMapTypeId(selectedItem.mapType);
+                          mapController
+                              .addOverlayMapTypeId(selectedItem.mapType);
 
                           setState(() {});
                           // setChecked(item);
                         },
-                        child: Text(selectedItem.title, textAlign: TextAlign.right),
+                        child: Text(selectedItem.title,
+                            textAlign: TextAlign.right),
                       ),
                     )
                     .toList(),

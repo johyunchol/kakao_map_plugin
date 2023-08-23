@@ -10,10 +10,12 @@ class Overlay16LineDistanceScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay16LineDistanceScreen> createState() => _Overlay16LineDistanceScreenState();
+  State<Overlay16LineDistanceScreen> createState() =>
+      _Overlay16LineDistanceScreenState();
 }
 
-class _Overlay16LineDistanceScreenState extends State<Overlay16LineDistanceScreen> {
+class _Overlay16LineDistanceScreenState
+    extends State<Overlay16LineDistanceScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};

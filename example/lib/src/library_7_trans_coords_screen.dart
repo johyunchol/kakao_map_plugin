@@ -10,7 +10,8 @@ class Library7transCoordsScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library7transCoordsScreen> createState() => _Library7transCoordsScreenState();
+  State<Library7transCoordsScreen> createState() =>
+      _Library7transCoordsScreenState();
 }
 
 class _Library7transCoordsScreenState extends State<Library7transCoordsScreen> {

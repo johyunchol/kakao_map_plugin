@@ -10,7 +10,8 @@ class RoadView5Overlay2Screen extends StatefulWidget {
   final String? title;
 
   @override
-  State<RoadView5Overlay2Screen> createState() => _RoadView5Overlay2ScreenState();
+  State<RoadView5Overlay2Screen> createState() =>
+      _RoadView5Overlay2ScreenState();
 }
 
 class _RoadView5Overlay2ScreenState extends State<RoadView5Overlay2Screen> {

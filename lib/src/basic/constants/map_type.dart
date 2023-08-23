@@ -18,6 +18,7 @@ enum MapType {
   final int id;
 
   factory MapType.getById(int mapTypeId) {
-    return MapType.values.firstWhere((value) => value.id == mapTypeId, orElse: () => MapType.normal);
+    return MapType.values.firstWhere((value) => value.id == mapTypeId,
+        orElse: () => MapType.normal);
   }
 }

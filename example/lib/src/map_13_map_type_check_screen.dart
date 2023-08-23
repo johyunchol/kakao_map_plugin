@@ -22,7 +22,8 @@ class Map13MapTypeCheckScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map13MapTypeCheckScreen> createState() => _Map13MapTypeCheckScreenState();
+  State<Map13MapTypeCheckScreen> createState() =>
+      _Map13MapTypeCheckScreenState();
 }
 
 class _Map13MapTypeCheckScreenState extends State<Map13MapTypeCheckScreen> {
@@ -66,14 +67,18 @@ class _Map13MapTypeCheckScreenState extends State<Map13MapTypeCheckScreen> {
                           }
 
                           selectedItem.isChecked
-                              ? mapController.addOverlayMapTypeId(selectedItem.mapType)
-                              : mapController.removeOverlayMapTypeId(selectedItem.mapType);
+                              ? mapController
+                                  .addOverlayMapTypeId(selectedItem.mapType)
+                              : mapController
+                                  .removeOverlayMapTypeId(selectedItem.mapType);
 
                           setState(() {});
                           // setChecked(item);
                         },
-                        color: selectedItem.isChecked ? Colors.blue : Colors.grey,
-                        child: Text(selectedItem.title, textAlign: TextAlign.right),
+                        color:
+                            selectedItem.isChecked ? Colors.blue : Colors.grey,
+                        child: Text(selectedItem.title,
+                            textAlign: TextAlign.right),
                       ),
                     )
                     .toList(),

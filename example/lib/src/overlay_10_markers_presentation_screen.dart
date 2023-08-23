@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// 여러개 마커 표시하기
 /// https://apis.map.kakao.com/web/sample/multipleMarkerImage/
 class Overlay10MarkersPresentationScreen extends StatefulWidget {
-  const Overlay10MarkersPresentationScreen({Key? key, this.title}) : super(key: key);
+  const Overlay10MarkersPresentationScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay10MarkersPresentationScreen> createState() => _Overlay10MarkersPresentationScreenState();
+  State<Overlay10MarkersPresentationScreen> createState() =>
+      _Overlay10MarkersPresentationScreenState();
 }
 
-class _Overlay10MarkersPresentationScreenState extends State<Overlay10MarkersPresentationScreen> {
+class _Overlay10MarkersPresentationScreenState
+    extends State<Overlay10MarkersPresentationScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -38,7 +41,8 @@ class _Overlay10MarkersPresentationScreenState extends State<Overlay10MarkersPre
             latLng: LatLng(33.450705, 126.570677),
             width: 24,
             height: 35,
-            markerImageSrc: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            markerImageSrc:
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
           ));
 
           markers.add(Marker(
@@ -46,7 +50,8 @@ class _Overlay10MarkersPresentationScreenState extends State<Overlay10MarkersPre
             latLng: LatLng(33.450936, 126.569477),
             width: 24,
             height: 35,
-            markerImageSrc: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            markerImageSrc:
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
           ));
 
           markers.add(Marker(
@@ -54,7 +59,8 @@ class _Overlay10MarkersPresentationScreenState extends State<Overlay10MarkersPre
             latLng: LatLng(33.450879, 126.569940),
             width: 24,
             height: 35,
-            markerImageSrc: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            markerImageSrc:
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
           ));
 
           markers.add(Marker(
@@ -62,10 +68,11 @@ class _Overlay10MarkersPresentationScreenState extends State<Overlay10MarkersPre
             latLng: LatLng(33.451393, 126.570738),
             width: 24,
             height: 35,
-            markerImageSrc: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            markerImageSrc:
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(33.450701, 126.570667),

@@ -10,10 +10,12 @@ class RoadView9ToggleButtonScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<RoadView9ToggleButtonScreen> createState() => _RoadView9ToggleButtonScreenState();
+  State<RoadView9ToggleButtonScreen> createState() =>
+      _RoadView9ToggleButtonScreenState();
 }
 
-class _RoadView9ToggleButtonScreenState extends State<RoadView9ToggleButtonScreen> {
+class _RoadView9ToggleButtonScreenState
+    extends State<RoadView9ToggleButtonScreen> {
   late KakaoMapController mapController;
 
   @override

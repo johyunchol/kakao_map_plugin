@@ -25,11 +25,13 @@ class _Library1KeywordScreenState extends State<Library1KeywordScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(onMapCreated: ((controller) async {
-        mapController = controller;
+      body: KakaoMap(
+        onMapCreated: ((controller) async {
+          mapController = controller;
 
-        await controller.keywordSearch();
-      }),),
+          await controller.keywordSearch();
+        }),
+      ),
     );
   }
 }

@@ -10,10 +10,12 @@ class RoadView6CustomOverlayScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<RoadView6CustomOverlayScreen> createState() => _RoadView6CustomOverlayScreenState();
+  State<RoadView6CustomOverlayScreen> createState() =>
+      _RoadView6CustomOverlayScreenState();
 }
 
-class _RoadView6CustomOverlayScreenState extends State<RoadView6CustomOverlayScreen> {
+class _RoadView6CustomOverlayScreenState
+    extends State<RoadView6CustomOverlayScreen> {
   late KakaoMapController mapController;
 
   @override

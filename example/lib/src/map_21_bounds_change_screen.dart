@@ -10,7 +10,8 @@ class Map21BoundsChangeScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map21BoundsChangeScreen> createState() => _Map21BoundsChangeScreenState();
+  State<Map21BoundsChangeScreen> createState() =>
+      _Map21BoundsChangeScreenState();
 }
 
 class _Map21BoundsChangeScreenState extends State<Map21BoundsChangeScreen> {
@@ -32,11 +33,11 @@ class _Map21BoundsChangeScreenState extends State<Map21BoundsChangeScreen> {
             }),
             currentLevel: 8,
             onBoundsChangeCallback: ((latLngBounds) {
-
               final ne = latLngBounds.getNorthEast();
               final sw = latLngBounds.getSouthWest();
 
-              message = '영역좌표는 남서쪽 위도, 경도는\n${sw.latitude}, ${sw.longitude}이고\n';
+              message =
+                  '영역좌표는 남서쪽 위도, 경도는\n${sw.latitude}, ${sw.longitude}이고\n';
               message += '북동쪽 위도, 경도는\n${ne.latitude}, ${ne.longitude}입니다';
 
               setState(() {});

@@ -10,7 +10,8 @@ class Static3MarkerTextScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Static3MarkerTextScreen> createState() => _Static3MarkerTextScreenState();
+  State<Static3MarkerTextScreen> createState() =>
+      _Static3MarkerTextScreenState();
 }
 
 class _Static3MarkerTextScreenState extends State<Static3MarkerTextScreen> {
@@ -20,8 +21,14 @@ class _Static3MarkerTextScreenState extends State<Static3MarkerTextScreen> {
 
   @override
   void initState() {
-    markers.add(Marker(markerId: 'markerId', latLng: LatLng(33.450701, 126.570667), infoWindowContent: '안녕하세요'));
-    markers.add(Marker(markerId: 'markerId', latLng: LatLng(33.440701, 126.570667), infoWindowContent: '안녕하세요2'));
+    markers.add(Marker(
+        markerId: 'markerId',
+        latLng: LatLng(33.450701, 126.570667),
+        infoWindowContent: '안녕하세요'));
+    markers.add(Marker(
+        markerId: 'markerId',
+        latLng: LatLng(33.440701, 126.570667),
+        infoWindowContent: '안녕하세요2'));
     super.initState();
   }
 

@@ -15,7 +15,8 @@ enum ControlPosition {
   final int id;
 
   factory ControlPosition.getById(int controlPositionId) {
-    return ControlPosition.values
-        .firstWhere((value) => value.id == controlPositionId, orElse: () => ControlPosition.top);
+    return ControlPosition.values.firstWhere(
+        (value) => value.id == controlPositionId,
+        orElse: () => ControlPosition.top);
   }
 }

@@ -10,7 +10,8 @@ class Overlay3MarkerImageScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay3MarkerImageScreen> createState() => _Overlay3MarkerImageScreenState();
+  State<Overlay3MarkerImageScreen> createState() =>
+      _Overlay3MarkerImageScreenState();
 }
 
 class _Overlay3MarkerImageScreenState extends State<Overlay3MarkerImageScreen> {
@@ -44,7 +45,7 @@ class _Overlay3MarkerImageScreenState extends State<Overlay3MarkerImageScreen> {
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),

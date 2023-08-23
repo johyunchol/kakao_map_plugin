@@ -10,10 +10,12 @@ class Map6CustomControllerScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map6CustomControllerScreen> createState() => _Map6CustomControllerScreenState();
+  State<Map6CustomControllerScreen> createState() =>
+      _Map6CustomControllerScreenState();
 }
 
-class _Map6CustomControllerScreenState extends State<Map6CustomControllerScreen> {
+class _Map6CustomControllerScreenState
+    extends State<Map6CustomControllerScreen> {
   late KakaoMapController mapController;
 
   bool isDefaultMap = true;

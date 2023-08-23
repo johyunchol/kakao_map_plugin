@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// 마커에 마우스 이벤트 등록하기
 /// https://apis.map.kakao.com/web/sample/addMarkerMouseEvent/
 class Overlay7MarkerMouseEventScreen extends StatefulWidget {
-  const Overlay7MarkerMouseEventScreen({Key? key, this.title}) : super(key: key);
+  const Overlay7MarkerMouseEventScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay7MarkerMouseEventScreen> createState() => _Overlay7MarkerMouseEventScreenState();
+  State<Overlay7MarkerMouseEventScreen> createState() =>
+      _Overlay7MarkerMouseEventScreenState();
 }
 
-class _Overlay7MarkerMouseEventScreenState extends State<Overlay7MarkerMouseEventScreen> {
+class _Overlay7MarkerMouseEventScreenState
+    extends State<Overlay7MarkerMouseEventScreen> {
   late KakaoMapController mapController;
 
   @override

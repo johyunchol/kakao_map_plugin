@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// 닫기가 가능한 커스텀 오버레이
 /// https://apis.map.kakao.com/web/sample/removableCustomOverlay/
 class Overlay23RemovableCustomOverlayScreen extends StatefulWidget {
-  const Overlay23RemovableCustomOverlayScreen({Key? key, this.title}) : super(key: key);
+  const Overlay23RemovableCustomOverlayScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay23RemovableCustomOverlayScreen> createState() => _Overlay23RemovableCustomOverlayScreenState();
+  State<Overlay23RemovableCustomOverlayScreen> createState() =>
+      _Overlay23RemovableCustomOverlayScreenState();
 }
 
-class _Overlay23RemovableCustomOverlayScreenState extends State<Overlay23RemovableCustomOverlayScreen> {
+class _Overlay23RemovableCustomOverlayScreenState
+    extends State<Overlay23RemovableCustomOverlayScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};

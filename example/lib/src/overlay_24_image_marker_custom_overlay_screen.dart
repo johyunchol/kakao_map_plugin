@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// 이미지 마커와 커스텀 오버레이
 /// https://apis.map.kakao.com/web/sample/markerWithCustomOverlay/
 class Overlay24ImageMarkerCustomOverlayScreen extends StatefulWidget {
-  const Overlay24ImageMarkerCustomOverlayScreen({Key? key, this.title}) : super(key: key);
+  const Overlay24ImageMarkerCustomOverlayScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay24ImageMarkerCustomOverlayScreen> createState() => _Overlay24ImageMarkerCustomOverlayScreenState();
+  State<Overlay24ImageMarkerCustomOverlayScreen> createState() =>
+      _Overlay24ImageMarkerCustomOverlayScreenState();
 }
 
-class _Overlay24ImageMarkerCustomOverlayScreenState extends State<Overlay24ImageMarkerCustomOverlayScreen> {
+class _Overlay24ImageMarkerCustomOverlayScreenState
+    extends State<Overlay24ImageMarkerCustomOverlayScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};

@@ -10,10 +10,12 @@ class Overlay18PolygonEvent1Screen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay18PolygonEvent1Screen> createState() => _Overlay18PolygonEvent1ScreenState();
+  State<Overlay18PolygonEvent1Screen> createState() =>
+      _Overlay18PolygonEvent1ScreenState();
 }
 
-class _Overlay18PolygonEvent1ScreenState extends State<Overlay18PolygonEvent1Screen> {
+class _Overlay18PolygonEvent1ScreenState
+    extends State<Overlay18PolygonEvent1Screen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};

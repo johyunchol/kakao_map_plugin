@@ -10,10 +10,12 @@ class Overlay11MarkersControlScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay11MarkersControlScreen> createState() => _Overlay11MarkersControlScreenState();
+  State<Overlay11MarkersControlScreen> createState() =>
+      _Overlay11MarkersControlScreenState();
 }
 
-class _Overlay11MarkersControlScreenState extends State<Overlay11MarkersControlScreen> {
+class _Overlay11MarkersControlScreenState
+    extends State<Overlay11MarkersControlScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -32,17 +34,16 @@ class _Overlay11MarkersControlScreenState extends State<Overlay11MarkersControlS
       body: KakaoMap(
         onMapCreated: ((controller) async {
           mapController = controller;
-
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),
         onMapTap: (latLng) {
           markers.add(Marker(
-              markerId: markers.length.toString(),
-              latLng: latLng,
+            markerId: markers.length.toString(),
+            latLng: latLng,
           ));
 
-          setState(() { });
+          setState(() {});
         },
       ),
     );

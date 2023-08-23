@@ -10,10 +10,12 @@ class Library8MarkerClustererScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library8MarkerClustererScreen> createState() => _Library8MarkerClustererScreenState();
+  State<Library8MarkerClustererScreen> createState() =>
+      _Library8MarkerClustererScreenState();
 }
 
-class _Library8MarkerClustererScreenState extends State<Library8MarkerClustererScreen> {
+class _Library8MarkerClustererScreenState
+    extends State<Library8MarkerClustererScreen> {
   late KakaoMapController mapController;
 
   bool draggable = true;

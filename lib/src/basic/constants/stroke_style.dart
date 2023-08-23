@@ -22,6 +22,7 @@ enum StrokeStyle {
   final String name;
 
   factory StrokeStyle.getByName(String styleName) {
-    return StrokeStyle.values.firstWhere((value) => value.name == styleName, orElse: () => StrokeStyle.solid);
+    return StrokeStyle.values.firstWhere((value) => value.name == styleName,
+        orElse: () => StrokeStyle.solid);
   }
 }

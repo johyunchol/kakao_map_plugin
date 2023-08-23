@@ -10,7 +10,8 @@ class Map17ClickAddMarkerScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map17ClickAddMarkerScreen> createState() => _Map17ClickAddMarkerScreenState();
+  State<Map17ClickAddMarkerScreen> createState() =>
+      _Map17ClickAddMarkerScreenState();
 }
 
 class _Map17ClickAddMarkerScreenState extends State<Map17ClickAddMarkerScreen> {

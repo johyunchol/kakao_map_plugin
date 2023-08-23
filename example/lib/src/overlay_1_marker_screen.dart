@@ -38,7 +38,7 @@ class _Overlay1MarkerScreenState extends State<Overlay1MarkerScreen> {
             latLng: await mapController.getCenter(),
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),

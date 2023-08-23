@@ -10,7 +10,8 @@ class Map20CenterChangeScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map20CenterChangeScreen> createState() => _Map20CenterChangeScreenState();
+  State<Map20CenterChangeScreen> createState() =>
+      _Map20CenterChangeScreenState();
 }
 
 class _Map20CenterChangeScreenState extends State<Map20CenterChangeScreen> {
@@ -33,7 +34,8 @@ class _Map20CenterChangeScreenState extends State<Map20CenterChangeScreen> {
             currentLevel: 8,
             onCenterChangeCallback: ((latlng, zoomLevel) {
               message = '지도 레벨은 $zoomLevel 이고\n';
-              message += '중심 좌표는 위도 ${latlng.latitude},\n경도 ${latlng.longitude} 입니다';
+              message +=
+                  '중심 좌표는 위도 ${latlng.latitude},\n경도 ${latlng.longitude} 입니다';
 
               setState(() {});
             }),
