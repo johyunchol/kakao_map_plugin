@@ -1,3 +1,6 @@
+## 0.1.8
+* Changed the timing of setting map for CustomOverlay
+
 ## 0.1.7
 * Added CustomOverlay click event
 
