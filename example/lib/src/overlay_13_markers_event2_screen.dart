@@ -10,10 +10,12 @@ class Overlay13MarkersEvent2Screen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay13MarkersEvent2Screen> createState() => _Overlay13MarkersEvent2ScreenState();
+  State<Overlay13MarkersEvent2Screen> createState() =>
+      _Overlay13MarkersEvent2ScreenState();
 }
 
-class _Overlay13MarkersEvent2ScreenState extends State<Overlay13MarkersEvent2Screen> {
+class _Overlay13MarkersEvent2ScreenState
+    extends State<Overlay13MarkersEvent2Screen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -44,7 +46,7 @@ class _Overlay13MarkersEvent2ScreenState extends State<Overlay13MarkersEvent2Scr
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),

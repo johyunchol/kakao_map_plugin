@@ -10,7 +10,8 @@ class Overlay6MarkerClickScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay6MarkerClickScreen> createState() => _Overlay6MarkerClickScreenState();
+  State<Overlay6MarkerClickScreen> createState() =>
+      _Overlay6MarkerClickScreenState();
 }
 
 class _Overlay6MarkerClickScreenState extends State<Overlay6MarkerClickScreen> {
@@ -44,12 +45,12 @@ class _Overlay6MarkerClickScreenState extends State<Overlay6MarkerClickScreen> {
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         onMarkerTap: ((markerId, latLng, zoomLevel) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('marker click:\n\n$latLng')));
-
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('marker click:\n\n$latLng')));
         }),
         center: LatLng(37.3608681, 126.9306506),
       ),

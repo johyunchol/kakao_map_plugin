@@ -78,7 +78,6 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
             ),
           );
 
-
           polygons.add(
             Polygon(
               polygonId: 'polygon_${polygons.length}',
@@ -115,7 +114,6 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
           );
 
           setState(() {});
-
         }),
         circles: circles.toList(),
         polylines: polylines.toList(),

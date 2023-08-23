@@ -10,10 +10,12 @@ class Library6CoordsToAddressScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library6CoordsToAddressScreen> createState() => _Library6CoordsToAddressScreenState();
+  State<Library6CoordsToAddressScreen> createState() =>
+      _Library6CoordsToAddressScreenState();
 }
 
-class _Library6CoordsToAddressScreenState extends State<Library6CoordsToAddressScreen> {
+class _Library6CoordsToAddressScreenState
+    extends State<Library6CoordsToAddressScreen> {
   late KakaoMapController mapController;
 
   bool draggable = true;

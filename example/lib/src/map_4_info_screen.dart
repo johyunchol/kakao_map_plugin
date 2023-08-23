@@ -37,11 +37,14 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
               final swLatLng = bounds.getSouthWest();
               final neLatLng = bounds.getNorthEast();
 
-              message += '지도 중심좌표는 위도 ${center.latitude}, 경도 ${center.longitude}\n';
+              message +=
+                  '지도 중심좌표는 위도 ${center.latitude}, 경도 ${center.longitude}\n';
               message += '지도 레벨은 $level\n';
               message += '지도 타입은 ${mapTypeId.name}\n';
-              message += '지도의 남서쪽 좌표는 ${swLatLng.latitude}, ${swLatLng.longitude} 이고\n';
-              message += '북동쪽 좌표는 ${neLatLng.latitude}, ${neLatLng.longitude} 입니다\n';
+              message +=
+                  '지도의 남서쪽 좌표는 ${swLatLng.latitude}, ${swLatLng.longitude} 이고\n';
+              message +=
+                  '북동쪽 좌표는 ${neLatLng.latitude}, ${neLatLng.longitude} 입니다\n';
 
               setState(() {});
             }),

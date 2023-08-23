@@ -10,7 +10,8 @@ class Map16ClickListenerScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Map16ClickListenerScreen> createState() => _Map16ClickListenerScreenState();
+  State<Map16ClickListenerScreen> createState() =>
+      _Map16ClickListenerScreenState();
 }
 
 class _Map16ClickListenerScreenState extends State<Map16ClickListenerScreen> {

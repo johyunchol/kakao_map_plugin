@@ -21,11 +21,11 @@ class LatLng {
 }
 
 LatLng _$LatLngFromJson(Map<String, dynamic> json) => LatLng(
-  json['latitude'] as double,
-  json['longitude'] as double,
-);
+      json['latitude'] as double,
+      json['longitude'] as double,
+    );
 
 Map<String, dynamic> _$LatLngToJson(LatLng instance) => <String, dynamic>{
-  'latitude': instance.latitude,
-  'longitude': instance.longitude,
-};
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
+    };

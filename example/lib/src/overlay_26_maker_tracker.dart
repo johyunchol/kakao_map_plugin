@@ -10,10 +10,12 @@ class Overlay26MarkerTrackerScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay26MarkerTrackerScreen> createState() => _Overlay26MarkerTrackerScreenState();
+  State<Overlay26MarkerTrackerScreen> createState() =>
+      _Overlay26MarkerTrackerScreenState();
 }
 
-class _Overlay26MarkerTrackerScreenState extends State<Overlay26MarkerTrackerScreen> {
+class _Overlay26MarkerTrackerScreenState
+    extends State<Overlay26MarkerTrackerScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};

@@ -10,7 +10,8 @@ class Overlay4InfoWindowScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay4InfoWindowScreen> createState() => _Overlay4InfoWindowScreenState();
+  State<Overlay4InfoWindowScreen> createState() =>
+      _Overlay4InfoWindowScreenState();
 }
 
 class _Overlay4InfoWindowScreenState extends State<Overlay4InfoWindowScreen> {
@@ -41,7 +42,7 @@ class _Overlay4InfoWindowScreenState extends State<Overlay4InfoWindowScreen> {
             infoWindowFirstShow: true,
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),

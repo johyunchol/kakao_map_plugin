@@ -35,13 +35,15 @@ class _Map2MoveScreenState extends State<Map2MoveScreen> {
             child: Row(
               children: [
                 MaterialButton(
-                  onPressed: () => mapController.setCenter(LatLng(33.452613, 126.570888)),
+                  onPressed: () =>
+                      mapController.setCenter(LatLng(33.452613, 126.570888)),
                   color: Colors.white,
                   child: const Text("setCenter"),
                 ),
                 const SizedBox(width: 8),
                 MaterialButton(
-                  onPressed: () => mapController.panTo(LatLng(33.450580, 126.574942)),
+                  onPressed: () =>
+                      mapController.panTo(LatLng(33.450580, 126.574942)),
                   color: Colors.white,
                   child: const Text("panTo"),
                 )

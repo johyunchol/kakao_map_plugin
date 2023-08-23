@@ -10,7 +10,8 @@ class LatLngBounds {
 
   LatLngBounds(this.sw, this.ne);
 
-  factory LatLngBounds.fromJson(Map<String, dynamic> json) => _$LatLngBoundsFromJson(json);
+  factory LatLngBounds.fromJson(Map<String, dynamic> json) =>
+      _$LatLngBoundsFromJson(json);
 
   Map<String, dynamic> toJson() => _$LatLngBoundsToJson(this);
 
@@ -25,11 +26,12 @@ class LatLngBounds {
 }
 
 LatLngBounds _$LatLngBoundsFromJson(Map<String, dynamic> json) => LatLngBounds(
-  json['sw'] as LatLng,
-  json['ne'] as LatLng,
-);
+      json['sw'] as LatLng,
+      json['ne'] as LatLng,
+    );
 
-Map<String, dynamic> _$LatLngBoundsToJson(LatLngBounds instance) => <String, dynamic>{
-  'sw': instance.sw,
-  'ne': instance.ne,
-};
+Map<String, dynamic> _$LatLngBoundsToJson(LatLngBounds instance) =>
+    <String, dynamic>{
+      'sw': instance.sw,
+      'ne': instance.ne,
+    };

@@ -10,7 +10,8 @@ class Library2KeywordListScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library2KeywordListScreen> createState() => _Library2KeywordListScreenState();
+  State<Library2KeywordListScreen> createState() =>
+      _Library2KeywordListScreenState();
 }
 
 class _Library2KeywordListScreenState extends State<Library2KeywordListScreen> {

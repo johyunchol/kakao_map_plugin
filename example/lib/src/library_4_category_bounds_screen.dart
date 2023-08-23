@@ -10,10 +10,12 @@ class Library4CategoryBoundsScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Library4CategoryBoundsScreen> createState() => _Library4CategoryBoundsScreenState();
+  State<Library4CategoryBoundsScreen> createState() =>
+      _Library4CategoryBoundsScreenState();
 }
 
-class _Library4CategoryBoundsScreenState extends State<Library4CategoryBoundsScreen> {
+class _Library4CategoryBoundsScreenState
+    extends State<Library4CategoryBoundsScreen> {
   late KakaoMapController mapController;
 
   bool draggable = true;

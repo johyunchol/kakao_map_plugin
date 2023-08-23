@@ -61,7 +61,8 @@ class _Map15RelayoutScreenState extends State<Map15RelayoutScreen> {
                 padding: const EdgeInsets.all(16),
                 width: double.infinity,
                 color: Colors.white,
-                child: const Text('웹에서는 width, height가 변경되면 relayout 호출하여 다시 렌더해야 하지 flutter 에서는 setState를 통해 rebuild 해주면 됩니다.'),
+                child: const Text(
+                    '웹에서는 width, height가 변경되면 relayout 호출하여 다시 렌더해야 하지 flutter 에서는 setState를 통해 rebuild 해주면 됩니다.'),
               )
             ],
           ),
@@ -82,9 +83,7 @@ class _Map15RelayoutScreenState extends State<Map15RelayoutScreen> {
                   const SizedBox(width: 8),
                   MaterialButton(
                     onPressed: () {
-                      setState(() {
-
-                      });
+                      setState(() {});
                     },
                     color: Colors.white,
                     child: const Text("relayout 호출하기"),

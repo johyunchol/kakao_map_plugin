@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// geolocation으로 마커 표시하기
 /// https://apis.map.kakao.com/web/sample/geolocationMarker/
 class Overlay9MarkerGeolocatorScreen extends StatefulWidget {
-  const Overlay9MarkerGeolocatorScreen({Key? key, this.title}) : super(key: key);
+  const Overlay9MarkerGeolocatorScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay9MarkerGeolocatorScreen> createState() => _Overlay9MarkerGeolocatorScreenState();
+  State<Overlay9MarkerGeolocatorScreen> createState() =>
+      _Overlay9MarkerGeolocatorScreenState();
 }
 
-class _Overlay9MarkerGeolocatorScreenState extends State<Overlay9MarkerGeolocatorScreen> {
+class _Overlay9MarkerGeolocatorScreenState
+    extends State<Overlay9MarkerGeolocatorScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -44,7 +47,7 @@ class _Overlay9MarkerGeolocatorScreenState extends State<Overlay9MarkerGeolocato
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),

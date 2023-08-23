@@ -10,10 +10,12 @@ class Overlay2MarkerDraggableScreen extends StatefulWidget {
   final String? title;
 
   @override
-  State<Overlay2MarkerDraggableScreen> createState() => _Overlay2MarkerDraggableScreenState();
+  State<Overlay2MarkerDraggableScreen> createState() =>
+      _Overlay2MarkerDraggableScreenState();
 }
 
-class _Overlay2MarkerDraggableScreenState extends State<Overlay2MarkerDraggableScreen> {
+class _Overlay2MarkerDraggableScreenState
+    extends State<Overlay2MarkerDraggableScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -45,9 +47,8 @@ class _Overlay2MarkerDraggableScreenState extends State<Overlay2MarkerDraggableS
 
               setState(() {});
             }),
-            onMarkerDragChangeCallback:
-                ((String markerId, LatLng latLng, int zoomLevel, MarkerDragType markerDragType) {
-
+            onMarkerDragChangeCallback: ((String markerId, LatLng latLng,
+                int zoomLevel, MarkerDragType markerDragType) {
               if (markerDragType == MarkerDragType.end) {
                 mapController.panTo(latLng);
               }

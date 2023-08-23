@@ -5,15 +5,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// draggable 마커 이벤트 적용하기
 /// https://apis.map.kakao.com/web/sample/addDraggableMarkerDragEvent/
 class Overlay8MarkerDraggableEventScreen extends StatefulWidget {
-  const Overlay8MarkerDraggableEventScreen({Key? key, this.title}) : super(key: key);
+  const Overlay8MarkerDraggableEventScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 
   @override
-  State<Overlay8MarkerDraggableEventScreen> createState() => _Overlay8MarkerDraggableEventScreenState();
+  State<Overlay8MarkerDraggableEventScreen> createState() =>
+      _Overlay8MarkerDraggableEventScreenState();
 }
 
-class _Overlay8MarkerDraggableEventScreenState extends State<Overlay8MarkerDraggableEventScreen> {
+class _Overlay8MarkerDraggableEventScreenState
+    extends State<Overlay8MarkerDraggableEventScreen> {
   late KakaoMapController mapController;
 
   Set<Marker> markers = {};
@@ -44,7 +47,7 @@ class _Overlay8MarkerDraggableEventScreenState extends State<Overlay8MarkerDragg
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
-          setState(() { });
+          setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(37.3608681, 126.9306506),
