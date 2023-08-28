@@ -85,11 +85,11 @@ class _KakaoMapState extends State<KakaoMap> {
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
 
+    addJavaScriptChannels(controller);
+
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadHtmlString(_loadMap());
-
-    addJavaScriptChannels(controller);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
