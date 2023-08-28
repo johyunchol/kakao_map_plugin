@@ -1,3 +1,6 @@
+## 0.1.9
+* Adjusted the timing of the 'addJavaScriptChannels' invocation
+
 ## 0.1.8
 * Changed the timing of setting map for CustomOverlay
 
