@@ -153,9 +153,11 @@ class KakaoMapController {
 
   /// get zoom level
   Future<int> getLevel() async {
-    final level = await _webViewController
+    final result = await _webViewController
         .runJavaScriptReturningResult("getLevel();") as String;
-    return int.parse(level);
+    final level = jsonDecode(result)['level'] as int;
+
+    return level;
   }
 
   /// set map type id
@@ -165,9 +167,12 @@ class KakaoMapController {
 
   /// get map type id
   Future<MapType> getMapTypeId() async {
-    final mapTypeId = await _webViewController
+    final result = await _webViewController
         .runJavaScriptReturningResult("getMapTypeId();") as String;
-    return MapType.getById(int.parse(mapTypeId));
+
+    final mapTypeId = jsonDecode(result)['mapTypeId'] as int;
+
+    return MapType.getById(mapTypeId);
   }
 
   /// set bounds

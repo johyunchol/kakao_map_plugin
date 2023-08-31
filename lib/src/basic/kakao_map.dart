@@ -690,10 +690,17 @@ class _KakaoMapState extends State<KakaoMap> {
 
     /**
      * 지도의 확대 수준을 반환한다.
-     * @return Number
      */
     function getLevel() {
-        return map.getLevel();
+        let result = {
+            level: map.getLevel()
+        };
+        
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+    
+        return result;
     }
 
     /**
@@ -705,7 +712,15 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     function getMapTypeId() {
-        return map.getMapTypeId();
+        let result = {
+            mapTypeId: map.getMapTypeId()
+        };
+        
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+    
+        return result;
     }
 
     /**
