@@ -602,7 +602,7 @@ class _KakaoMapState extends State<KakaoMap> {
     function addCustomOverlay(customOverlayId, latLng, content, isClickable) {
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
-        
+
         content = '<div id="' + customOverlayId + '"' + content + '</div>'
 
         let customOverlay = new kakao.maps.CustomOverlay({
@@ -614,22 +614,22 @@ class _KakaoMapState extends State<KakaoMap> {
             yAnchor: 1,
             zIndex: 3
         });
-        
+
         customOverlay.setMap(map);
-        
+
         if (${widget.onCustomOverlayTap != null}) {
             let element = document.getElementById(customOverlayId);
             element.addEventListener('click', function () {
-                  // 클릭한 위도, 경도 정보를 가져옵니다
-                  let latLng = customOverlay.getPosition();
+                // 클릭한 위도, 경도 정보를 가져옵니다
+                let latLng = customOverlay.getPosition();
 
-                  const clickLatLng = {
+                const clickLatLng = {
                     customOverlayId: customOverlayId,
                     latitude: latLng.getLat(),
                     longitude: latLng.getLng(),
-                  }
+                }
 
-                  onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
+                onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
             });
         }
 
@@ -695,11 +695,11 @@ class _KakaoMapState extends State<KakaoMap> {
         let result = {
             level: map.getLevel()
         };
-        
+
         if (${Platform.isIOS}) {
             result = JSON.stringify(result);
         }
-    
+
         return result;
     }
 
@@ -715,11 +715,11 @@ class _KakaoMapState extends State<KakaoMap> {
         let result = {
             mapTypeId: map.getMapTypeId()
         };
-        
+
         if (${Platform.isIOS}) {
             result = JSON.stringify(result);
         }
-    
+
         return result;
     }
 
@@ -877,17 +877,21 @@ class _KakaoMapState extends State<KakaoMap> {
     controller
       ..addJavaScriptChannel('onMapCreated',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapCreated != null) widget.onMapCreated!(_mapController);
+        if (widget.onMapCreated != null) {
+          widget.onMapCreated!(_mapController);
+        }
       })
       ..addJavaScriptChannel('onMapTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapTap != null)
+        if (widget.onMapTap != null) {
           widget.onMapTap!(LatLng.fromJson(jsonDecode(result.message)));
+        }
       })
       ..addJavaScriptChannel('onMapDoubleTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapDoubleTap != null)
+        if (widget.onMapDoubleTap != null) {
           widget.onMapDoubleTap!(LatLng.fromJson(jsonDecode(result.message)));
+        }
       })
       ..addJavaScriptChannel('onMarkerTap',
           onMessageReceived: (JavaScriptMessage result) {

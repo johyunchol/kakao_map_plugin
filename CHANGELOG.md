@@ -1,3 +1,6 @@
+## 0.2.0
+* Fixed bugs in getLevel and getMapTypeId.
+ 
 ## 0.1.9
 * Adjusted the timing of the 'addJavaScriptChannels' invocation
 
