@@ -50,6 +50,9 @@ class _Overlay22CustomOverlay2ScreenState
           setState(() {});
         }),
         customOverlays: customOverlays,
+        onCustomOverlayTap: (String id, LatLng latLng) {
+          debugPrint('***** [callback2] $id / $latLng');
+        },
         center: LatLng(37.502, 127.026581),
         currentLevel: 4,
       ),
