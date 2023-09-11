@@ -599,7 +599,7 @@ class _KakaoMapState extends State<KakaoMap> {
         });
     }
 
-    function addCustomOverlay(customOverlayId, latLng, content, isClickable) {
+    function addCustomOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
@@ -610,27 +610,30 @@ class _KakaoMapState extends State<KakaoMap> {
             clickable: isClickable,
             content: content,
             position: markerPosition,
-            xAnchor: 0.5,
-            yAnchor: 1,
-            zIndex: 3
+            xAnchor: xAnchor,
+            yAnchor: yAnchor,
+            zIndex: zIndex,
         });
-
+        
         customOverlay.setMap(map);
 
         if (${widget.onCustomOverlayTap != null}) {
             let element = document.getElementById(customOverlayId);
-            element.addEventListener('click', function () {
-                // 클릭한 위도, 경도 정보를 가져옵니다
-                let latLng = customOverlay.getPosition();
-
-                const clickLatLng = {
-                    customOverlayId: customOverlayId,
-                    latitude: latLng.getLat(),
-                    longitude: latLng.getLng(),
-                }
-
-                onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
-            });
+            
+            if (element) {
+                element.addEventListener('click', function () {
+                    // 클릭한 위도, 경도 정보를 가져옵니다
+                    let latLng = customOverlay.getPosition();
+    
+                    const clickLatLng = {
+                        customOverlayId: customOverlayId,
+                        latitude: latLng.getLat(),
+                        longitude: latLng.getLng(),
+                    }
+    
+                    onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
+                });
+            }
         }
 
         customOverlays.push(customOverlay);
