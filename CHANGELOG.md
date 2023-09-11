@@ -1,3 +1,6 @@
+## 0.2.1
+* Modified to accept xAnchor, yAnchor, and zIndex as parameters.
+
 ## 0.2.0
 * Fixed bugs in getLevel and getMapTypeId.
  
