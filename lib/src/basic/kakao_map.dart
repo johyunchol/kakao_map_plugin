@@ -27,8 +27,8 @@ class KakaoMap extends StatefulWidget {
   final List<Rectangle>? rectangles;
   final List<Polygon>? polygons;
   final List<Marker>? markers;
-  final List<Clusterer>? clusterers;
   final List<CustomOverlay>? customOverlays;
+  final Clusterer? clusterer;
 
   const KakaoMap({
     Key? key,
@@ -57,7 +57,7 @@ class KakaoMap extends StatefulWidget {
     this.rectangles,
     this.polygons,
     this.markers,
-    this.clusterers,
+    this.clusterer,
     this.customOverlays,
   }) : super(key: key);
 
@@ -177,6 +177,9 @@ class _KakaoMapState extends State<KakaoMap> {
             kakao.maps.event.addListener(map, 'zoom_changed', function () {
                 const level = map.getLevel();
                 zoomChanged.postMessage(JSON.stringify({zoomLevel: level}));
+                
+                clusterer.clear();
+                clusterer.addMarkers(markers);
             });
         }
 
@@ -324,6 +327,13 @@ class _KakaoMapState extends State<KakaoMap> {
 
         markers = [];
     }
+    
+    function clearMarkerClusterer() {
+        if (!clusterer) return;
+        
+        clusterer.clear();
+    }
+
 
     function clearCustomOverlay() {
         for (let i = 0; i < customOverlays.length; i++) {
@@ -581,10 +591,33 @@ class _KakaoMapState extends State<KakaoMap> {
         }
     }
 
-    function addClusterer() {
-        if (clusterer == null) return;
-
-        clusterer.addMarker(marker);
+    function addMarkerClusterer(markerList, gridSize = 60, averageCenter = true, minLevel = 10, minClusterSize = 2, styles) {
+        markerList = JSON.parse(markerList);
+        markers = markerList.map(function (marker) {
+          const latLng = new kakao.maps.LatLng(marker.latLng.latitude, marker.latLng.longitude);
+          
+          return new kakao.maps.Marker({
+            position: latLng,
+          });
+        });
+        
+        clusterer = new kakao.maps.MarkerClusterer({
+            map: map,
+            gridSize: gridSize,
+            averageCenter: averageCenter,
+            minLevel: minLevel,
+            disableClickZoom: true,
+            styles: [{
+                width: '53px', height: '52px',
+                color: '#FFF',
+                background: 'url("http://superstorefinder.net/support/wp-content/uploads/2015/07/m1.png") no-repeat',
+                textAlign: 'center',
+                lineHeight: '54px'
+            }]
+        });
+        
+        clusterer.setMinClusterSize(minClusterSize);
+        clusterer.addMarkers(markers);
     }
 
     function initMarkerClusterer() {
@@ -602,6 +635,8 @@ class _KakaoMapState extends State<KakaoMap> {
                 lineHeight: '54px'
             }]
         });
+        
+        console.log('>>>> initMarkerClusterer', clusterer)
     }
 
     function addCustomOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
@@ -877,6 +912,7 @@ class _KakaoMapState extends State<KakaoMap> {
     _mapController.addRectangle(rectangles: widget.rectangles);
     _mapController.addPolygon(polygons: widget.polygons);
     _mapController.addMarker(markers: widget.markers);
+    _mapController.addMarkerClusterer(clusterer: widget.clusterer);
     _mapController.addCustomOverlay(customOverlays: widget.customOverlays);
     super.didUpdateWidget(oldWidget);
   }
