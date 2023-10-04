@@ -48,34 +48,41 @@ class _Overlay10MarkersPresentationScreenState
           markers.add(Marker(
             markerId: markers.length.toString(),
             latLng: LatLng(33.450936, 126.569477),
-            width: 24,
-            height: 35,
+            width: 50,
+            height: 45,
+            offsetX: 15,
+            offsetY: 43,
             markerImageSrc:
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
           ));
 
           markers.add(Marker(
             markerId: markers.length.toString(),
             latLng: LatLng(33.450879, 126.569940),
-            width: 24,
-            height: 35,
+            width: 50,
+            height: 45,
+            offsetX: 15,
+            offsetY: 43,
             markerImageSrc:
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png',
           ));
 
+          /// offset 을 넣는 형식
           markers.add(Marker(
             markerId: markers.length.toString(),
             latLng: LatLng(33.451393, 126.570738),
-            width: 24,
-            height: 35,
+            width: 64,
+            height: 69,
+            offsetX: 27,
+            offsetY: 69,
             markerImageSrc:
-                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
           ));
 
           setState(() {});
         }),
         markers: markers.toList(),
-        center: LatLng(33.450701, 126.570667),
+        center: LatLng(33.450705, 126.570677),
       ),
     );
   }

@@ -14,10 +14,10 @@ class Marker {
   int height = 30;
 
   /// marker horizontal offset
-  int offsetX = 0;
+  int? offsetX;
 
   /// marker vertical offset
-  int offsetY = 0;
+  int? offsetY;
 
   /// marker image
   String markerImageSrc = '';
@@ -39,8 +39,8 @@ class Marker {
     required this.latLng,
     this.width = 24,
     this.height = 30,
-    this.offsetX = 0,
-    this.offsetY = 0,
+    this.offsetX,
+    this.offsetY,
     this.markerImageSrc = '',
     this.infoWindowContent = '',
     this.draggable = false,
