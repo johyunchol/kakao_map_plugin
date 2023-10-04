@@ -1,25 +1,37 @@
+## 0.2.2
+
+* Changed the default value of the image marker's offset.
+
 ## 0.2.1
+
 * Modified to accept xAnchor, yAnchor, and zIndex as parameters.
 
 ## 0.2.0
+
 * Fixed bugs in getLevel and getMapTypeId.
- 
+
 ## 0.1.9
+
 * Adjusted the timing of the 'addJavaScriptChannels' invocation
 
 ## 0.1.8
+
 * Changed the timing of setting map for CustomOverlay
 
 ## 0.1.7
+
 * Added CustomOverlay click event
 
 ## 0.1.4
+
 * Added callbacks to detect the drag start and end events of a marker
 
 ## 0.1.3
+
 * Add the "isClickable" option to the CustomOverlay creation.
 
 ## 0.1.2
+
 * Added Dart document comments
 * Added "generated" folder to .gitignore
 
