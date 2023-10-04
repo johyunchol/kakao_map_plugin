@@ -465,7 +465,7 @@ class _KakaoMapState extends State<KakaoMap> {
         polygons.push(polygon);
     }
 
-    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = 0, offsetY = 0, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow) {
+    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow) {
 
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
@@ -484,7 +484,12 @@ class _KakaoMapState extends State<KakaoMap> {
 
         if (imageSrc !== '' && imageSrc !== 'null') {
             let imageSize = new kakao.maps.Size(width, height); // 마커이미지의 크기입니다
-            let imageOption = {offset: new kakao.maps.Point(offsetX, offsetY)}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
+            
+            let offset;
+            if (offsetX && offsetY) {
+              offset = new kakao.maps.Point(offsetX, offsetY);
+            }
+            let imageOption = {offset: offset}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
 
             let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
             marker.setImage(markerImage);
