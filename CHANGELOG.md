@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Added Marker Clusterer
+
 ## 0.2.2
 
 * Changed the default value of the image marker's offset.
