@@ -48,6 +48,25 @@ class Marker {
     this.infoWindowFirstShow = false,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'markerId': markerId,
+      'latLng': {
+        'latitude': latLng.latitude,
+        'longitude': latLng.longitude,
+      },
+      'width': width,
+      'height': height,
+      'offsetX': offsetX,
+      'offsetY': offsetY,
+      'markerImageSrc': markerImageSrc,
+      'infoWindowContent': infoWindowContent,
+      'draggable': draggable,
+      'infoWindowRemovable': infoWindowRemovable,
+      'infoWindowFirstShow': infoWindowFirstShow,
+    };
+  }
+
   @override
   String toString() {
     return '{markerId: $markerId, latLng: $latLng, draggable: $draggable, width: $width, height: $height, offsetX: $offsetX, offsetY: $offsetY, markerImageSrc: $markerImageSrc, infoWindowContent: $infoWindowContent, infoWindowRemovable: $infoWindowRemovable, infoWindowFirstShow: $infoWindowFirstShow}';
