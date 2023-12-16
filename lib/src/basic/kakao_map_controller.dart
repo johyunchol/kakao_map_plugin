@@ -68,6 +68,17 @@ class KakaoMapController {
     }
   }
 
+  /// draw markers
+  addMarkerClusterer({Clusterer? clusterer}) async {
+    if (clusterer != null) {
+      clearMarkerClusterer();
+
+      final clustererString =
+          "addMarkerClusterer('${jsonEncode(clusterer.markers)}', ${clusterer.gridSize}, ${clusterer.averageCenter}, ${clusterer.disableClickZoom}, ${clusterer.minLevel}, ${clusterer.minClusterSize}, '${jsonEncode(clusterer.texts)}', '${jsonEncode(clusterer.calculator)}', '${jsonEncode(clusterer.styles)}')";
+      await _webViewController.runJavaScript(clustererString);
+    }
+  }
+
   /// change marker draggable
   setMarkerDraggable(String markerId, bool draggable) async {
     await _webViewController
@@ -114,6 +125,10 @@ class KakaoMapController {
   /// clear markers
   clearMarker() {
     _webViewController.runJavaScript('clearMarker();');
+  }
+
+  clearMarkerClusterer() {
+    _webViewController.runJavaScript('clearMarkerClusterer();');
   }
 
   /// clear custom overlay
