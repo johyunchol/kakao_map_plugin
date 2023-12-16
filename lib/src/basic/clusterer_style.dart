@@ -8,7 +8,10 @@ class ClustererStyle {
   int? height;
 
   /// cluster background color
-  String? background;
+  Color? background;
+
+  /// cluster background border radius
+  int? borderRadius;
 
   /// cluster color
   Color? color;
@@ -23,8 +26,21 @@ class ClustererStyle {
     this.width,
     this.height,
     this.background,
+    this.borderRadius = 0,
     this.color,
     this.textAlign,
     this.lineHeight,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'width': '${width}px',
+      'height': '${height}px',
+      'background': background?.toHexColorWithAlpha(),
+      'borderRadius': '${borderRadius}px',
+      'color': color?.toHexColor(),
+      'textAlign': textAlign,
+      'lineHeight': '${lineHeight}px',
+    };
+  }
 }
