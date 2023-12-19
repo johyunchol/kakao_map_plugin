@@ -12,6 +12,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 part 'src/basic/base_draw.dart';
 part 'src/basic/callbacks.dart';
+part 'src/basic/road_callbacks.dart';
 part 'src/basic/circle.dart';
 part 'src/basic/clusterer.dart';
 part 'src/basic/clusterer_style.dart';
@@ -19,6 +20,7 @@ part 'src/basic/custom_overlay.dart';
 part 'src/basic/hex_color.dart';
 part 'src/basic/kakao_map.dart';
 part 'src/basic/kakao_map_controller.dart';
+part 'src/basic/kakao_road_map_controller.dart';
 part 'src/basic/marker.dart';
 part 'src/basic/polygon.dart';
 part 'src/basic/polyline.dart';

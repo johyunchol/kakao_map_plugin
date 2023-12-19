@@ -133,7 +133,8 @@ class _KakaoMapState extends State<KakaoMap> {
 
     const options = {
       center: center,
-      level: ${widget.currentLevel}    };
+      level: ${widget.currentLevel}
+    };
 
     map = new kakao.maps.Map(container, options);
 

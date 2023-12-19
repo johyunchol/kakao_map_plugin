@@ -15,6 +15,9 @@ class RoadView2DefaultScreen extends StatefulWidget {
 
 class _RoadView2DefaultScreenState extends State<RoadView2DefaultScreen> {
   late KakaoMapController mapController;
+  late KakaoRoadMapController roadMapController;
+
+  Set<Marker> markers = {};
 
   @override
   Widget build(BuildContext context) {
@@ -22,15 +25,59 @@ class _RoadView2DefaultScreenState extends State<RoadView2DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: MediaQuery.of(context).orientation == Orientation.portrait ? _portrait() : _landscape(),
+      body: MediaQuery.of(context).orientation == Orientation.portrait
+          ? _portrait()
+          : _landscape(),
     );
   }
 
   _portrait() {
     return Column(
       children: [
-        Expanded(child: KakaoMap()),
-        Expanded(child: KakaoRoadMap()),
+        Expanded(
+          child: KakaoMap(
+            markers: markers.toList(),
+            onMapCreated: (controller) {
+              mapController = controller;
+              mapController.addOverlayMapTypeId(MapType.roadView);
+
+              markers.add(
+                Marker(
+                  markerId: '${markers.length + 1}',
+                  latLng: LatLng(33.450701, 126.570667),
+                  width: 64,
+                  height: 69,
+                  offsetX: 27,
+                  offsetY: 69,
+                  markerImageSrc:
+                      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+                  draggable: true,
+                ),
+              );
+
+              setState(() {});
+            },
+            onMapTap: (latLng) {
+              debugPrint('***** [latLng] ${latLng}');
+              roadMapController.toggleRoadview(latLng);
+            },
+            onMarkerDragChangeCallback:
+                (markerId, latLng, zoomLevel, markerDragType) {
+              // roadMapController.
+              debugPrint('***** [markerId] ${markerId}');
+              debugPrint('***** [latLng] ${latLng}');
+              debugPrint('***** [zoomLevel] ${zoomLevel}');
+              debugPrint('***** [markerDragType] ${markerDragType}');
+              roadMapController.toggleRoadview(latLng);
+            },
+          ),
+        ),
+        Expanded(child: KakaoRoadMap(
+          onMapCreated: (controller) {
+            roadMapController = controller;
+            debugPrint('***** [roadview created] ');
+          },
+        )),
       ],
     );
   }

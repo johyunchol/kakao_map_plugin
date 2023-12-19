@@ -23,10 +23,10 @@ class _RoadView1DefaultScreenState extends State<RoadView1DefaultScreen> {
         title: Text(widget.title ?? selectedTitle),
       ),
       body: KakaoRoadMap(
-        onMapTap: ((latLng) {
-          debugPrint('***** [JHC_DEBUG] ${latLng.latitude}, ${latLng.longitude}');
-        }),
-      ),
+          // onMapTap: ((latLng) {
+          //   debugPrint('***** [JHC_DEBUG] ${latLng.latitude}, ${latLng.longitude}');
+          // }),
+          ),
     );
   }
 }

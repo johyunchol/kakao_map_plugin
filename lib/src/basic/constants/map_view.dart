@@ -10,6 +10,7 @@ enum MapView {
   final int id;
 
   factory MapView.getById(int MapViewId) {
-    return MapView.values.firstWhere((value) => value.id == MapViewId, orElse: () => MapView.basicMap);
+    return MapView.values.firstWhere((value) => value.id == MapViewId,
+        orElse: () => MapView.basicMap);
   }
 }

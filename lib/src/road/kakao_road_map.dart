@@ -1,7 +1,7 @@
 part of kakao_map_plugin;
 
 class KakaoRoadMap extends StatefulWidget {
-  final MapCreateCallback? onMapCreated;
+  final RoadMapCreateCallback? onMapCreated;
   final int currentLevel;
   final LatLng? center;
   final List<Marker>? markers;
@@ -21,7 +21,7 @@ class KakaoRoadMap extends StatefulWidget {
 class _KakaoRoadMapState extends State<KakaoRoadMap> {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
-  late WebViewController _webViewController;
+  late final KakaoRoadMapController _mapController;
 
   @override
   void initState() {
@@ -40,6 +40,8 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> {
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
 
+    addJavaScriptChannels(controller);
+
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadHtmlString(_loadMap());
@@ -50,14 +52,14 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> {
           .setMediaPlaybackRequiresUserGesture(false);
     }
 
-    _webViewController = controller;
+    _mapController = KakaoRoadMapController(controller);
   }
 
   @override
   Widget build(BuildContext context) {
     getMarkers();
     return WebViewWidget(
-      controller: _webViewController,
+      controller: _mapController.webViewController,
       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
         Factory(() => EagerGestureRecognizer()),
       },
@@ -83,17 +85,49 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> {
   }
 
   String _loadMap() {
-    return _htmlWrapper('''<script>
-  const container = document.getElementById('map'); //로드뷰를 표시할 div
-  let roadview = new kakao.maps.Roadview(container); //로드뷰 객체
-  let roadviewClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+    return _htmlWrapper("""<script>
 
-  let position = new kakao.maps.LatLng(33.450701, 126.570667);
+  let roadview = null;
+  let roadviewClient = null;
+  const defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
 
-  // 특정 위치의 좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
-  roadviewClient.getNearestPanoId(position, 50, function (panoId) {
-    roadview.setPanoId(panoId, position); //panoId와 중심좌표를 통해 로드뷰 실행
-  });
-</script>''');
+  window.onload = function () {
+    const container = document.getElementById('map'); //로드뷰를 표시할 div
+    roadview = new kakao.maps.Roadview(container); //로드뷰 객체
+    roadviewClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+
+    let center = defaultCenter;
+    let position = new kakao.maps.LatLng(33.450701, 126.570667);
+    
+    toggleRoadview(position.getLat(), position.getLng())
+    
+    onMapCreated.postMessage({"test": 1});
+  }
+
+
+  function toggleRoadview(latitude, longitude) {
+  const position = new kakao.maps.LatLng(latitude, longitude)
+    // 특정 위치의 좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
+    roadviewClient.getNearestPanoId(position, 50, function (panoId) {
+      roadview.setPanoId(panoId, position); //panoId와 중심좌표를 통해 로드뷰 실행
+    });
+
+  }
+</script>""");
+  }
+
+  @override
+  void didUpdateWidget(covariant KakaoRoadMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void addJavaScriptChannels(WebViewController controller) {
+    controller
+      ..addJavaScriptChannel('onMapCreated',
+          onMessageReceived: (JavaScriptMessage result) {
+        if (widget.onMapCreated != null) {
+          widget.onMapCreated!(_mapController);
+        }
+      });
   }
 }

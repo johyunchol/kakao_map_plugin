@@ -11,7 +11,7 @@ class KakaoRoadMapController {
     if (polylines != null) {
       clearPolyline();
       for (var polyline in polylines) {
-        await _webViewController.runJavascriptReturningResult(
+        await _webViewController.runJavaScriptReturningResult(
             "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}');");
       }
     }
@@ -24,7 +24,7 @@ class KakaoRoadMapController {
         final circleString =
             "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}');";
 
-        await _webViewController.runJavascript(circleString);
+        await _webViewController.runJavaScript(circleString);
       }
     }
   }
@@ -36,7 +36,7 @@ class KakaoRoadMapController {
         final rectangleString =
             "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}');";
 
-        await _webViewController.runJavascript(rectangleString);
+        await _webViewController.runJavaScript(rectangleString);
       }
     }
   }
@@ -45,7 +45,7 @@ class KakaoRoadMapController {
     if (polygons != null) {
       clearPolygon();
       for (var polygon in polygons) {
-        await _webViewController.runJavascript(
+        await _webViewController.runJavaScript(
             "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}');");
       }
     }
@@ -58,7 +58,7 @@ class KakaoRoadMapController {
       for (var marker in markers) {
         final markerString =
             "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc ?? ''}', '${marker.infoWindowContent ?? ''}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow})";
-        await _webViewController.runJavascript(markerString);
+        await _webViewController.runJavaScript(markerString);
       }
     }
   }
@@ -70,13 +70,14 @@ class KakaoRoadMapController {
       for (var clusterer in clusterers) {
         // final markerString =
         //     "addClusterer('${jsonEncode(clusterer.latLng)}', ${clusterer.draggable}, '${clusterer.width}', '${clusterer.height}', '${clusterer.offsetX}', '${clusterer.offsetY}', '${clusterer.clustererImageSrc ?? ''}', '${clusterer.infoWindowContent ?? ''}', ${clusterer.infoWindowRemovable}, ${clusterer.infoWindowFirstShow})";
-        // await _webViewController.runJavascript(clustererString);
+        // await _webViewController.runJavaScript(clustererString);
       }
     }
   }
 
   setMarkerDraggable(String markerId, bool draggable) async {
-    await _webViewController.runJavascript("setMarkerDraggable('$markerId', $draggable);");
+    await _webViewController
+        .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
   }
 
   addCustomOverlay({List<CustomOverlay>? customOverlays}) async {
@@ -84,126 +85,141 @@ class KakaoRoadMapController {
       clearCustomOverlay();
 
       for (var customOverlay in customOverlays) {
-        await _webViewController.runJavascript(
+        await _webViewController.runJavaScript(
             "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}')");
       }
     }
   }
 
   clear() {
-    _webViewController.runJavascript('clear();');
+    _webViewController.runJavaScript('clear();');
   }
 
   clearPolyline() {
-    _webViewController.runJavascript('clearPolyline();');
+    _webViewController.runJavaScript('clearPolyline();');
   }
 
   clearCircle() {
-    _webViewController.runJavascript('clearCircle();');
+    _webViewController.runJavaScript('clearCircle();');
   }
 
   clearPolygon() {
-    _webViewController.runJavascript('clearPolygon();');
+    _webViewController.runJavaScript('clearPolygon();');
   }
 
   clearMarker() {
-    _webViewController.runJavascript('clearMarker();');
+    _webViewController.runJavaScript('clearMarker();');
   }
 
   clearCustomOverlay() {
-    _webViewController.runJavascript('clearCustomOverlay();');
+    _webViewController.runJavaScript('clearCustomOverlay();');
   }
 
   panTo(LatLng latLng) {
-    _webViewController.runJavascript("panTo('${latLng.latitude}', '${latLng.longitude}');");
+    _webViewController
+        .runJavaScript("panTo('${latLng.latitude}', '${latLng.longitude}');");
   }
 
   fitBounds(List<LatLng> points) async {
-    await _webViewController.runJavascript("fitBounds('${jsonEncode(points)}');");
+    await _webViewController
+        .runJavaScript("fitBounds('${jsonEncode(points)}');");
   }
 
   setCenter(LatLng latLng) {
-    _webViewController.runJavascript("setCenter('${latLng.latitude}', '${latLng.longitude}');");
+    _webViewController.runJavaScript(
+        "setCenter('${latLng.latitude}', '${latLng.longitude}');");
   }
 
   Future<LatLng> getCenter() async {
-    final center = await _webViewController.runJavascriptReturningResult("getCenter();");
+    final center = await _webViewController
+        .runJavaScriptReturningResult("getCenter();") as String;
     return LatLng.fromJson(jsonDecode(center));
   }
 
   setLevel(level) {
-    _webViewController.runJavascript("setLevel('$level');");
+    _webViewController.runJavaScript("setLevel('$level');");
   }
 
   Future<int> getLevel() async {
-    final level = await _webViewController.runJavascriptReturningResult("getLevel();");
+    final level = await _webViewController
+        .runJavaScriptReturningResult("getLevel();") as String;
     return int.parse(level);
   }
 
   setMapTypeId(MapType mapType) {
-    _webViewController.runJavascript("setMapTypeId('${mapType.id}');");
+    _webViewController.runJavaScript("setMapTypeId('${mapType.id}');");
   }
 
   Future<MapType> getMapTypeId() async {
-    final mapTypeId = await _webViewController.runJavascriptReturningResult("getMapTypeId();");
+    final mapTypeId = await _webViewController
+        .runJavaScriptReturningResult("getMapTypeId();") as String;
     return MapType.getById(int.parse(mapTypeId));
   }
 
   setBounds() {
-    _webViewController.runJavascript("setBounds();");
+    _webViewController.runJavaScript("setBounds();");
   }
 
   setStyle(int width, int height) {}
 
   relayout() {
-    _webViewController.runJavascript("relayout();");
+    _webViewController.runJavaScript("relayout();");
   }
 
   Future<LatLngBounds> getBounds() async {
-    final bounds = await _webViewController.runJavascriptReturningResult("getBounds()");
+    final bounds = await _webViewController
+        .runJavaScriptReturningResult("getBounds()") as String;
     final latLngBounds = jsonDecode(bounds);
 
     final sw = latLngBounds['sw'];
     final ne = latLngBounds['ne'];
-    return LatLngBounds(LatLng(sw['latitude'], sw['longitude']), LatLng(ne['latitude'], ne['longitude']));
+    return LatLngBounds(LatLng(sw['latitude'], sw['longitude']),
+        LatLng(ne['latitude'], ne['longitude']));
   }
 
   addOverlayMapTypeId(MapType mapType) {
-    _webViewController.runJavascript("addOverlayMapTypeId('${mapType.id}');");
+    _webViewController.runJavaScript("addOverlayMapTypeId('${mapType.id}');");
   }
 
   removeOverlayMapTypeId(MapType mapType) {
-    _webViewController.runJavascript("removeOverlayMapTypeId('${mapType.id}');");
+    _webViewController
+        .runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
   }
 
   setDraggable(bool draggable) {
-    _webViewController.runJavascript("setDraggable($draggable);");
+    _webViewController.runJavaScript("setDraggable($draggable);");
   }
 
   getDraggable() async {
-    final draggable = await _webViewController.runJavascript("getDraggable();");
+    final draggable = await _webViewController.runJavaScript("getDraggable();");
 
     return draggable;
   }
 
   setZoomable(bool zoomable) {
-    _webViewController.runJavascript("setZoomable($zoomable);");
+    _webViewController.runJavaScript("setZoomable($zoomable);");
   }
 
   getZoomable() async {
-    final zoomable = await _webViewController.runJavascript("getZoomable();");
+    final zoomable = await _webViewController.runJavaScript("getZoomable();");
     return zoomable;
   }
 
   keywordSearch() async {
-    await _webViewController.runJavascriptReturningResult("keywordSearch();");
+    await _webViewController.runJavaScriptReturningResult("keywordSearch();");
   }
 
   addressSearch() async {
-    await _webViewController.runJavascriptReturningResult("addressSearch();");
+    await _webViewController.runJavaScriptReturningResult("addressSearch();");
   }
 
   coord2Address() async {
-    await _webViewController.runJavascriptReturningResult("coord2Address(37.56496830314491, 126.93990862062978);");
+    await _webViewController.runJavaScriptReturningResult(
+        "coord2Address(37.56496830314491, 126.93990862062978);");
+  }
+
+  toggleRoadview(LatLng latLng) async {
+    await _webViewController.runJavaScript(
+        "toggleRoadview('${latLng.latitude}', '${latLng.longitude}');");
   }
 }
