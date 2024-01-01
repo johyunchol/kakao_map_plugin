@@ -1,3 +1,7 @@
+## 0.2.4
+
+* Modified CustomOverlay click event
+
 ## 0.2.3
 
 * Added Marker Clusterer
