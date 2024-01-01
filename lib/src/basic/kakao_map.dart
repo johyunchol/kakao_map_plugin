@@ -605,7 +605,7 @@ class _KakaoMapState extends State<KakaoMap> {
         marker?.infoWindowFirstShow
       )
     })
-    
+
     clusterer = new kakao.maps.MarkerClusterer({
       map: map,
       gridSize: gridSize,
@@ -613,33 +613,30 @@ class _KakaoMapState extends State<KakaoMap> {
       minLevel: minLevel,
       disableClickZoom: true,
     });
-    
+
     clusterer.setMinClusterSize(minClusterSize);
-    
+
     texts = JSON.parse(texts)
     if (texts) {
-      console.log('texts :::', JSON.stringify(texts))
       clusterer.setTexts(texts)
     }
 
     calculator = JSON.parse(calculator)
     if (calculator) {
-      console.log('calculator :::', JSON.stringify(calculator))
       clusterer.setCalculator(calculator)
     }
-    
+
     styles = JSON.parse(styles)
     if (styles) {
       styles = styles.map(function (style) {
-        return { ...style, background: hexToRgba(style.background), color: hexToRgba(style.color) }
+        return {...style, background: hexToRgba(style.background), color: hexToRgba(style.color)}
       })
-      
-      console.log('styles :::', JSON.stringify(styles))
+
       clusterer.setStyles(styles)
     }
-    
+
     clusterer.addMarkers(markers);
-    
+
 
     if (${widget.onMarkerClustererTap != null}) {
       kakao.maps.event.addListener(clusterer, 'clusterclick', function (cluster) {
@@ -684,6 +681,14 @@ class _KakaoMapState extends State<KakaoMap> {
     let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
     content = '<div id="' + customOverlayId + '"' + content + '</div>'
+    if (${widget.onCustomOverlayTap != null}) {
+      content =
+        '<div id="' + customOverlayId +
+        '" onclick="addCustomOverlayListener(`' + customOverlayId +
+        '`, `' + latLng.latitude +
+        '`, `' + latLng.longitude +
+        '`)">' + content + '</div>'
+    }
 
     let customOverlay = new kakao.maps.CustomOverlay({
       map: map,
@@ -696,28 +701,22 @@ class _KakaoMapState extends State<KakaoMap> {
     });
 
     customOverlay.setMap(map);
-
-    if (${widget.onCustomOverlayTap != null}) {
-      let element = document.getElementById(customOverlayId);
-
-      if (element) {
-        element.addEventListener('click', function () {
-          // 클릭한 위도, 경도 정보를 가져옵니다
-          let latLng = customOverlay.getPosition();
-
-          const clickLatLng = {
-            customOverlayId: customOverlayId,
-            latitude: latLng.getLat(),
-            longitude: latLng.getLng(),
-          }
-
-          onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
-        });
-      }
-    }
-
     customOverlays.push(customOverlay);
   }
+
+  function addCustomOverlayListener(customOverlayId, latitude, longitude) {
+    // 클릭한 위도, 경도 정보를 가져옵니다
+    let latLng = new kakao.maps.LatLng(latitude, longitude); // 마커가 표시될 위치입니다
+
+    const clickLatLng = {
+      customOverlayId: customOverlayId,
+      latitude: latLng.getLat(),
+      longitude: latLng.getLng(),
+    }
+
+    onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
+  }
+
 
   function showInfoWindow(marker, latitude, longitude, contents = '', infoWindowRemovable) {
     let iwPosition = new kakao.maps.LatLng(latitude, longitude);

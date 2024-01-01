@@ -34,6 +34,18 @@ class _Overlay21CustomOverlay1ScreenState
 
     customOverlays.add(customOverlay);
 
+    final customOverlay2 = CustomOverlay(
+      customOverlayId: UniqueKey().toString(),
+      latLng: LatLng(33.4671705, 126.5745101),
+      content:
+          '<p style="background-color: blue; padding: 8px; border-radius: 8px;">카카오2!</p>',
+      xAnchor: 1,
+      yAnchor: -1,
+      zIndex: 5,
+    );
+
+    customOverlays.add(customOverlay2);
+
     super.initState();
   }
 
