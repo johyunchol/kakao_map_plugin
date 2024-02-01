@@ -21,6 +21,8 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
   Set<Polygon> polygons = {};
   Set<Rectangle> rectangles = {};
 
+  StrokeStyle strokeStyle = StrokeStyle.solid;
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +63,7 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
               strokeColor: Colors.blue,
               strokeOpacity: 0.4,
               strokeWidth: 15,
+              strokeStyle: StrokeStyle.dashDot,
             ),
           );
 
@@ -75,6 +78,8 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
               strokeColor: Colors.red,
               strokeOpacity: 0.9,
               strokeWidth: 5,
+              strokeStyle: StrokeStyle.shortDot,
+              endArrow: true,
             ),
           );
 

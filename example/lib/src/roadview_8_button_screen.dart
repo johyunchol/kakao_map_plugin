@@ -22,7 +22,7 @@ class _RoadView8ButtonScreenState extends State<RoadView8ButtonScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }

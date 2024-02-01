@@ -11,7 +11,7 @@ class BaseDraw {
   double? strokeOpacity;
 
   /// stroke style
-  StrokeStyle? strokeStyle;
+  StrokeStyle? strokeStyle = StrokeStyle.solid;
 
   /// fill color
   Color? fillColor;

@@ -26,7 +26,7 @@ class _Library2KeywordListScreenState extends State<Library2KeywordListScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }

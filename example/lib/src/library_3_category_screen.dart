@@ -25,7 +25,7 @@ class _Library3CategoryScreenState extends State<Library3CategoryScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }

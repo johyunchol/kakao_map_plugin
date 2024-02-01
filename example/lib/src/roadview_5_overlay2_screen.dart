@@ -23,7 +23,7 @@ class _RoadView5Overlay2ScreenState extends State<RoadView5Overlay2Screen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }

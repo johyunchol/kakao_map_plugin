@@ -22,7 +22,7 @@ class _Static1DefaultScreenState extends State<Static1DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoStaticMap(),
+      body: const KakaoStaticMap(),
     );
   }
 }

@@ -26,7 +26,7 @@ class _Library7transCoordsScreenState extends State<Library7transCoordsScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }
