@@ -7,6 +7,9 @@ class Polyline extends BaseDraw {
   /// polyline paths
   final List<LatLng>? points;
 
+  /// end arrow
+  bool? endArrow = false;
+
   Polyline({
     required this.polylineId,
     this.points,
@@ -16,5 +19,6 @@ class Polyline extends BaseDraw {
     super.strokeStyle,
     super.fillColor,
     super.fillOpacity,
+    this.endArrow = false,
   });
 }
