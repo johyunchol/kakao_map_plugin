@@ -28,7 +28,7 @@ class _Library14DrawingUntoRedoScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }

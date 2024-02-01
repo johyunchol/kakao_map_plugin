@@ -30,9 +30,9 @@ class _Overlay7MarkerMouseEventScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
-          children: const [
+          children: [
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Text('안드로이드, ios에는\nmouseover, mouseout 이벤트는 동작하지 않습니다.'),

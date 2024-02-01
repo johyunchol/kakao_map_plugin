@@ -24,7 +24,7 @@ class _RoadView9ToggleButtonScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }

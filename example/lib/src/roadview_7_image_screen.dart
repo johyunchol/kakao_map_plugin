@@ -22,7 +22,7 @@ class _RoadView7ImageScreenState extends State<RoadView7ImageScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }
