@@ -27,7 +27,7 @@ class _Library4CategoryBoundsScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }

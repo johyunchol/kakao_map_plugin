@@ -22,7 +22,7 @@ class _RoadView2DefaultScreenState extends State<RoadView2DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }

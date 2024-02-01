@@ -28,7 +28,7 @@ class _Library9MarkerClustererClickEventScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(),
+      body: const KakaoMap(),
     );
   }
 }

@@ -464,7 +464,7 @@ class _Library8MarkerClustererScreenState
           debugPrint('***** [markerId] $markerId');
         }),
         onZoomChangeCallback: (int zoomLevel, ZoomType zoomType) {
-          debugPrint('***** [JHC_DEBUG] ${zoomType}');
+          debugPrint('***** [JHC_DEBUG] $zoomType');
         },
       ),
     );

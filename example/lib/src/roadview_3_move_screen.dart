@@ -22,7 +22,7 @@ class _RoadView3MoveScreenState extends State<RoadView3MoveScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoRoadMap(),
+      body: const KakaoRoadMap(),
     );
   }
 }
