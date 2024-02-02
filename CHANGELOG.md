@@ -1,3 +1,6 @@
+## 0.2.5
+* Modify the hard-coded style in the Polyline drawing.
+
 ## 0.2.4
 
 * Modified CustomOverlay click event
