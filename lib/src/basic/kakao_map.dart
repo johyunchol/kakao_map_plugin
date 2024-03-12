@@ -91,7 +91,8 @@ class _KakaoMapState extends State<KakaoMap> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000));
     addJavaScriptChannels(controller);
-    controller.loadHtmlString(_loadMap(), baseUrl: null);
+    controller.loadHtmlString(_loadMap(),
+        baseUrl: AuthRepository.instance.baseUrl);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
@@ -115,6 +116,7 @@ class _KakaoMapState extends State<KakaoMap> {
   String _loadMap() {
     return _htmlWrapper('''<script>
   let map = null;
+  let geocoder = null;
   let polylines = [];
   let circles = [];
   let rectangles = [];
@@ -136,6 +138,7 @@ class _KakaoMapState extends State<KakaoMap> {
       level: ${widget.currentLevel}    };
 
     map = new kakao.maps.Map(container, options);
+    geocoder = new kakao.maps.services.Geocoder();
 
     if (${widget.mapTypeControl}) {
       const mapTypeControl = new kakao.maps.MapTypeControl();
@@ -1009,6 +1012,13 @@ class _KakaoMapState extends State<KakaoMap> {
 
     return 'rgb(' + int_r + ', ' + int_g + ', ' + int_b + ')';
   }
+async function coord2Address(latitude, longitude) {
+    return new Promise((resolve) => {
+        geocoder.coord2Address(longitude, latitude, function(result, status) {
+            coord2AddressComplete.postMessage(JSON.stringify(result[0]));
+        });
+    });
+}
 </script>
     ''');
   }
@@ -1174,6 +1184,13 @@ class _KakaoMapState extends State<KakaoMap> {
             jsonDecode(result.message)['zoomLevel'],
           );
         }
+      })
+      ..addJavaScriptChannel("coord2AddressComplete",
+          onMessageReceived: (JavaScriptMessage message) {
+        final resultData = jsonDecode(message.message);
+        Coord2AddressService()
+            .getCompleter()
+            .complete(Coord2Address.fromJson(resultData));
       });
   }
 }
