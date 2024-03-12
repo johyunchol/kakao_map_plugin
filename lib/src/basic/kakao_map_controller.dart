@@ -260,8 +260,10 @@ class KakaoMapController {
   }
 
   /// coord to address
-  coord2Address() async {
-    await _webViewController.runJavaScriptReturningResult(
-        "coord2Address(37.56496830314491, 126.93990862062978);");
+  Future<Coord2Address> coord2Address(LatLng latLng) async {
+    Coord2AddressService().resetCompleter();
+    await _webViewController.runJavaScript(
+        "coord2Address(${latLng.latitude}, ${latLng.longitude})");
+    return Coord2AddressService().getCompleter().future;
   }
 }
