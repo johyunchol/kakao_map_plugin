@@ -1012,12 +1012,10 @@ class _KakaoMapState extends State<KakaoMap> {
 
     return 'rgb(' + int_r + ', ' + int_g + ', ' + int_b + ')';
   }
-async function coord2Address(latitude, longitude) {
-    return new Promise((resolve) => {
+function coord2Address(latitude, longitude) {
         geocoder.coord2Address(longitude, latitude, function(result, status) {
             coord2AddressComplete.postMessage(JSON.stringify(result[0]));
         });
-    });
 }
 </script>
     ''');
