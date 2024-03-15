@@ -33,8 +33,8 @@ class Coord2Address {
       );
 
   Map<String, dynamic> toJson() => {
-        "road_address": roadAddress == null ? 'null' : roadAddress?.toJson(),
-        "address": address == null ? 'null' : address?.toJson(),
+        "road_address": roadAddress == null ? null : roadAddress?.toJson(),
+        "address": address == null ? null : address?.toJson(),
       };
   @override
   String toString() {
