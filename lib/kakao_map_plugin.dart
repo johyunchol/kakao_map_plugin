@@ -1,5 +1,6 @@
 library kakao_map_plugin;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -28,6 +29,7 @@ part 'src/constants/wrapper.dart';
 
 part 'src/model/lat_lng.dart';
 part 'src/model/lat_lng_bounds.dart';
+part 'src/model/coord_2_address.dart';
 part 'src/repository/auth_repository.dart';
 part 'src/basic/constants/control_position.dart';
 part 'src/basic/constants/drag_type.dart';
