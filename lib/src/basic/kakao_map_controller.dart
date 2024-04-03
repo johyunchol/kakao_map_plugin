@@ -13,7 +13,7 @@ class KakaoMapController {
       clearPolyline();
       for (var polyline in polylines) {
         await _webViewController.runJavaScript(
-            "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}');");
+            "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});");
       }
     }
   }
@@ -24,7 +24,7 @@ class KakaoMapController {
       clearCircle();
       for (var circle in circles) {
         final circleString =
-            "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}');";
+            "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}', ${circle.zIndex});";
 
         await _webViewController.runJavaScript(circleString);
       }
@@ -37,7 +37,7 @@ class KakaoMapController {
       clearRectangle();
       for (var rectangle in rectangles) {
         final rectangleString =
-            "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}');";
+            "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}', ${rectangle.zIndex});";
 
         await _webViewController.runJavaScript(rectangleString);
       }
@@ -50,7 +50,7 @@ class KakaoMapController {
       clearPolygon();
       for (var polygon in polygons) {
         await _webViewController.runJavaScript(
-            "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}');");
+            "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});");
       }
     }
   }
@@ -61,8 +61,9 @@ class KakaoMapController {
       clearMarker();
 
       for (var marker in markers) {
+        debugPrint('***** [JHC_DEBUG] ${marker.toJson()}');
         final markerString =
-            "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow})";
+            "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
         await _webViewController.runJavaScript(markerString);
       }
     }
@@ -81,8 +82,7 @@ class KakaoMapController {
 
   /// change marker draggable
   setMarkerDraggable(String markerId, bool draggable) async {
-    await _webViewController
-        .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
+    await _webViewController.runJavaScript("setMarkerDraggable('$markerId', $draggable);");
   }
 
   /// draw custom overlay
@@ -138,26 +138,22 @@ class KakaoMapController {
 
   /// move to center
   panTo(LatLng latLng) {
-    _webViewController
-        .runJavaScript("panTo('${latLng.latitude}', '${latLng.longitude}');");
+    _webViewController.runJavaScript("panTo('${latLng.latitude}', '${latLng.longitude}');");
   }
 
   /// fit bounds
   fitBounds(List<LatLng> points) async {
-    await _webViewController
-        .runJavaScript("fitBounds('${jsonEncode(points)}');");
+    await _webViewController.runJavaScript("fitBounds('${jsonEncode(points)}');");
   }
 
   /// set center latitude, longitude
   setCenter(LatLng latLng) {
-    _webViewController.runJavaScript(
-        "setCenter('${latLng.latitude}', '${latLng.longitude}');");
+    _webViewController.runJavaScript("setCenter('${latLng.latitude}', '${latLng.longitude}');");
   }
 
   /// get center latitude, longitude
   Future<LatLng> getCenter() async {
-    final center = await _webViewController
-        .runJavaScriptReturningResult("getCenter();") as String;
+    final center = await _webViewController.runJavaScriptReturningResult("getCenter();") as String;
     return LatLng.fromJson(jsonDecode(center));
   }
 
@@ -168,8 +164,7 @@ class KakaoMapController {
 
   /// get zoom level
   Future<int> getLevel() async {
-    final result = await _webViewController
-        .runJavaScriptReturningResult("getLevel();") as String;
+    final result = await _webViewController.runJavaScriptReturningResult("getLevel();") as String;
     final level = jsonDecode(result)['level'] as int;
 
     return level;
@@ -182,8 +177,7 @@ class KakaoMapController {
 
   /// get map type id
   Future<MapType> getMapTypeId() async {
-    final result = await _webViewController
-        .runJavaScriptReturningResult("getMapTypeId();") as String;
+    final result = await _webViewController.runJavaScriptReturningResult("getMapTypeId();") as String;
 
     final mapTypeId = jsonDecode(result)['mapTypeId'] as int;
 
@@ -205,14 +199,12 @@ class KakaoMapController {
 
   /// get bounds from screen
   Future<LatLngBounds> getBounds() async {
-    final bounds = await _webViewController
-        .runJavaScriptReturningResult("getBounds()") as String;
+    final bounds = await _webViewController.runJavaScriptReturningResult("getBounds()") as String;
     final latLngBounds = jsonDecode(bounds);
 
     final sw = latLngBounds['sw'];
     final ne = latLngBounds['ne'];
-    return LatLngBounds(LatLng(sw['latitude'], sw['longitude']),
-        LatLng(ne['latitude'], ne['longitude']));
+    return LatLngBounds(LatLng(sw['latitude'], sw['longitude']), LatLng(ne['latitude'], ne['longitude']));
   }
 
   /// add overlay map type id
@@ -222,8 +214,7 @@ class KakaoMapController {
 
   /// remove overlay map type id
   removeOverlayMapTypeId(MapType mapType) {
-    _webViewController
-        .runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
+    _webViewController.runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
   }
 
   /// change draggable
@@ -261,7 +252,6 @@ class KakaoMapController {
 
   /// coord to address
   coord2Address() async {
-    await _webViewController.runJavaScriptReturningResult(
-        "coord2Address(37.56496830314491, 126.93990862062978);");
+    await _webViewController.runJavaScriptReturningResult("coord2Address(37.56496830314491, 126.93990862062978);");
   }
 }

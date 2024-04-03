@@ -34,6 +34,9 @@ class Marker {
   /// marker info window first show flag
   bool infoWindowFirstShow;
 
+  /// marker z-index
+  int zIndex = 0;
+
   Marker({
     required this.markerId,
     required this.latLng,
@@ -46,6 +49,7 @@ class Marker {
     this.draggable = false,
     this.infoWindowRemovable = true,
     this.infoWindowFirstShow = false,
+    this.zIndex = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -64,11 +68,12 @@ class Marker {
       'draggable': draggable,
       'infoWindowRemovable': infoWindowRemovable,
       'infoWindowFirstShow': infoWindowFirstShow,
+      'zIndex': zIndex,
     };
   }
 
   @override
   String toString() {
-    return '{markerId: $markerId, latLng: $latLng, draggable: $draggable, width: $width, height: $height, offsetX: $offsetX, offsetY: $offsetY, markerImageSrc: $markerImageSrc, infoWindowContent: $infoWindowContent, infoWindowRemovable: $infoWindowRemovable, infoWindowFirstShow: $infoWindowFirstShow}';
+    return 'Marker{markerId: $markerId, latLng: $latLng, width: $width, height: $height, offsetX: $offsetX, offsetY: $offsetY, markerImageSrc: $markerImageSrc, infoWindowContent: $infoWindowContent, draggable: $draggable, infoWindowRemovable: $infoWindowRemovable, infoWindowFirstShow: $infoWindowFirstShow, zIndex: $zIndex}';
   }
 }

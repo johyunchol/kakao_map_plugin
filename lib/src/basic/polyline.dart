@@ -19,6 +19,7 @@ class Polyline extends BaseDraw {
     super.strokeStyle,
     super.fillColor,
     super.fillOpacity,
+    super.zIndex,
     this.endArrow = false,
   });
 }

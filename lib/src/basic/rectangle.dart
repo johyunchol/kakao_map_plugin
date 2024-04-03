@@ -16,5 +16,6 @@ class Rectangle extends BaseDraw {
     super.strokeStyle,
     super.fillColor,
     super.fillOpacity,
+    super.zIndex,
   });
 }
