@@ -84,8 +84,7 @@ class _KakaoMapState extends State<KakaoMap> {
       params = const PlatformWebViewControllerCreationParams();
     }
 
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
+    final WebViewController controller = WebViewController.fromPlatformCreationParams(params);
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -95,8 +94,7 @@ class _KakaoMapState extends State<KakaoMap> {
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+      (controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
     }
 
     _mapController = KakaoMapController(controller);
@@ -356,7 +354,7 @@ class _KakaoMapState extends State<KakaoMap> {
     clearCustomOverlay();
   }
 
-  function addPolyline(callId, points, color, opacity, width, stroke, endArrow) {
+  function addPolyline(callId, points, color, opacity, width, stroke, endArrow, zIndex) {
     let list = JSON.parse(points);
     let paths = [];
     for (let i = 0; i < list.length; i++) {
@@ -375,6 +373,7 @@ class _KakaoMapState extends State<KakaoMap> {
       strokeOpacity: opacity,
       strokeStyle: stroke,
       endArrow: endArrow,
+      zIndex: zIndex,
     });
 
 
@@ -384,7 +383,7 @@ class _KakaoMapState extends State<KakaoMap> {
     polyline.setMap(map);
   }
 
-  function addCircle(callId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0) {
+  function addCircle(callId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
     center = JSON.parse(center);
 
     // 지도에 표시할 원을 생성합니다
@@ -396,7 +395,8 @@ class _KakaoMapState extends State<KakaoMap> {
       strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
       strokeStyle: strokeStyle, // 선의 스타일 입니다
       fillColor: fillColor, // 채우기 색깔입니다
-      fillOpacity: fillOpacity  // 채우기 불투명도 입니다
+      fillOpacity: fillOpacity,  // 채우기 불투명도 입니다
+      zIndex: zIndex,
     });
 
     circles.push(circle);
@@ -405,7 +405,7 @@ class _KakaoMapState extends State<KakaoMap> {
     circle.setMap(map);
   }
 
-  function addRectangle(callId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0) {
+  function addRectangle(callId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
     rectangleBounds = JSON.parse(rectangleBounds);
 
     // 지도에 표시할 원을 생성합니다
@@ -419,7 +419,8 @@ class _KakaoMapState extends State<KakaoMap> {
       strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
       strokeStyle: strokeStyle, // 선의 스타일 입니다
       fillColor: fillColor, // 채우기 색깔입니다
-      fillOpacity: fillOpacity  // 채우기 불투명도 입니다
+      fillOpacity: fillOpacity, // 채우기 불투명도 입니다
+      zIndex: zIndex,
     });
 
     rectangles.push(rectangle);
@@ -428,7 +429,7 @@ class _KakaoMapState extends State<KakaoMap> {
     rectangle.setMap(map);
   }
 
-  function addPolygon(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0) {
+  function addPolygon(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
     points = JSON.parse(points);
     let paths = [];
     for (let i = 0; i < points.length; i++) {
@@ -447,13 +448,13 @@ class _KakaoMapState extends State<KakaoMap> {
         holePaths.push(array);
       }
 
-      return addPolygonWithHole(callId, paths, holePaths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity);
+      return addPolygonWithHole(callId, paths, holePaths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
     }
 
-    return addPolygonWithoutHole(callId, paths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity);
+    return addPolygonWithoutHole(callId, paths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
   }
 
-  function addPolygonWithoutHole(callId, points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0) {
+  function addPolygonWithoutHole(callId, points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
     // 지도에 표시할 다각형을 생성합니다
     let polygon = new kakao.maps.Polygon({
       path: points, // 그려질 다각형의 좌표 배열입니다
@@ -462,7 +463,8 @@ class _KakaoMapState extends State<KakaoMap> {
       strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
       strokeStyle: strokeStyle, // 선의 스타일입니다
       fillColor: fillColor, // 채우기 색깔입니다
-      fillOpacity: fillOpacity // 채우기 불투명도 입니다
+      fillOpacity: fillOpacity, // 채우기 불투명도 입니다
+      zIndex: zIndex, 
     });
 
     polygons.push(polygon);
@@ -471,7 +473,7 @@ class _KakaoMapState extends State<KakaoMap> {
     polygon.setMap(map);
   }
 
-  function addPolygonWithHole(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0) {
+  function addPolygonWithHole(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
     // 다각형을 생성하고 지도에 표시합니다
     let polygon = new kakao.maps.Polygon({
       map: map,
@@ -481,12 +483,13 @@ class _KakaoMapState extends State<KakaoMap> {
       strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
       fillColor: fillColor, // 채우기 색깔입니다
       fillOpacity: fillOpacity, // 채우기 불투명도 입니다
+      zIndex: zIndex,
     });
 
     polygons.push(polygon);
   }
 
-  function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow) {
+  function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex) {
 
     latLng = JSON.parse(latLng);
     let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
@@ -499,6 +502,12 @@ class _KakaoMapState extends State<KakaoMap> {
     marker['id'] = markerId;
 
     marker.setDraggable(draggable);
+    
+    console.log('zIndex : ', zIndex);
+    
+    if (zIndex) {
+      marker.setZIndex(zIndex);
+    }
 
     // 마커가 지도 위에 표시되도록 설정합니다
     marker.setMap(map);
@@ -616,7 +625,8 @@ class _KakaoMapState extends State<KakaoMap> {
         marker?.imageSrc,
         marker?.infoWindowText,
         marker?.infoWindowRemovable,
-        marker?.infoWindowFirstShow
+        marker?.infoWindowFirstShow,
+        marker?.zIndex,
         )
     })
 
@@ -1015,26 +1025,22 @@ class _KakaoMapState extends State<KakaoMap> {
 
   void addJavaScriptChannels(WebViewController controller) {
     controller
-      ..addJavaScriptChannel('onMapCreated',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMapCreated', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapCreated != null) {
           widget.onMapCreated!(_mapController);
         }
       })
-      ..addJavaScriptChannel('onMapTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMapTap', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapTap != null) {
           widget.onMapTap!(LatLng.fromJson(jsonDecode(result.message)));
         }
       })
-      ..addJavaScriptChannel('onMapDoubleTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMapDoubleTap', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapDoubleTap != null) {
           widget.onMapDoubleTap!(LatLng.fromJson(jsonDecode(result.message)));
         }
       })
-      ..addJavaScriptChannel('onMarkerTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerTap', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerTap != null) {
           widget.onMarkerTap!(
             jsonDecode(result.message)['markerId'],
@@ -1043,8 +1049,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('onMarkerClustererTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerClustererTap', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerClustererTap != null) {
           widget.onMarkerClustererTap!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1052,8 +1057,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('onCustomOverlayTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onCustomOverlayTap', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCustomOverlayTap != null) {
           widget.onCustomOverlayTap!(
             jsonDecode(result.message)['customOverlayId'],
@@ -1061,21 +1065,17 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('onMarkerDragChangeCallback',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerDragChangeCallback', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerDragChangeCallback != null) {
           widget.onMarkerDragChangeCallback!(
             jsonDecode(result.message)['markerId'],
             LatLng.fromJson(jsonDecode(result.message)),
             jsonDecode(result.message)['zoomLevel'],
-            jsonDecode(result.message)['drag'] == 'dragstart'
-                ? MarkerDragType.start
-                : MarkerDragType.end,
+            jsonDecode(result.message)['drag'] == 'dragstart' ? MarkerDragType.start : MarkerDragType.end,
           );
         }
       })
-      ..addJavaScriptChannel('zoomStart',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('zoomStart', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onZoomChangeCallback != null) {
           widget.onZoomChangeCallback!(
             jsonDecode(result.message)['zoomLevel'],
@@ -1083,8 +1083,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('zoomChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('zoomChanged', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onZoomChangeCallback != null) {
           widget.onZoomChangeCallback!(
             jsonDecode(result.message)['zoomLevel'],
@@ -1092,8 +1091,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('centerChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('centerChanged', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCenterChangeCallback != null) {
           widget.onCenterChangeCallback!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1101,8 +1099,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('boundsChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('boundsChanged', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onBoundsChangeCallback != null) {
           final latLngBounds = jsonDecode(result.message);
 
@@ -1115,8 +1112,7 @@ class _KakaoMapState extends State<KakaoMap> {
           ));
         }
       })
-      ..addJavaScriptChannel('dragStart',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('dragStart', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
           widget.onDragChangeCallback!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1125,8 +1121,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('drag',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('drag', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
           widget.onDragChangeCallback!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1135,8 +1130,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('dragEnd',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('dragEnd', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
           widget.onDragChangeCallback!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1145,8 +1139,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('cameraIdle',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('cameraIdle', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCameraIdle != null) {
           widget.onCameraIdle!(
             LatLng.fromJson(jsonDecode(result.message)),
@@ -1154,8 +1147,7 @@ class _KakaoMapState extends State<KakaoMap> {
           );
         }
       })
-      ..addJavaScriptChannel('tilesLoaded',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('tilesLoaded', onMessageReceived: (JavaScriptMessage result) {
         if (widget.onTilesLoadedCallback != null) {
           widget.onTilesLoadedCallback!(
             LatLng.fromJson(jsonDecode(result.message)),

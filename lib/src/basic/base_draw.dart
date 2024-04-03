@@ -19,6 +19,8 @@ class BaseDraw {
   /// fill opacity
   double? fillOpacity;
 
+  int zIndex = 0;
+
   BaseDraw({
     this.strokeWidth,
     this.strokeColor,
@@ -26,5 +28,6 @@ class BaseDraw {
     this.strokeStyle,
     this.fillColor,
     this.fillOpacity,
+    this.zIndex = 0,
   });
 }

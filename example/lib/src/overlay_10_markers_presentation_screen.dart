@@ -43,6 +43,7 @@ class _Overlay10MarkersPresentationScreenState
             height: 35,
             markerImageSrc:
                 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+            zIndex: 4,
           ));
 
           markers.add(Marker(
@@ -54,6 +55,7 @@ class _Overlay10MarkersPresentationScreenState
             offsetY: 43,
             markerImageSrc:
                 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/red_b.png',
+            zIndex: 3,
           ));
 
           markers.add(Marker(
@@ -65,6 +67,7 @@ class _Overlay10MarkersPresentationScreenState
             offsetY: 43,
             markerImageSrc:
                 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/blue_b.png',
+            zIndex: 2,
           ));
 
           /// offset 을 넣는 형식
@@ -77,12 +80,19 @@ class _Overlay10MarkersPresentationScreenState
             offsetY: 69,
             markerImageSrc:
                 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
+            zIndex: 1,
           ));
 
           setState(() {});
         }),
         markers: markers.toList(),
         center: LatLng(33.450705, 126.570677),
+        onMarkerTap: (String markerId, LatLng latLng, int zoomLevel) {
+          Marker marker =
+              markers.firstWhere((element) => element.markerId == markerId);
+          marker.zIndex = marker.zIndex + 10;
+          mapController.addMarker(markers: markers.toList());
+        },
       ),
     );
   }

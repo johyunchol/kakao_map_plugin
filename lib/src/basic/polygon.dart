@@ -20,5 +20,6 @@ class Polygon extends BaseDraw {
     super.strokeStyle,
     super.fillColor,
     super.fillOpacity,
+    super.zIndex,
   });
 }

@@ -46,9 +46,10 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
               strokeColor: Colors.red,
               strokeOpacity: 0.5,
               strokeStyle: StrokeStyle.longDashDotDot,
-              fillColor: Colors.black,
-              fillOpacity: 0.7,
-              radius: 50,
+              fillColor: Colors.red,
+              fillOpacity: 1,
+              radius: 100,
+              zIndex: 10,
             ),
           );
 
@@ -98,7 +99,8 @@ class _Overlay15ShapeScreenState extends State<Overlay15ShapeScreen> {
               strokeOpacity: 1,
               strokeStyle: StrokeStyle.shortDashDot,
               fillColor: Colors.black,
-              fillOpacity: 0.3,
+              fillOpacity: 1,
+              zIndex: 20,
             ),
           );
 
