@@ -42,7 +42,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> {
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_loadMap());
+      ..loadHtmlString(_loadMap(), baseUrl: null);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);

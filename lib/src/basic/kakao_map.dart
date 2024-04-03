@@ -87,11 +87,11 @@ class _KakaoMapState extends State<KakaoMap> {
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
 
-    addJavaScriptChannels(controller);
-
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_loadMap());
+      ..setBackgroundColor(const Color(0x00000000));
+    addJavaScriptChannels(controller);
+    controller.loadHtmlString(_loadMap(), baseUrl: null);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
@@ -307,6 +307,14 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     circles = [];
+  }
+  
+  function clearRectangle() {
+    for (let i = 0; i < rectangles.length; i++) {
+      rectangles[i].setMap(null);
+    }
+
+    rectangles = [];
   }
 
   function clearPolygon() {
