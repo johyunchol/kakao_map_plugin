@@ -43,7 +43,7 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_loadMap());
+      ..loadHtmlString(_loadMap(), baseUrl: null);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);

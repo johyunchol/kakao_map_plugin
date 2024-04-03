@@ -28,7 +28,6 @@ class _Overlay22CustomOverlay2ScreenState
     final customOverlay = CustomOverlay(
       customOverlayId: 'customOverlay',
       latLng: LatLng(37.49887, 127.026581),
-      // content: '<p style="background-color: white; padding: 8px; border-radius: 8px;">카카오!</p>',
       content: content,
     );
 
