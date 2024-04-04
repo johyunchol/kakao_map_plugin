@@ -1,4 +1,12 @@
+## 0.2.6
+
+* Modified the street view to allow dynamic setting of central coordinates.
+* Added zIndex properties for polyline, polygon, circle, and rectangle.
+* Changed the location of the addJavaScriptChannels code.
+* Fixed a missing > tag in div element for addCustomOverlay.
+
 ## 0.2.5
+
 * Modify the hard-coded style in the Polyline drawing.
 
 ## 0.2.4
