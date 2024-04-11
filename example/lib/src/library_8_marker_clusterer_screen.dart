@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
@@ -418,54 +416,14 @@ class _Library8MarkerClustererScreenState
 
           clusterer = Clusterer(
             markers: markers.toList(),
-            minLevel: 6,
-            gridSize: 45,
-            calculator: [30, 60],
-            texts: ['적음', '보통', '많음'],
-            styles: [
-              ClustererStyle(
-                width: 50,
-                height: 50,
-                background: Colors.blue.withOpacity(0.8),
-                borderRadius: 25,
-                color: Colors.white,
-                textAlign: 'center',
-                lineHeight: 60,
-              ),
-              ClustererStyle(
-                width: 50,
-                height: 50,
-                background: Colors.red.withOpacity(0.8),
-                borderRadius: 25,
-                color: Colors.yellow,
-                textAlign: 'center',
-                lineHeight: 60,
-              ),
-              ClustererStyle(
-                width: 50,
-                height: 50,
-                background: Colors.purple.withOpacity(0.8),
-                borderRadius: 25,
-                color: Colors.white,
-                textAlign: 'center',
-                lineHeight: 60,
-              ),
-            ],
+            minLevel: 10,
+            averageCenter: true,
           );
 
           setState(() {});
         },
         currentLevel: 14,
         clusterer: clusterer,
-        onMarkerClustererTap: (latLng, zoomLevel) {
-          debugPrint('***** [cluster tap] ${jsonEncode(latLng)}');
-        },
-        onMarkerTap: ((markerId, latLng, zoomLevel) {
-          debugPrint('***** [markerId] $markerId');
-        }),
-        onZoomChangeCallback: (int zoomLevel, ZoomType zoomType) {
-          debugPrint('***** [JHC_DEBUG] $zoomType');
-        },
       ),
     );
   }

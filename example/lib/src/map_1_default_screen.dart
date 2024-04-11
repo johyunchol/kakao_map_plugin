@@ -24,7 +24,7 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
       ),
       body: KakaoMap(
         onMapTap: (latLng) {
-          print(latLng);
+          debugPrint('***** [JHC_DEBUG] ${latLng.toString()}');
         },
       ),
     );

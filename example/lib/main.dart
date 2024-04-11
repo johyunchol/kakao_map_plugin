@@ -12,7 +12,9 @@ void main() async {
   /// rest api 호출시 필요한 BASE_URL 도 등록해 주세요.
   /// 지도가 호출되기 전에만 세팅해 주면 됩니다.
   /// dotEnv 대신 appKey 를 직접 넣어주셔도 됩니다.
-  AuthRepository.initialize(appKey: dotenv.env['APP_KEY'] ?? '', baseUrl: dotenv.env['BASE_URL'] ?? '');
+  AuthRepository.initialize(
+      appKey: dotenv.env['APP_KEY'] ?? '',
+      baseUrl: dotenv.env['BASE_URL'] ?? '');
 
   runApp(const MyApp());
 }

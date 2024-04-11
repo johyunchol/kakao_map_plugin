@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../kakao_map_plugin.dart';
 
 class KakaoMap extends StatefulWidget {
   final MapCreateCallback? onMapCreated;
@@ -32,7 +32,7 @@ class KakaoMap extends StatefulWidget {
   final Clusterer? clusterer;
 
   const KakaoMap({
-    Key? key,
+    super.key,
     this.onMapCreated,
     this.onMapTap,
     this.onMarkerTap,
@@ -61,7 +61,7 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
-  }) : super(key: key);
+  });
 
   @override
   State<KakaoMap> createState() => _KakaoMapState();
@@ -117,6 +117,7 @@ class _KakaoMapState extends State<KakaoMap> {
     return _htmlWrapper('''<script>
   let map = null;
   let geocoder = null;
+  let places = null;
   let polylines = [];
   let circles = [];
   let rectangles = [];
@@ -139,6 +140,7 @@ class _KakaoMapState extends State<KakaoMap> {
 
     map = new kakao.maps.Map(container, options);
     geocoder = new kakao.maps.services.Geocoder();
+    places = new kakao.maps.services.Places();
 
     if (${widget.mapTypeControl}) {
       const mapTypeControl = new kakao.maps.MapTypeControl();
@@ -508,8 +510,6 @@ class _KakaoMapState extends State<KakaoMap> {
 
     marker.setDraggable(draggable);
     
-    console.log('zIndex : ', zIndex);
-    
     if (zIndex) {
       marker.setZIndex(zIndex);
     }
@@ -800,7 +800,26 @@ class _KakaoMapState extends State<KakaoMap> {
    * @param options
    */
   function setLevel(level, options) {
-    map.setLevel(level);
+    if (!options) {
+      return map.setLevel(level);
+    }
+    
+    let levelOption = {}
+    
+    console.log(options);
+    options = JSON.parse(options);
+    
+    if (options?.animate) {
+      levelOption['animate'] = options.animate;
+    }
+    
+    if (options?.anchor) {
+      levelOption['anchor'] = new kakao.maps.LatLng(options?.anchor?.latitude, options?.anchor?.longitude);
+    }
+    
+    console.log(JSON.stringify(levelOption));
+  
+    map.setLevel(level, levelOption);
   }
 
   /**
@@ -1012,11 +1031,113 @@ class _KakaoMapState extends State<KakaoMap> {
 
     return 'rgb(' + int_r + ', ' + int_g + ', ' + int_b + ')';
   }
-function coord2Address(latitude, longitude) {
-        geocoder.coord2Address(longitude, latitude, function(result, status) {
-            coord2AddressComplete.postMessage(JSON.stringify(result[0]));
-        });
-}
+  
+  function keywordSearch(request) {
+    request = JSON.parse(request);
+    
+    let options = {
+      category_group_code: request.categoryGroupCode,
+      x: request.x,
+      y: request.y,
+      radius: request.radius,
+      rect: request.rect,
+      page: request.page,
+      size: request.size,
+      sort: request.sort,
+      useMapCenter: request.useMapCenter,
+      useMapBounds: request.useMapBounds,
+    };
+    
+    places.keywordSearch(request.keyword, function(result, status) {
+      if (typeof result === 'object') {
+        keywordSearchCallback.postMessage(JSON.stringify(result));
+      }
+    }, options);
+  }
+  
+  // function categorySearch(category, latitude, longitude) {
+  function categorySearch(request) {
+    request = JSON.parse(request);
+
+     let options = {
+      x: request.x,
+      y: request.y,
+      radius: request.radius,
+      rect: request.rect,
+      page: request.page,
+      size: request.size,
+      sort: request.sort,
+      useMapCenter: request.useMapCenter,
+      useMapBounds: request.useMapBounds,
+    };
+    
+    places.categorySearch(request.categoryGroupCode, function(result, status) {
+      if (typeof result === 'object') {
+        categorySearchCallback.postMessage(JSON.stringify(result));
+      }
+    }, options);
+  }
+
+  
+  function addressSearch(request) {
+    request = JSON.parse(request);
+
+     let options = {
+      page: request.page,
+      size: request.size,
+      analyze_type: request.analyze_type,
+    };
+    
+    geocoder.addressSearch(request.addr, function(result, status) {
+      if (typeof result === 'object') {
+        addressSearchCallback.postMessage(JSON.stringify(result));
+      }
+    }, options);
+  }
+  
+  function coord2Address(request) {
+     request = JSON.parse(request);
+     
+     let options = {
+      input_coord: request.input_coord,
+     };
+ 
+    geocoder.coord2Address(request.longitude, request.latitude, function(result, status) {
+      if (typeof result === 'object') {
+        coord2AddressCallback.postMessage(JSON.stringify(result));
+      }
+    }, options);
+  }
+  
+  function coord2RegionCode(request) {
+     request = JSON.parse(request);
+     
+     let options = {
+      input_coord: request.input_coord,
+      output_coord: request.output_coord,
+     };
+ 
+    geocoder.coord2RegionCode(request.longitude, request.latitude, function(result, status) {
+      if (typeof result === 'object') {
+        coord2RegionCodeCallback.postMessage(JSON.stringify(result));
+      }
+    }, options);
+  }
+  
+  function transCoord(request) {
+    request = JSON.parse(request)
+    
+    let options = {
+      input_coord: request.input_coord,
+      output_coord: request.output_coord,
+     };
+     
+    geocoder.transCoord(request.x, request.y, function(result, status) {
+      if (typeof result === 'object') {
+        transCoordCallback.postMessage(JSON.stringify(result));
+      }
+    }, options)
+  }
 </script>
     ''');
   }
@@ -1183,12 +1304,29 @@ function coord2Address(latitude, longitude) {
           );
         }
       })
-      ..addJavaScriptChannel("coord2AddressComplete",
-          onMessageReceived: (JavaScriptMessage message) {
-        final resultData = jsonDecode(message.message);
-        Coord2AddressService()
-            .getCompleter()
-            .complete(Coord2Address.fromJson(resultData));
+      ..addJavaScriptChannel("keywordSearchCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        KeywordSearchService.keywordSearchCallback(result.message);
+      })
+      ..addJavaScriptChannel("categorySearchCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        CategorySearchService.categorySearchCallback(result.message);
+      })
+      ..addJavaScriptChannel("addressSearchCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        AddressSearchService.addressSearchCallback(result.message);
+      })
+      ..addJavaScriptChannel("coord2AddressCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        Coord2AddressService.coord2AddressCallback(result.message);
+      })
+      ..addJavaScriptChannel("coord2RegionCodeCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        Coord2RegionCodeService.coord2RegionCodeCallback(result.message);
+      })
+      ..addJavaScriptChannel("transCoordCallback",
+          onMessageReceived: (JavaScriptMessage result) {
+        TransCoordService.transCodeCallback(result.message);
       });
   }
 }

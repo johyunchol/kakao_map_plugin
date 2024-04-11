@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../kakao_map_plugin.dart';
 
 /// kakao app key repository
 class AuthRepository {
@@ -6,13 +6,13 @@ class AuthRepository {
 
   /// kakao map javascript app key
   late String appKey;
-  late String baseUrl;
+  String? baseUrl;
 
   AuthRepository();
 
   static AuthRepository get instance => _instance;
 
-  factory AuthRepository.initialize({required String appKey,required String baseUrl}) {
+  factory AuthRepository.initialize({required String appKey, String? baseUrl}) {
     _instance.appKey = appKey;
     _instance.baseUrl = baseUrl;
 

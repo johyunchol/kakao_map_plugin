@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../kakao_map_plugin.dart';
 
 class KakaoMapController {
   final WebViewController _webViewController;
@@ -61,7 +61,6 @@ class KakaoMapController {
       clearMarker();
 
       for (var marker in markers) {
-        debugPrint('***** [JHC_DEBUG] ${marker.toJson()}');
         final markerString =
             "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
         await _webViewController.runJavaScript(markerString);
@@ -163,8 +162,13 @@ class KakaoMapController {
   }
 
   /// set zoom level
-  setLevel(level) {
-    _webViewController.runJavaScript("setLevel('$level');");
+  setLevel(int level, {LevelOptions? options}) {
+    if (options == null) {
+      _webViewController.runJavaScript("setLevel('$level');");
+    } else {
+      _webViewController
+          .runJavaScript("setLevel('$level', '${jsonEncode(options)}');");
+    }
   }
 
   /// get zoom level
@@ -251,20 +255,67 @@ class KakaoMapController {
   }
 
   /// keyword search
-  keywordSearch() async {
-    await _webViewController.runJavaScriptReturningResult("keywordSearch();");
+  Future<KeywordSearchResponse> keywordSearch(
+      KeywordSearchRequest request) async {
+    KeywordSearchService().resetCompleter();
+
+    await _webViewController
+        .runJavaScript("keywordSearch('${jsonEncode(request)}');");
+
+    return await KeywordSearchService.keywordSearchResult();
+  }
+
+  /// category search
+  Future<CategorySearchResponse> categorySearch(
+      CategorySearchRequest request) async {
+    CategorySearchService().resetCompleter();
+
+    await _webViewController
+        .runJavaScript("categorySearch('${jsonEncode(request)}');");
+
+    return await CategorySearchService.categorySearchResult();
   }
 
   /// address search
-  addressSearch() async {
-    await _webViewController.runJavaScriptReturningResult("addressSearch();");
+  Future<AddressSearchResponse> addressSearch(
+      AddressSearchRequest request) async {
+    AddressSearchService().resetCompleter();
+
+    await _webViewController
+        .runJavaScript("addressSearch('${jsonEncode(request)}')");
+
+    return await AddressSearchService.addressSearchResult();
   }
 
   /// coord to address
-  Future<Coord2Address> coord2Address(LatLng latLng) async {
+  Future<Coord2AddressResponse> coord2Address(
+      Coord2AddressRequest request) async {
     Coord2AddressService().resetCompleter();
-    await _webViewController.runJavaScript(
-        "coord2Address(${latLng.latitude}, ${latLng.longitude})");
-    return Coord2AddressService().getCompleter().future;
+
+    await _webViewController
+        .runJavaScript("coord2Address('${jsonEncode(request)}')");
+
+    return await Coord2AddressService.coord2AddressResult();
+  }
+
+  /// coord to region code
+  Future<Coord2RegionCodeResponse> coord2RegionCode(
+      Coord2RegionCodeRequest request) async {
+    Coord2RegionCodeService().resetCompleter();
+
+    await _webViewController
+        .runJavaScript("coord2RegionCode('${jsonEncode(request)}')");
+
+    return await Coord2RegionCodeService.coord2RegionCodeResult();
+  }
+
+  /// coord to region code
+  Future<TransCoordResponse> transCoord(TransCoordRequest request) async {
+    TransCoordService().resetCompleter();
+
+    await _webViewController
+        .runJavaScript("transCoord('${jsonEncode(request)}')");
+
+    return await TransCoordService.transCodeResult();
   }
 }

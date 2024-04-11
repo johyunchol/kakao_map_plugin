@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../kakao_map_plugin.dart';
 
 /// kakao map created callback
 typedef MapCreateCallback = void Function(KakaoMapController controller);

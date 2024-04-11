@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_4_category_bounds_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_5_address_to_coords_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_6_coords_to_address_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_7_trans_coords_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_8_marker_clusterer_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_9_marker_clusterer_click_event_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_10_roadview_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_11_terrain_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_12_map_type_radio_screen.dart';
@@ -172,18 +181,31 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(title: '마커와 텍스트 표시하기', newPage: const Static3MarkerTextScreen()),
     ]),
     MenuGroup(name: '라이브러리', items: [
-      // MenuItem(title: '키워드로 장소검색하기', newPage: const Library1KeywordScreen()),
-      // MenuItem(title: '키워드로 장소검색하고 목록으로 표출하기', newPage: const Library2KeywordListScreen()),
-      // MenuItem(title: '카테고리로 장소 검색하기', newPage: const Library3CategoryScreen()),
-      // MenuItem(title: '카테고리별 장소 검색하기', newPage: const Library4CategoryBoundsScreen()),
-      // MenuItem(title: '주소로 장소 표시하기', newPage: const Library5AddressToCoordsScreen()),
-      // MenuItem(title: '좌표로 주소를 얻어내기', newPage: const Library6CoordsToAddressScreen()),
-      // MenuItem(title: 'WTM 좌표를 WGS84 좌표로 변환하기', newPage: const Library7transCoordsScreen()),
+      MenuItem(title: '키워드로 장소검색하기', newPage: const Library1KeywordScreen()),
+      MenuItem(
+          title: '키워드로 장소검색하고 목록으로 표출하기',
+          newPage: const Library2KeywordListScreen()),
+      MenuItem(title: '카테고리로 장소 검색하기', newPage: const Library3CategoryScreen()),
+      MenuItem(
+          title: '카테고리별 장소 검색하기',
+          newPage: const Library4CategoryBoundsScreen()),
+      MenuItem(
+          title: '주소로 장소 표시하기', newPage: const Library5AddressToCoordsScreen()),
+      MenuItem(
+          title: '좌표로 주소를 얻어내기',
+          newPage: const Library6CoordsToAddressScreen()),
+      MenuItem(
+          title: 'WTM 좌표를 WGS84 좌표로 변환하기',
+          newPage: const Library7transCoordsScreen()),
       MenuItem(
           title: '마커 클러스터러 사용하기',
           newPage: const Library8MarkerClustererScreen()),
-      // MenuItem(title: '마커 클러스터러에 클릭이벤트 추가하기', newPage: const Library9MarkerClustererClickEventScreen()),
-      // MenuItem(title: '클러스터 마커에 텍스트 표시하기', newPage: const Library10MarkerClustererTextScreen()),
+      MenuItem(
+          title: '마커 클러스터러에 클릭이벤트 추가하기',
+          newPage: const Library9MarkerClustererClickEventScreen()),
+      MenuItem(
+          title: '클러스터 마커에 텍스트 표시하기',
+          newPage: const Library10MarkerClustererTextScreen()),
       // MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
       // MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
       // MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),
