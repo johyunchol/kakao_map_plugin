@@ -18,6 +18,8 @@ class _Library3CategoryScreenState extends State<Library3CategoryScreen> {
 
   bool draggable = true;
   bool zoomable = true;
+  Set<Marker> markers = {};
+  List<KeywordAddress> list = [];
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,51 @@ class _Library3CategoryScreenState extends State<Library3CategoryScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: const KakaoMap(),
+      body: KakaoMap(
+        center: LatLng(37.566826, 126.9786567),
+        currentLevel: 3,
+        onMapCreated: (controller) async {
+          mapController = controller;
+
+          final center = await mapController.getCenter();
+
+          final request = CategorySearchRequest(
+            categoryGroupCode: CategoryType.bk9,
+            y: center.latitude,
+            x: center.longitude,
+            radius: 1000,
+            sort: SortBy.distance,
+            page: 1,
+            size: 5,
+            useMapCenter: true,
+            useMapBounds: true,
+          );
+
+          final result = await mapController.categorySearch(request);
+
+          List<LatLng> bounds = [];
+          for (var item in result.list) {
+            LatLng latLng =
+                LatLng(double.parse(item.y ?? ''), double.parse(item.x ?? ''));
+
+            bounds.add(latLng);
+
+            Marker marker = Marker(
+                markerId: item.id ?? UniqueKey().toString(), latLng: latLng);
+
+            markers.add(marker);
+          }
+
+          mapController.fitBounds(bounds);
+
+          setState(() {
+            list.addAll(result.list);
+          });
+
+          debugPrint('***** [JHC_DEBUG] ${result.toString()}');
+        },
+        markers: markers.toList(),
+      ),
     );
   }
 }

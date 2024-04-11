@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../../kakao_map_plugin.dart';
 
 /// StrokeStyle
 /// 지도 위에 올라가는 각종 도형의 선 스타일을 의미한다.

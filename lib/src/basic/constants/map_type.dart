@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../../kakao_map_plugin.dart';
 
 enum MapType {
   normal(1),

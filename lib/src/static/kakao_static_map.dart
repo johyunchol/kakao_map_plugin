@@ -1,4 +1,4 @@
-part of kakao_map_plugin;
+part of '../../kakao_map_plugin.dart';
 
 class KakaoStaticMap extends StatefulWidget {
   final MapCreateCallback? onMapCreated;
@@ -7,12 +7,12 @@ class KakaoStaticMap extends StatefulWidget {
   final List<Marker>? markers;
 
   const KakaoStaticMap({
-    Key? key,
+    super.key,
     this.onMapCreated,
     this.currentLevel = 3,
     this.center,
     this.markers,
-  }) : super(key: key);
+  });
 
   @override
   State<KakaoStaticMap> createState() => _KakaoStaticMapState();
@@ -43,7 +43,7 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_loadMap(), baseUrl: null);
+      ..loadHtmlString(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);

@@ -1,3 +1,3 @@
-part of kakao_map_plugin;
+part of '../../../kakao_map_plugin.dart';
 
 enum DragType { start, move, end }
