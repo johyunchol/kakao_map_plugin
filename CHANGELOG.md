@@ -1,3 +1,15 @@
+## 0.3.0
+
+* Integration and implementation of an example for searching places by keyword
+* Integration and implementation of an example for displaying a list of places searched by keyword
+* Integration and implementation of an example for searching places by category
+* Integration and implementation of an example for searching places by specific categories
+* Integration and implementation of an example for displaying places by address
+* Integration and implementation of an example for obtaining an address by coordinates
+* Integration and implementation of an example for converting WTM coordinates to WGS84 coordinates
+* Modification of the example source for marker clustering
+* Addition of options when using setLevel
+
 ## 0.2.6
 
 * Modified the street view to allow dynamic setting of central coordinates.
