@@ -30,11 +30,20 @@ dependencies:
 1. javascript key 등록
 
 * Singleton 으로 되어 있어서 KakaoMap 위젯이 호출 되기 전에만 initialize 하면 됩니다. 여기서는 main 함수에서 호출하도록 했습니다.
-* example 에서는 flutter_dotenv 라이브러리를 사용하였습니다. 바로 실행해 보시려면 `example/assets/env/.env.sample`을 복사하여 `example/assets/env/.env`로 만들어주시고 `.env` 파일 내부에 `APP_KEY=`뒤에 본인의 javascript key 를 넣으시면 됩니다.
+* example 에서는 flutter_dotenv 라이브러리를 사용하였습니다. 바로 실행해 보시려면 `example/assets/env/.env.sample`을
+  복사하여 `example/assets/env/.env`로 만들어주시고 `.env` 파일 내부에 `APP_KEY=`뒤에 본인의 javascript key 를 넣으시면 됩니다.
+* 키워드로 장소검색하기, 카테고리로 장소 검색, 주소로 장소 표시, 좌표로 주소를 얻어오기, 좌표 변환하기 와 같은 services 기능을 사용하려면 baseUrl 을 추가 해야 합니다.
+* `.env`에 `BASE_URL=`뒤에 본인의 baseUrl 주소를 넣으시면 됩니다.
 
 ``` dart
 void main() {
   AuthRepository.initialize(appKey: 'javascript key');
+}
+
+or
+
+void main() {
+  AuthRepository.initialize(appKey: 'javascript key', baseUrl: 'http://localhost');
 }
 ```
 
