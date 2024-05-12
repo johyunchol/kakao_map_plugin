@@ -1102,7 +1102,7 @@ class _KakaoMapState extends State<KakaoMap> {
       input_coord: request.input_coord,
      };
  
-    geocoder.coord2Address(request.longitude, request.latitude, function(result, status) {
+    geocoder.coord2Address(request.x, request.y, function(result, status) {
       if (typeof result === 'object') {
         coord2AddressCallback.postMessage(JSON.stringify(result));
       }
