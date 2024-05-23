@@ -1,3 +1,6 @@
+## 0.3.1
+* Modified the parameters for coord2RegionCode and coord2Address.
+ 
 ## 0.3.0
 
 * Integration and implementation of an example for searching places by keyword
