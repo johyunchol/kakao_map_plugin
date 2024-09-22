@@ -23,10 +23,21 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
         title: Text(widget.title ?? selectedTitle),
       ),
       body: KakaoMap(
+        onMapCreated: (controller) {
+          setState(() {
+            mapController = controller;
+          });
+        },
         onMapTap: (latLng) {
           debugPrint('***** [JHC_DEBUG] ${latLng.toString()}');
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    mapController.dispose();
+    super.dispose();
   }
 }
