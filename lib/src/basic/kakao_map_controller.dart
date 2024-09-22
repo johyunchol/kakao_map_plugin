@@ -97,6 +97,11 @@ class KakaoMapController {
     }
   }
 
+
+  dispose() {
+    _webViewController.runJavaScript("dispose()");
+  }
+
   /// clear overlays
   clear() {
     _webViewController.runJavaScript('clear();');

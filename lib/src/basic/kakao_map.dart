@@ -131,7 +131,8 @@ class _KakaoMapState extends State<KakaoMap> {
     const container = document.getElementById('map');
     let center = defaultCenter;
     if (${widget.center != null}) {
-      center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget.center?.longitude});
+      center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget.center
+        ?.longitude});
     }
 
     const options = {
@@ -359,6 +360,12 @@ class _KakaoMapState extends State<KakaoMap> {
     clearPolygon();
     clearMarker();
     clearCustomOverlay();
+  }
+  
+  function dispose() {
+    console.log("map clear!!")
+    clear();
+    map = null;
   }
 
   function addPolyline(callId, points, color, opacity, width, stroke, endArrow, zIndex) {
@@ -806,7 +813,6 @@ class _KakaoMapState extends State<KakaoMap> {
     
     let levelOption = {}
     
-    console.log(options);
     options = JSON.parse(options);
     
     if (options?.animate) {
@@ -817,8 +823,6 @@ class _KakaoMapState extends State<KakaoMap> {
       levelOption['anchor'] = new kakao.maps.LatLng(options?.anchor?.latitude, options?.anchor?.longitude);
     }
     
-    console.log(JSON.stringify(levelOption));
-  
     map.setLevel(level, levelOption);
   }
 
