@@ -97,7 +97,6 @@ class KakaoMapController {
     }
   }
 
-
   dispose() {
     _webViewController.runJavaScript("dispose()");
   }
