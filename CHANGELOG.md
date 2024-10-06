@@ -1,3 +1,7 @@
+## 0.3.2
+* added dispose method.
+* apply dart format.
+
 ## 0.3.1
 * Modified the parameters for coord2RegionCode and coord2Address.
  
