@@ -189,7 +189,12 @@ class _KakaoMapState extends State<KakaoMap> {
       // 지도 영역이 변경되면 발생한다.
       kakao.maps.event.addListener(map, 'bounds_changed', function () {
         const bounds = getBounds();
-        boundsChanged.postMessage(bounds);
+
+        if (${Platform.isIOS}) {
+          boundsChanged.postMessage(bounds);
+        } else {
+          boundsChanged.postMessage(JSON.stringify(bounds));
+        }
       });
     }
 
@@ -913,7 +918,9 @@ class _KakaoMapState extends State<KakaoMap> {
       ne: ne
     };
 
-    result = JSON.stringify(result);
+    if (${Platform.isIOS}) {
+      result = JSON.stringify(result);
+    }
 
     return result;
   }
@@ -1247,6 +1254,8 @@ class _KakaoMapState extends State<KakaoMap> {
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onBoundsChangeCallback != null) {
           final latLngBounds = jsonDecode(result.message);
+
+          print(latLngBounds);
 
           final sw = latLngBounds['sw'];
           final ne = latLngBounds['ne'];
