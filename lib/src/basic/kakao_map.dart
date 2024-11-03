@@ -1255,8 +1255,6 @@ class _KakaoMapState extends State<KakaoMap> {
         if (widget.onBoundsChangeCallback != null) {
           final latLngBounds = jsonDecode(result.message);
 
-          print(latLngBounds);
-
           final sw = latLngBounds['sw'];
           final ne = latLngBounds['ne'];
 
