@@ -152,7 +152,6 @@ class KakaoMapController {
   }
 
   clearNoLongerPresentOverlay({required List<String> newOverlayIds}) async {
-    String ids = jsonEncode(newOverlayIds);
     _webViewController.runJavaScript("clearNoLongerPresentOverlay('${jsonEncode(newOverlayIds)}');");
   }
 
