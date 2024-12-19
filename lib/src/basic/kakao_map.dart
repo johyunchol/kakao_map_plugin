@@ -352,6 +352,16 @@ class _KakaoMapState extends State<KakaoMap> {
 
     customOverlays = [];
   }
+  
+  function clearNoLongerPresentOverlay(ids) {
+    customOverlays = customOverlays.filter(overlay => {
+      if (!ids.includes(overlay.id)) {
+        overlay.setMap(null);
+        return false;
+      }
+      return true;
+    });
+  }
 
   function clear() {
     clearPolyline();
@@ -710,8 +720,31 @@ class _KakaoMapState extends State<KakaoMap> {
 
     return newObj;
   }
-
+  
   function addCustomOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
+    let customOverlay = makeOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex); 
+    
+    customOverlay['id'] = customOverlayId;
+    
+    customOverlays.push(customOverlay);
+
+    customOverlay.setMap(map);
+  }
+  
+  function addCustomOverlayIfNotExist(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
+    // customOverlays에 동일한 ID가 있는지 확인
+    if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
+      return;
+    }
+      
+    const customOverlay = makeOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex); 
+    customOverlay['id'] = customOverlayId;
+    customOverlays.push(customOverlay);
+    customOverlay.setMap(map);
+  }
+  
+  
+  function makeOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
     latLng = JSON.parse(latLng);
     let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
     isClickable = Boolean(isClickable);
@@ -725,8 +758,7 @@ class _KakaoMapState extends State<KakaoMap> {
         '`, `' + latLng.longitude +
         '`)">' + content + '</div>';
     }
-
-    let customOverlay = new kakao.maps.CustomOverlay({
+    return new kakao.maps.CustomOverlay({
       map: map,
       clickable: isClickable,
       content: content,
@@ -735,14 +767,9 @@ class _KakaoMapState extends State<KakaoMap> {
       yAnchor: yAnchor,
       zIndex: zIndex,
     });
-    
-    customOverlay['id'] = customOverlayId;
-    
-    customOverlays.push(customOverlay);
-
-    customOverlay.setMap(map);
   }
-
+  
+  
   function addCustomOverlayListener(customOverlayId, latitude, longitude) {
     // 클릭한 위도, 경도 정보를 가져옵니다
     let latLng = new kakao.maps.LatLng(latitude, longitude); // 마커가 표시될 위치입니다

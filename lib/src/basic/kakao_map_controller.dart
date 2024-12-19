@@ -85,6 +85,17 @@ class KakaoMapController {
         .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
   }
 
+  /// Accepts a new list to update the existing overlay by retaining overlapping elements, adding new ones, and removing those no longer present.
+  /// addCustomOverlay 사용 시 customOverlay 들을 다시 그리는 현상을 방지하기 위해 사용
+  mergeAnsSyncOverlay({required List<CustomOverlay> customOverlays}) async {
+    clearNoLongerPresentOverlay(newOverlayIds: customOverlays.map((e) => e.customOverlayId).toList());
+
+    for (var customOverlay in customOverlays) {
+      await _webViewController.runJavaScript(
+          "addCustomOverlayIfNotExist('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}', '${customOverlay.isClickable}', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
+    }
+  }
+
   /// draw custom overlay
   addCustomOverlay({List<CustomOverlay>? customOverlays}) async {
     if (customOverlays != null) {
@@ -138,6 +149,11 @@ class KakaoMapController {
   /// clear custom overlay
   clearCustomOverlay() {
     _webViewController.runJavaScript('clearCustomOverlay();');
+  }
+
+  clearNoLongerPresentOverlay({required List<String> newOverlayIds}) async {
+    String ids = jsonEncode(newOverlayIds);
+    _webViewController.runJavaScript("clearNoLongerPresentOverlay('${jsonEncode(newOverlayIds)}');");
   }
 
   /// move to center
