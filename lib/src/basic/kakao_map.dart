@@ -189,7 +189,12 @@ class _KakaoMapState extends State<KakaoMap> {
       // 지도 영역이 변경되면 발생한다.
       kakao.maps.event.addListener(map, 'bounds_changed', function () {
         const bounds = getBounds();
-        boundsChanged.postMessage(JSON.stringify(bounds));
+
+        if (${Platform.isIOS}) {
+          boundsChanged.postMessage(bounds);
+        } else {
+          boundsChanged.postMessage(JSON.stringify(bounds));
+        }
       });
     }
 
