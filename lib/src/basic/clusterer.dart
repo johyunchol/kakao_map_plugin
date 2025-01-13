@@ -56,4 +56,10 @@ class Clusterer {
       'styles': styles?.map((style) => style.toJson()).toList(),
     };
   }
+
+  List<Marker> getMarkersByIds(List<String> markerIdList) {
+    return markers
+        .where((marker) => markerIdList.contains(marker.markerId))
+        .toList();
+  }
 }

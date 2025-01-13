@@ -18,7 +18,7 @@ typedef OnMarkerTap = void Function(
     String markerId, LatLng latLng, int zoomLevel);
 
 /// kakao map marker clusterer tap callback
-typedef OnMarkerClustererTap = void Function(LatLng latLng, int zoomLevel);
+typedef OnMarkerClustererTap = void Function(LatLng latLng, int zoomLevel, List<Marker> clusterMarkers);
 
 /// kakao marker drag change callback
 typedef OnMarkerDragChangeCallback = void Function(String markerId,

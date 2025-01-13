@@ -426,8 +426,12 @@ class _Library9MarkerClustererClickEventScreenState
         },
         currentLevel: 14,
         clusterer: clusterer,
-        onMarkerClustererTap: (latLng, zoomLevel) async {
+        onMarkerClustererTap: (latLng, zoomLevel, clusterMarkers) async {
           debugPrint('***** [cluster tap] ${jsonEncode(latLng)}');
+
+          for (var marker in clusterMarkers) {
+            debugPrint('***** [cluster tap :: marker] ${marker.markerId} / ${jsonEncode(marker.latLng)}');
+          }
 
           int level = await mapController.getLevel() - 1;
 
