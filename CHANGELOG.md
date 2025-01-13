@@ -1,10 +1,18 @@
+## 0.3.3
+
+* Modify code to be depreciated.
+* The package related to webview has been updated.
+* fix onBoundsChanged is not working on android device.
+
 ## 0.3.2
+
 * added dispose method.
 * apply dart format.
 
 ## 0.3.1
+
 * Modified the parameters for coord2RegionCode and coord2Address.
- 
+
 ## 0.3.0
 
 * Integration and implementation of an example for searching places by keyword
