@@ -12,15 +12,15 @@ extension HexColor on Color {
   /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
   String toHexColorWithAlpha({bool leadingHashSign = true}) =>
       '${leadingHashSign ? '#' : ''}'
-      '${alpha.toRadixString(16).padLeft(2, '0')}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
+      '${(a * 255).toInt().toRadixString(16).padLeft(2, '0')}'
+      '${(r * 255).toInt().toRadixString(16).padLeft(2, '0')}'
+      '${(g * 255).toInt().toRadixString(16).padLeft(2, '0')}'
+      '${(b * 255).toInt().toRadixString(16).padLeft(2, '0')}';
 
   /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
   String toHexColor({bool leadingHashSign = true}) =>
       '${leadingHashSign ? '#' : ''}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
+      '${(r * 255).toInt().toRadixString(16).padLeft(2, '0')}'
+      '${(g * 255).toInt().toRadixString(16).padLeft(2, '0')}'
+      '${(b * 255).toInt().toRadixString(16).padLeft(2, '0')}';
 }
