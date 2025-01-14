@@ -430,7 +430,8 @@ class _Library9MarkerClustererClickEventScreenState
           debugPrint('***** [cluster tap] ${jsonEncode(latLng)}');
 
           for (var marker in clusterMarkers) {
-            debugPrint('***** [cluster tap :: marker] ${marker.markerId} / ${jsonEncode(marker.latLng)}');
+            debugPrint(
+                '***** [cluster tap :: marker] ${marker.markerId} / ${jsonEncode(marker.latLng)}');
           }
 
           int level = await mapController.getLevel() - 1;
