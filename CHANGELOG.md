@@ -1,3 +1,7 @@
+## 0.3.4
+
+* Modify to retrieve the list of markers for the selected cluster.
+
 ## 0.3.3
 
 * Modify code to be depreciated.
