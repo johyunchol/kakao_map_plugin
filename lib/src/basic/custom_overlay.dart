@@ -10,9 +10,6 @@ class CustomOverlay {
   /// custom overlay inner content
   final String content;
 
-  /// custom overlay clickable
-  final bool isClickable;
-
   /// custom overlay x anchor
   final double xAnchor;
 
@@ -26,7 +23,6 @@ class CustomOverlay {
     required this.customOverlayId,
     required this.latLng,
     required this.content,
-    this.isClickable = true,
     this.xAnchor = 0.5,
     this.yAnchor = 1,
     this.zIndex = 3,

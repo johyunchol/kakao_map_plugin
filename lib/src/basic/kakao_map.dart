@@ -722,10 +722,9 @@ class _KakaoMapState extends State<KakaoMap> {
         return newObj;
     }
 
-    function addCustomOverlay(customOverlayId, latLng, content, isClickable, xAnchor, yAnchor, zIndex) {
+    function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
-        isClickable = Boolean(isClickable);
 
         content = '<div id="' + customOverlayId + '">' + content + '</div>'
         if (${widget.onCustomOverlayTap != null}) {
@@ -739,7 +738,6 @@ class _KakaoMapState extends State<KakaoMap> {
 
         let customOverlay = new kakao.maps.CustomOverlay({
             map: map,
-            clickable: isClickable,
             content: content,
             position: markerPosition,
             xAnchor: xAnchor,
