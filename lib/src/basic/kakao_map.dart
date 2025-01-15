@@ -131,12 +131,14 @@ class _KakaoMapState extends State<KakaoMap> {
         const container = document.getElementById('map');
         let center = defaultCenter;
         if (${widget.center != null}) {
-            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget.center?.longitude});
+            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget
+        .center?.longitude});
         }
 
         const options = {
             center: center,
-            level: ${widget.currentLevel}    };
+            level: ${widget.currentLevel}
+        };
 
         map = new kakao.maps.Map(container, options);
         geocoder = new kakao.maps.services.Geocoder();
@@ -303,23 +305,47 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
 
-    function clearPolyline() {
-        for (let i = 0; i < polylines.length; i++) {
-            polylines[i].setMap(null);
+    function clearPolyline(ids) {
+        if (empty(ids)) {
+            ids = [];
         }
 
-        polylines = [];
+        polylines = polylines.filter(polyline => {
+            if (!ids.includes(polyline.id)) {
+                polyline.setMap(null);
+                return false;
+            }
+            return true;
+        });
     }
 
-    function clearCircle() {
-        for (let i = 0; i < circles.length; i++) {
-            circles[i].setMap(null);
+    function clearCircle(ids) {
+        if (empty(ids)) {
+            ids = [];
         }
 
-        circles = [];
+        circles = circles.filter(circle => {
+            if (!ids.includes(circle.id)) {
+                circle.setMap(null);
+                return false;
+            }
+            return true;
+        });
     }
 
-    function clearRectangle() {
+    function clearRectangle(ids) {
+        if (empty(ids)) {
+            ids = [];
+        }
+
+        rectangles = rectangles.filter(rectangle => {
+            if (!ids.includes(rectangle.id)) {
+                rectangle.setMap(null);
+                return false;
+            }
+            return true;
+        });
+
         for (let i = 0; i < rectangles.length; i++) {
             rectangles[i].setMap(null);
         }
@@ -327,20 +353,32 @@ class _KakaoMapState extends State<KakaoMap> {
         rectangles = [];
     }
 
-    function clearPolygon() {
-        for (let i = 0; i < polygons.length; i++) {
-            polygons[i].setMap(null);
+    function clearPolygon(ids) {
+        if (empty(ids)) {
+            ids = [];
         }
 
-        polygons = [];
+        polygons = polygons.filter(polygon => {
+            if (!ids.includes(polygon.id)) {
+                polygon.setMap(null);
+                return false;
+            }
+            return true;
+        });
     }
 
-    function clearMarker() {
-        for (let i = 0; i < markers.length; i++) {
-            markers[i].setMap(null);
+    function clearMarker(ids) {
+        if (empty(ids)) {
+            ids = [];
         }
 
-        markers = [];
+        markers = markers.filter(marker => {
+            if (!ids.includes(marker.id)) {
+                marker.setMap(null);
+                return false;
+            }
+            return true;
+        });
     }
 
     function clearMarkerClusterer() {
@@ -349,18 +387,24 @@ class _KakaoMapState extends State<KakaoMap> {
         clusterer.clear();
     }
 
-
-    function clearCustomOverlay() {
-        for (let i = 0; i < customOverlays.length; i++) {
-            customOverlays[i].setMap(null);
+    function clearCustomOverlay(ids) {
+        if (empty(ids)) {
+            ids = [];
         }
 
-        customOverlays = [];
+        customOverlays = customOverlays.filter(overlay => {
+            if (!ids.includes(overlay.id)) {
+                overlay.setMap(null);
+                return false;
+            }
+            return true;
+        });
     }
 
     function clear() {
         clearPolyline();
         clearCircle();
+        clearRectangle();
         clearPolygon();
         clearMarker();
         clearCustomOverlay();
@@ -372,7 +416,12 @@ class _KakaoMapState extends State<KakaoMap> {
         map = null;
     }
 
-    function addPolyline(callId, points, color, opacity, width, stroke, endArrow, zIndex) {
+    function addPolyline(polylineId, points, color, opacity, width, stroke, endArrow, zIndex) {
+        // polyline에 동일한 ID가 있는지 확인
+        if (polylines.some(existingPolyline => existingPolyline.id === polylineId)) {
+            return;
+        }
+
         let list = JSON.parse(points);
         let paths = [];
         for (let i = 0; i < list.length; i++) {
@@ -394,14 +443,18 @@ class _KakaoMapState extends State<KakaoMap> {
             zIndex: zIndex,
         });
 
-
         polylines.push(polyline);
 
         // 지도에 선을 표시합니다
         polyline.setMap(map);
     }
 
-    function addCircle(callId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addCircle(circleId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+        // circle에 동일한 ID가 있는지 확인
+        if (circles.some(existingCircle => existingCircle.id === circleId)) {
+            return;
+        }
+
         center = JSON.parse(center);
 
         // 지도에 표시할 원을 생성합니다
@@ -423,7 +476,12 @@ class _KakaoMapState extends State<KakaoMap> {
         circle.setMap(map);
     }
 
-    function addRectangle(callId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addRectangle(rectangleId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+        // rectangle에 동일한 ID가 있는지 확인
+        if (rectangles.some(existingRectangle => existingRectangle.id === rectangleId)) {
+            return;
+        }
+
         rectangleBounds = JSON.parse(rectangleBounds);
 
         // 지도에 표시할 원을 생성합니다
@@ -447,7 +505,12 @@ class _KakaoMapState extends State<KakaoMap> {
         rectangle.setMap(map);
     }
 
-    function addPolygon(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addPolygon(polygonId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+        // polygon에 동일한 ID가 있는지 확인
+        if (polygons.some(existingPolygon => existingPolygon.id === polygonId)) {
+            return;
+        }
+
         points = JSON.parse(points);
         let paths = [];
         for (let i = 0; i < points.length; i++) {
@@ -466,13 +529,13 @@ class _KakaoMapState extends State<KakaoMap> {
                 holePaths.push(array);
             }
 
-            return addPolygonWithHole(callId, paths, holePaths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
+            return addPolygonWithHole(polygonId, paths, holePaths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
         }
 
-        return addPolygonWithoutHole(callId, paths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
+        return addPolygonWithoutHole(polygonId, paths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
     }
 
-    function addPolygonWithoutHole(callId, points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addPolygonWithoutHole(polygonId, points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
         // 지도에 표시할 다각형을 생성합니다
         let polygon = new kakao.maps.Polygon({
             path: points, // 그려질 다각형의 좌표 배열입니다
@@ -491,7 +554,7 @@ class _KakaoMapState extends State<KakaoMap> {
         polygon.setMap(map);
     }
 
-    function addPolygonWithHole(callId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addPolygonWithHole(polygonId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
         // 다각형을 생성하고 지도에 표시합니다
         let polygon = new kakao.maps.Polygon({
             map: map,
@@ -508,6 +571,10 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex) {
+        // marker에 동일한 ID가 있는지 확인
+        if (markers.some(existingMarker => existingMarker.id === markerId)) {
+            return;
+        }
 
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
@@ -723,6 +790,11 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
+        // customOverlays에 동일한 ID가 있는지 확인
+        if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
+            return;
+        }
+
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
