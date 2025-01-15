@@ -131,7 +131,8 @@ class _KakaoMapState extends State<KakaoMap> {
         const container = document.getElementById('map');
         let center = defaultCenter;
         if (${widget.center != null}) {
-            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget.center?.longitude});
+            center = new kakao.maps.LatLng(${widget.center?.latitude}, ${widget
+        .center?.longitude});
         }
 
         const options = {
@@ -349,13 +350,18 @@ class _KakaoMapState extends State<KakaoMap> {
         clusterer.clear();
     }
 
-
-    function clearCustomOverlay() {
-        for (let i = 0; i < customOverlays.length; i++) {
-            customOverlays[i].setMap(null);
+    function clearCustomOverlay(ids) {
+        if (empty(ids)) {
+          ids = []; 
         }
-
-        customOverlays = [];
+        
+        customOverlays = customOverlays.filter(overlay => {
+          if (!ids.includes(overlay.id)) {
+            overlay.setMap(null);
+            return false;
+          }
+          return true;
+        });
     }
 
     function clear() {
@@ -723,6 +729,11 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
+        // customOverlays에 동일한 ID가 있는지 확인
+        if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
+          return;
+        }
+        
         latLng = JSON.parse(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 

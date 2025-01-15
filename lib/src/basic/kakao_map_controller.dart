@@ -88,7 +88,8 @@ class KakaoMapController {
   /// draw custom overlay
   addCustomOverlay({List<CustomOverlay>? customOverlays}) async {
     if (customOverlays != null) {
-      clearCustomOverlay();
+      clearCustomOverlay(
+          overlayIds: customOverlays.map((e) => e.customOverlayId).toList());
 
       for (var customOverlay in customOverlays) {
         await _webViewController.runJavaScript(
@@ -136,8 +137,12 @@ class KakaoMapController {
   }
 
   /// clear custom overlay
-  clearCustomOverlay() {
-    _webViewController.runJavaScript('clearCustomOverlay();');
+  clearCustomOverlay({List<String>? overlayIds}) {
+    String newOverlayIds = '';
+    if (overlayIds != null) {
+      newOverlayIds = jsonEncode(overlayIds);
+    }
+    _webViewController.runJavaScript('clearCustomOverlay($newOverlayIds);');
   }
 
   /// move to center
