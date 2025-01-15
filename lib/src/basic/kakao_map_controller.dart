@@ -9,91 +9,97 @@ class KakaoMapController {
 
   /// draw polylines
   addPolyline({List<Polyline>? polylines}) async {
-    if (polylines != null) {
-      clearPolyline();
-      for (var polyline in polylines) {
-        await _webViewController.runJavaScript(
-            "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});");
-      }
+    if (polylines == null) {
+      return;
+    }
+
+    clearPolyline(polylineIds: polylines.map((e) => e.polylineId).toList());
+    for (var polyline in polylines) {
+      await _webViewController.runJavaScript(
+          "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});");
     }
   }
 
   /// draw circles
   addCircle({List<Circle>? circles}) async {
-    if (circles != null) {
-      clearCircle();
-      for (var circle in circles) {
-        final circleString =
-            "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}', ${circle.zIndex});";
+    if (circles == null) {
+      return;
+    }
 
-        await _webViewController.runJavaScript(circleString);
-      }
+    clearCircle(circleIds: circles.map((e) => e.circleId).toList());
+    for (var circle in circles) {
+      final circleString =
+          "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}', ${circle.zIndex});";
+
+      await _webViewController.runJavaScript(circleString);
     }
   }
 
   /// draw rectangles
   addRectangle({List<Rectangle>? rectangles}) async {
-    if (rectangles != null) {
-      clearRectangle();
-      for (var rectangle in rectangles) {
-        final rectangleString =
-            "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}', ${rectangle.zIndex});";
+    if (rectangles == null) {
+      return;
+    }
 
-        await _webViewController.runJavaScript(rectangleString);
-      }
+    clearRectangle(rectangleIds: rectangles.map((e) => e.rectangleId).toList());
+    for (var rectangle in rectangles) {
+      final rectangleString =
+          "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}', ${rectangle.zIndex});";
+
+      await _webViewController.runJavaScript(rectangleString);
     }
   }
 
   /// draw polygons
   addPolygon({List<Polygon>? polygons}) async {
-    if (polygons != null) {
-      clearPolygon();
-      for (var polygon in polygons) {
-        await _webViewController.runJavaScript(
-            "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});");
-      }
+    if (polygons == null) {
+      return;
+    }
+
+    clearPolygon(polygonIds: polygons.map((e) => e.polygonId).toList());
+    for (var polygon in polygons) {
+      await _webViewController.runJavaScript(
+          "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});");
     }
   }
 
   /// draw markers
   addMarker({List<Marker>? markers}) async {
-    if (markers != null) {
-      clearMarker();
+    if (markers == null) {
+      return;
+    }
 
-      for (var marker in markers) {
-        final markerString =
-            "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
-        await _webViewController.runJavaScript(markerString);
-      }
+    clearMarker(markerIds: markers.map((e) => e.markerId).toList());
+    for (var marker in markers) {
+      final markerString =
+          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
+      await _webViewController.runJavaScript(markerString);
     }
   }
 
   /// draw markers
   addMarkerClusterer({Clusterer? clusterer}) async {
-    if (clusterer != null) {
-      clearMarkerClusterer();
-
-      final clustererString =
-          "addMarkerClusterer('${jsonEncode(clusterer.markers)}', ${clusterer.gridSize}, ${clusterer.averageCenter}, ${clusterer.disableClickZoom}, ${clusterer.minLevel}, ${clusterer.minClusterSize}, '${jsonEncode(clusterer.texts)}', '${jsonEncode(clusterer.calculator)}', '${jsonEncode(clusterer.styles)}')";
-      await _webViewController.runJavaScript(clustererString);
+    if (clusterer == null) {
+      return null;
     }
-  }
 
-  /// change marker draggable
-  setMarkerDraggable(String markerId, bool draggable) async {
-    await _webViewController
-        .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
+    clearMarkerClusterer();
+    final clustererString =
+        "addMarkerClusterer('${jsonEncode(clusterer.markers)}', ${clusterer.gridSize}, ${clusterer.averageCenter}, ${clusterer.disableClickZoom}, ${clusterer.minLevel}, ${clusterer.minClusterSize}, '${jsonEncode(clusterer.texts)}', '${jsonEncode(clusterer.calculator)}', '${jsonEncode(clusterer.styles)}')";
+    await _webViewController.runJavaScript(clustererString);
   }
 
   /// draw custom overlay
   addCustomOverlay({List<CustomOverlay>? customOverlays}) async {
-    if (customOverlays != null) {
-      clearCustomOverlay();
+    if (customOverlays == null) {
+      return;
+    }
 
-      for (var customOverlay in customOverlays) {
-        await _webViewController.runJavaScript(
-            "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
-      }
+    clearCustomOverlay(
+        overlayIds: customOverlays.map((e) => e.customOverlayId).toList());
+    for (var customOverlay in customOverlays) {
+      await _webViewController.runJavaScript(
+          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
     }
   }
 
@@ -107,28 +113,53 @@ class KakaoMapController {
   }
 
   /// clear polylines
-  clearPolyline() {
-    _webViewController.runJavaScript('clearPolyline();');
+  clearPolyline({List<String>? polylineIds}) {
+    String newPolylineIds = '';
+    if (polylineIds != null) {
+      newPolylineIds = jsonEncode(polylineIds);
+    }
+
+    _webViewController.runJavaScript('clearPolyline($newPolylineIds);');
   }
 
   /// clear circles
-  clearCircle() {
-    _webViewController.runJavaScript('clearCircle();');
+  clearCircle({List<String>? circleIds}) {
+    String newCircleIds = '';
+    if (circleIds != null) {
+      newCircleIds = jsonEncode(circleIds);
+    }
+
+    _webViewController.runJavaScript('clearCircle($newCircleIds);');
   }
 
   /// clear rectagles
-  clearRectangle() {
-    _webViewController.runJavaScript('clearRectangle();');
+  clearRectangle({List<String>? rectangleIds}) {
+    String newRectangleIds = '';
+    if (rectangleIds != null) {
+      newRectangleIds = jsonEncode(rectangleIds);
+    }
+
+    _webViewController.runJavaScript('clearRectangle($newRectangleIds);');
   }
 
   /// clear polygon
-  clearPolygon() {
-    _webViewController.runJavaScript('clearPolygon();');
+  clearPolygon({List<String>? polygonIds}) {
+    String newPolygonIds = '';
+    if (polygonIds != null) {
+      newPolygonIds = jsonEncode(polygonIds);
+    }
+
+    _webViewController.runJavaScript('clearPolygon($newPolygonIds);');
   }
 
   /// clear markers
-  clearMarker() {
-    _webViewController.runJavaScript('clearMarker();');
+  clearMarker({List<String>? markerIds}) {
+    String newMarkerIds = '';
+    if (markerIds != null) {
+      newMarkerIds = jsonEncode(markerIds);
+    }
+
+    _webViewController.runJavaScript('clearMarker($newMarkerIds);');
   }
 
   clearMarkerClusterer() {
@@ -136,8 +167,12 @@ class KakaoMapController {
   }
 
   /// clear custom overlay
-  clearCustomOverlay() {
-    _webViewController.runJavaScript('clearCustomOverlay();');
+  clearCustomOverlay({List<String>? overlayIds}) {
+    String newOverlayIds = '';
+    if (overlayIds != null) {
+      newOverlayIds = jsonEncode(overlayIds);
+    }
+    _webViewController.runJavaScript('clearCustomOverlay($newOverlayIds);');
   }
 
   /// move to center
@@ -150,6 +185,12 @@ class KakaoMapController {
   fitBounds(List<LatLng> points) async {
     await _webViewController
         .runJavaScript("fitBounds('${jsonEncode(points)}');");
+  }
+
+  /// change marker draggable
+  setMarkerDraggable(String markerId, bool draggable) async {
+    await _webViewController
+        .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
   }
 
   /// set center latitude, longitude
