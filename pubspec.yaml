@@ -1,6 +1,6 @@
 name: kakao_map_plugin
 description: This is a plug-in project made by using the webview_flutter package so that the javascript of Kakao map api can be used on the flutter.
-version: 0.3.4
+version: 0.3.5
 homepage: https://github.com/johyunchol/kakao_map_plugin
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   plugin_platform_interface: ^2.1.8
   webview_flutter: ^4.10.0
-  webview_flutter_android: ^4.2.0
+  webview_flutter_android: ^4.3.1
   webview_flutter_wkwebview: ^3.17.0
 
 dev_dependencies:

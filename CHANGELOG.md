@@ -1,3 +1,8 @@
+## 0.3.5
+
+* Optimize drawing performance
+* Removed "isClickable" option from custom overlay.
+
 ## 0.3.4
 
 * Modify to retrieve the list of markers for the selected cluster.
