@@ -65,14 +65,19 @@ class KakaoMapController {
 
   /// draw markers
   addMarker({List<Marker>? markers}) async {
-    if (markers == null) {
+    if (markers == null || markers.isEmpty) {
       return;
     }
 
     clearMarker(markerIds: markers.map((e) => e.markerId).toList());
     for (var marker in markers) {
+      print('-----------------------');
+      print(marker.icon?.imageSrc);
+      print(marker.icon?.imageType);
+      print('-----------------------');
+      final imageSrc = marker.icon?.imageSrc ?? marker.markerImageSrc;
       final markerString =
-          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
+          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '$imageSrc', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex}, '${marker.icon?.imageType?.name}')";
       await _webViewController.runJavaScript(markerString);
     }
   }
