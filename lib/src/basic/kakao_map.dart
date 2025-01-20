@@ -569,7 +569,7 @@ class _KakaoMapState extends State<KakaoMap> {
         polygons.push(polygon);
     }
 
-    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex) {
+    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType) {
         // marker에 동일한 ID가 있는지 확인
         if (markers.some(existingMarker => existingMarker.id === markerId)) {
             return;
@@ -595,6 +595,18 @@ class _KakaoMapState extends State<KakaoMap> {
         marker.setMap(map);
 
         if (imageSrc !== '' && imageSrc !== 'null') {
+          console.log('>>>>>>>>>>>>>>>>>>>>>>>');
+          console.log('imageType : ' + imageType);
+          console.log('>>>>>>>>>>>>>>>>>>>>>>>');
+          if (imageType === 'file') {
+              // Convert base64 to Blob and create Object URL
+              const byteCharacters = atob(imageSrc);
+              const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: 'image/png' });
+              imageSrc = URL.createObjectURL(blob);
+          }
+        
             let imageSize = new kakao.maps.Size(width, height); // 마커이미지의 크기입니다
 
             let offset;

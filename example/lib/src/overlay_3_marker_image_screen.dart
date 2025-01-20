@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
@@ -37,12 +41,12 @@ class _Overlay3MarkerImageScreenState extends State<Overlay3MarkerImageScreen> {
           markers.add(Marker(
             markerId: markers.length.toString(),
             latLng: await mapController.getCenter(),
-            width: 30,
-            height: 44,
+            width: 60,
+            height: 60,
             offsetX: 15,
             offsetY: 44,
-            markerImageSrc:
-                'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
+            icon: await MarkerIcon.fromAsset('assets/images/marker.png'),
+            markerImageSrc: 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
           setState(() {});
