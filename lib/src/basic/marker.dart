@@ -19,7 +19,11 @@ class Marker {
   /// marker vertical offset
   int? offsetY;
 
-  /// marker image
+  /// marker image - MarkerIcon.fromAssets(...) or MarkerIcon.fromNetwork(...)
+  MarkerIcon? icon;
+
+  /// marker image - image url
+  @Deprecated('use MarkerIcon instead')
   String markerImageSrc = '';
 
   /// marker info window
@@ -44,6 +48,7 @@ class Marker {
     this.height = 30,
     this.offsetX,
     this.offsetY,
+    this.icon,
     this.markerImageSrc = '',
     this.infoWindowContent = '',
     this.draggable = false,
@@ -63,6 +68,7 @@ class Marker {
       'height': height,
       'offsetX': offsetX,
       'offsetY': offsetY,
+      'icon': icon,
       'markerImageSrc': markerImageSrc,
       'infoWindowContent': infoWindowContent,
       'draggable': draggable,
@@ -74,6 +80,6 @@ class Marker {
 
   @override
   String toString() {
-    return 'Marker{markerId: $markerId, latLng: $latLng, width: $width, height: $height, offsetX: $offsetX, offsetY: $offsetY, markerImageSrc: $markerImageSrc, infoWindowContent: $infoWindowContent, draggable: $draggable, infoWindowRemovable: $infoWindowRemovable, infoWindowFirstShow: $infoWindowFirstShow, zIndex: $zIndex}';
+    return 'Marker{markerId: $markerId, latLng: $latLng, width: $width, height: $height, offsetX: $offsetX, offsetY: $offsetY, icon: $icon, markerImageSrc: $markerImageSrc, infoWindowContent: $infoWindowContent, draggable: $draggable, infoWindowRemovable: $infoWindowRemovable, infoWindowFirstShow: $infoWindowFirstShow, zIndex: $zIndex}';
   }
 }

@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
@@ -34,15 +38,44 @@ class _Overlay3MarkerImageScreenState extends State<Overlay3MarkerImageScreen> {
         onMapCreated: ((controller) async {
           mapController = controller;
 
+          var latLng = await mapController.getCenter();
+
+          /// 기존방법 - url 에서 이미지 불러오는 방법
           markers.add(Marker(
             markerId: markers.length.toString(),
-            latLng: await mapController.getCenter(),
+            latLng: latLng,
             width: 30,
             height: 44,
             offsetX: 15,
             offsetY: 44,
             markerImageSrc:
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
+          ));
+
+          /// 새로운방법 - asset 에서 이미지 불러오는 방법
+          markers.add(Marker(
+            markerId: markers.length.toString(),
+            latLng: LatLng(latLng.latitude + 0.001, latLng.longitude + 0.001),
+            width: 80,
+            height: 100,
+            offsetX: 15,
+            offsetY: 44,
+            icon: await MarkerIcon.fromAsset(
+              'assets/images/marker2.png',
+            ),
+          ));
+
+          /// 새로운방법 - url 에서 이미지 불러오는 방법
+          markers.add(Marker(
+            markerId: markers.length.toString(),
+            latLng: LatLng(latLng.latitude + 0.001, latLng.longitude - 0.001),
+            width: 30,
+            height: 44,
+            offsetX: 15,
+            offsetY: 44,
+            icon: await MarkerIcon.fromNetwork(
+              'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
+            ),
           ));
 
           setState(() {});
