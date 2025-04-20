@@ -1,3 +1,7 @@
+## 0.3.6
+
+* Add marker image loading from assets
+
 ## 0.3.5
 
 * Optimize drawing performance
