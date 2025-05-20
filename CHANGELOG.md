@@ -1,6 +1,11 @@
+## 0.3.7
+
+* Changed the parameter order of coord2Address and coord2RegionCode.
+* Update the example to display the marker at the clicked location.
+
 ## 0.3.6
 
-* Add marker image loading from assets
+* Add marker image loading from assets.
 
 ## 0.3.5
 
