@@ -3,6 +3,8 @@ part of '../../kakao_map_plugin.dart';
 /// kakao map created callback
 typedef MapCreateCallback = void Function(KakaoMapController controller);
 
+typedef MapWebCreateCallback = void Function(KakaoMapWebController controller);
+
 /// kakao map tap callback
 typedef OnMapTap = void Function(LatLng latLng);
 

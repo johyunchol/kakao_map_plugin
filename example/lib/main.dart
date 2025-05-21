@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
+
+final localhostServer = InAppLocalhostServer(port: 8080);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

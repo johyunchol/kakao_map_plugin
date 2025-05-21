@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
@@ -14,7 +15,7 @@ class Map1DefaultScreen extends StatefulWidget {
 }
 
 class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
-  late KakaoMapController mapController;
+  late KakaoMapWebController mapController;
 
   @override
   Widget build(BuildContext context) {
@@ -22,16 +23,24 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(
-        onMapCreated: (controller) {
-          setState(() {
-            mapController = controller;
-          });
-        },
-        onMapTap: (latLng) {
-          debugPrint('***** [JHC_DEBUG] ${latLng.toString()}');
-        },
-      ),
+      body: kIsWeb ? web() : Container(color: Colors.red),
+    );
+  }
+
+  Widget web() {
+    print('>>>>>> 여기는 web');
+    return KakaoMapWeb(
+      onMapCreated: (controller) {
+        print('>>>>> 맵 생성!!!!!!!!');
+
+
+        setState(() {
+          mapController = controller;
+        });
+      },
+      onMapTap: (latLng) {
+        debugPrint('***** [JHC_DEBUG] ${latLng.toString()}');
+      },
     );
   }
 

@@ -1,0 +1,20 @@
+body{
+    background-color: aliceblue;
+}
+h1{
+    text-align: center;
+    font-style: bold;
+    color: blue;
+}
+p{
+    text-align: center;
+    font-style: italic;
+    color: cornflowerblue
+}
+img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 15%;
+    width: 15%;
+}
