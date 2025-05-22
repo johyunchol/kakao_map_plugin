@@ -39,24 +39,24 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
           mapController = controller;
         });
       },
-      onMapTap: (latLng) {
-        logger.d('>>>>> 맵 클릭 : ${latLng.toString()}');
+      onMapDoubleTap: (latLng) {
+        logger.d('>>>>> 맵 더블 클릭 : ${latLng.toString()}');
       },
-      onCenterChangeCallback: (latlng, zoomLevel) {
-        logger.d('>>>>> 중심좌표 변경 : ${latlng.toString()}');
-      },
-      onZoomChangeCallback: (zoomLevel, zoomType) {
-        logger.d('>>>>> 줌 레벨 변경 : $zoomLevel / $zoomType');
-      },
-      onBoundsChangeCallback: (latLngBounds) {
-        final ne = latLngBounds.getNorthEast();
-        final sw = latLngBounds.getSouthWest();
-
-        var message = '영역좌표는 남서쪽 위도, 경도는\n${sw.latitude}, ${sw.longitude}이고\n';
-        message += '북동쪽 위도, 경도는\n${ne.latitude}, ${ne.longitude}입니다';
-
-        logger.d(message);
-      },
+      // onCenterChangeCallback: (latlng, zoomLevel) {
+      //   logger.d('>>>>> 중심좌표 변경 : ${latlng.toString()}');
+      // },
+      // onZoomChangeCallback: (zoomLevel, zoomType) {
+      //   logger.d('>>>>> 줌 레벨 변경 : $zoomLevel / $zoomType');
+      // },
+      // onBoundsChangeCallback: (latLngBounds) {
+      //   final ne = latLngBounds.getNorthEast();
+      //   final sw = latLngBounds.getSouthWest();
+      //
+      //   var message = '영역좌표는 남서쪽 위도, 경도는\n${sw.latitude}, ${sw.longitude}이고\n';
+      //   message += '북동쪽 위도, 경도는\n${ne.latitude}, ${ne.longitude}입니다';
+      //
+      //   logger.d(message);
+      // },
     );
   }
 

@@ -3,6 +3,7 @@ part of '../../../kakao_map_plugin.dart';
 enum JavascriptEvent {
   onMapCreated('onMapCreated'),
   onMapTap('onMapTap'),
+  onMapDoubleTap('onMapDoubleTap'),
   centerChanged('centerChanged'),
   zoomStart('zoomStart'),
   zoomChanged('zoomChanged'),

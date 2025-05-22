@@ -99,6 +99,10 @@ class _KakaoMapState extends State<KakaoMap> {
         onMapTap(message);
         break;
 
+      case JavascriptEvent.onMapDoubleTap:
+        onMapDoubleTap(message);
+        break;
+
       case JavascriptEvent.centerChanged:
         centerChanged(message);
         break;
@@ -154,6 +158,10 @@ class _KakaoMapState extends State<KakaoMap> {
 
   void onMapTap(String message) {
     widget.onMapTap?.call(LatLng.fromJson(jsonDecode(message)));
+  }
+
+  void onMapDoubleTap(String message) {
+    widget.onMapDoubleTap?.call(LatLng.fromJson(jsonDecode(message)));
   }
 
   void onMapCreated() {
@@ -264,14 +272,22 @@ class _KakaoMapState extends State<KakaoMap> {
                     zoomLevel: map.getLevel(),
                 }
 
-                // window.parent.postMessage("onMapTap:" + JSON.stringify(
-                //     clickLatLng), "*");
-
-                postMessage('onMapTap', JSON.stringify(clickLatLng));
-
+                postMessage('${JavascriptEvent.onMapTap.name}', JSON.stringify(clickLatLng));
             });
         }
 
+        // 지도를 더블클릭하면 발생한다.
+        kakao.maps.event.addListener(map, 'dblclick', function (mouseEvent) {
+            const latLng = mouseEvent.latLng;
+
+            const clickLatLng = {
+                latitude: latLng.getLat(),
+                longitude: latLng.getLng(),
+                zoomLevel: map.getLevel(),
+            }
+
+            postMessage('${JavascriptEvent.onMapDoubleTap.name}', JSON.stringify(clickLatLng));
+        });
 
         console.log('>>>>>>> a')
         console.log('>>>>>>> b')
@@ -1460,18 +1476,6 @@ class _KakaoMapState extends State<KakaoMap> {
 
   void addJavaScriptChannels(WebViewController controller) {
     controller
-      ..addJavaScriptChannel('onMapCreated',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapCreated != null) {
-          widget.onMapCreated!(_mapController);
-        }
-      })
-      ..addJavaScriptChannel('onMapTap',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapTap != null) {
-          widget.onMapTap!(LatLng.fromJson(jsonDecode(result.message)));
-        }
-      })
       ..addJavaScriptChannel('onMapDoubleTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapDoubleTap != null) {
@@ -1521,47 +1525,6 @@ class _KakaoMapState extends State<KakaoMap> {
                 ? MarkerDragType.start
                 : MarkerDragType.end,
           );
-        }
-      })
-      ..addJavaScriptChannel('zoomStart',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onZoomChangeCallback != null) {
-          widget.onZoomChangeCallback!(
-            jsonDecode(result.message)['zoomLevel'],
-            ZoomType.start,
-          );
-        }
-      })
-      ..addJavaScriptChannel('zoomChanged',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onZoomChangeCallback != null) {
-          widget.onZoomChangeCallback!(
-            jsonDecode(result.message)['zoomLevel'],
-            ZoomType.end,
-          );
-        }
-      })
-      ..addJavaScriptChannel('centerChanged',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onCenterChangeCallback != null) {
-          widget.onCenterChangeCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
-          );
-        }
-      })
-      ..addJavaScriptChannel('boundsChanged',
-          onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onBoundsChangeCallback != null) {
-          final latLngBounds = jsonDecode(result.message);
-
-          final sw = latLngBounds['sw'];
-          final ne = latLngBounds['ne'];
-
-          widget.onBoundsChangeCallback!(LatLngBounds(
-            LatLng(sw['latitude'], sw['longitude']),
-            LatLng(ne['latitude'], ne['longitude']),
-          ));
         }
       })
       ..addJavaScriptChannel('dragStart',
