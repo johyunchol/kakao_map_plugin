@@ -8,24 +8,15 @@ void addJavascriptHandler(
 ) {
   debugPrint('***** [JHC_DEBUG] addJavascriptHandler - app');
 
-  controller.webViewController.addJavaScriptHandler(
-    handlerName: 'onMapCreated',
-    callback: (message) {
-      // print('onMapCreated >>>>>>>>>>>>>>>>>>>>>>>>');
-      javascriptMessage(
-        'onMapCreated',
-        message.isNotEmpty ? message[0].toString() : '',
-      );
-    },
-  );
-  controller.webViewController.addJavaScriptHandler(
-    handlerName: 'onMapTap',
-    callback: (message) {
-      // print('onMapCreated >>>>>>>>>>>>>>>>>>>>>>>>');
-      javascriptMessage(
-        'onMapTap',
-        message.isNotEmpty ? message[0].toString() : '',
-      );
-    },
-  );
+  for (var event in JavascriptEvent.values) {
+    controller.webViewController.addJavaScriptHandler(
+      handlerName: event.name,
+      callback: (message) {
+        javascriptMessage(
+          event.name,
+          message.isNotEmpty ? message[0].toString() : '',
+        );
+      },
+    );
+  }
 }

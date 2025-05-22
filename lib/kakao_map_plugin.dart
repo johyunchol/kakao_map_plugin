@@ -25,6 +25,7 @@ part 'src/basic/constants/control_position.dart';
 part 'src/basic/constants/coords.dart';
 part 'src/basic/constants/drag_type.dart';
 part 'src/basic/constants/image_type.dart';
+part 'src/basic/constants/javascript_event.dart';
 part 'src/basic/constants/map_type.dart';
 part 'src/basic/constants/marker_drag_type.dart';
 part 'src/basic/constants/sort_by.dart';

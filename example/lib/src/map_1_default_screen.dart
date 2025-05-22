@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:kakao_map_plugin_example/main.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 지도 생성하기
@@ -39,7 +40,22 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
         });
       },
       onMapTap: (latLng) {
-        debugPrint('***** [JHC_DEBUG] ${latLng.toString()}');
+        logger.d('>>>>> 맵 클릭 : ${latLng.toString()}');
+      },
+      onCenterChangeCallback: (latlng, zoomLevel) {
+        logger.d('>>>>> 중심좌표 변경 : ${latlng.toString()}');
+      },
+      onZoomChangeCallback: (zoomLevel, zoomType) {
+        logger.d('>>>>> 줌 레벨 변경 : $zoomLevel / $zoomType');
+      },
+      onBoundsChangeCallback: (latLngBounds) {
+        final ne = latLngBounds.getNorthEast();
+        final sw = latLngBounds.getSouthWest();
+
+        var message = '영역좌표는 남서쪽 위도, 경도는\n${sw.latitude}, ${sw.longitude}이고\n';
+        message += '북동쪽 위도, 경도는\n${ne.latitude}, ${ne.longitude}입니다';
+
+        logger.d(message);
       },
     );
   }

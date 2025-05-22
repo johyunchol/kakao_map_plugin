@@ -3,6 +3,24 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
+import 'package:logger/logger.dart';
+
+var logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 2,
+    // Number of method calls to be displayed
+    errorMethodCount: 8,
+    // Number of method calls if stacktrace is provided
+    lineLength: 120,
+    // Width of the output
+    colors: true,
+    // Colorful log messages
+    printEmojis: true,
+    // Print an emoji for each log message
+    // Should each log print contain a timestamp
+    dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
+  ),
+);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

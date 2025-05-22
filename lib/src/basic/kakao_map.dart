@@ -87,16 +87,77 @@ class _KakaoMapState extends State<KakaoMap> {
     );
   }
 
-  void javascriptMessage(String name, String message) {
-    switch (name) {
-      case 'onMapCreated':
-        widget.onMapCreated?.call(_mapController);
+  void javascriptMessage(String handlerName, String message) {
+    var event = JavascriptEvent.getByName(handlerName);
+
+    switch (event) {
+      case JavascriptEvent.onMapCreated:
+        onMapCreated();
         break;
 
-      case 'onMapTap':
-        widget.onMapTap?.call(LatLng.fromJson(jsonDecode(message)));
+      case JavascriptEvent.onMapTap:
+        onMapTap(message);
+        break;
+
+      case JavascriptEvent.centerChanged:
+        centerChanged(message);
+        break;
+
+      case JavascriptEvent.zoomStart:
+        zoomStart(message);
+        break;
+
+      case JavascriptEvent.zoomChanged:
+        zoomChanged(message);
+        break;
+
+      case JavascriptEvent.boundsChanged:
+        boundsChanged(message);
         break;
     }
+  }
+
+  void boundsChanged(String message) {
+    if (widget.onBoundsChangeCallback == null) return;
+
+    final latLngBounds = jsonDecode(message);
+
+    final sw = latLngBounds['sw'];
+    final ne = latLngBounds['ne'];
+
+    widget.onBoundsChangeCallback!(LatLngBounds(
+      LatLng(sw['latitude'], sw['longitude']),
+      LatLng(ne['latitude'], ne['longitude']),
+    ));
+  }
+
+  void zoomChanged(String message) {
+    widget.onZoomChangeCallback?.call(
+      jsonDecode(message)['zoomLevel'],
+      ZoomType.end,
+    );
+  }
+
+  void zoomStart(String message) {
+    widget.onZoomChangeCallback?.call(
+      jsonDecode(message)['zoomLevel'],
+      ZoomType.start,
+    );
+  }
+
+  void centerChanged(String message) {
+    widget.onCenterChangeCallback?.call(
+      LatLng.fromJson(jsonDecode(message)),
+      jsonDecode(message)['zoomLevel'],
+    );
+  }
+
+  void onMapTap(String message) {
+    widget.onMapTap?.call(LatLng.fromJson(jsonDecode(message)));
+  }
+
+  void onMapCreated() {
+    widget.onMapCreated?.call(_mapController);
   }
 
   String _loadMap2() {
@@ -123,11 +184,73 @@ class _KakaoMapState extends State<KakaoMap> {
 
         const options = {
             center: center,
-            level: ${widget.currentLevel}      };
+            level: ${widget.currentLevel}
+        };
 
         map = new kakao.maps.Map(container, options);
-        // geocoder = new kakao.maps.services.Geocoder();
-        // places = new kakao.maps.services.Places();
+        geocoder = new kakao.maps.services.Geocoder();
+        places = new kakao.maps.services.Places();
+
+        if (${widget.mapTypeControl}) {
+            const mapTypeControl = new kakao.maps.MapTypeControl();
+            map.addControl(mapTypeControl, ${widget.mapTypeControlPosition.id});
+        }
+
+        if (${widget.zoomControl}) {
+            const zoomControl = new kakao.maps.ZoomControl()
+            map.addControl(zoomControl, ${widget.zoomControlPosition.id});
+        }
+
+        map.setMinLevel(${widget.minLevel});
+
+        map.setMaxLevel(${widget.maxLevel});
+
+        if (${widget.onCenterChangeCallback != null}) {
+            // 중심 좌표가 변경되면 발생한다.
+            kakao.maps.event.addListener(map, 'center_changed', function () {
+                const latLng = map.getCenter();
+
+                const data = {
+                    latitude: latLng.getLat(),
+                    longitude: latLng.getLng(),
+                    zoomLevel: map.getLevel(),
+                }
+
+                postMessage('${JavascriptEvent.centerChanged.name}', JSON.stringify(data));
+            });
+        }
+
+        if (${widget.onZoomChangeCallback != null}) {
+            // 확대 수준이 변경되기 직전 발생한다.
+            kakao.maps.event.addListener(map, 'zoom_start', function () {
+                const level = map.getLevel();
+
+                const data = {
+                    zoomLevel: level,
+                }
+                postMessage('${JavascriptEvent.zoomStart.name}', JSON.stringify(data));
+
+            });
+
+            // 확대 수준이 변경되면 발생한다.
+            kakao.maps.event.addListener(map, 'zoom_changed', function () {
+                const level = map.getLevel();
+
+                const data = {
+                    zoomLevel: level,
+                }
+                postMessage('${JavascriptEvent.zoomChanged.name}', JSON.stringify(data));
+            });
+        }
+
+        if (${widget.onBoundsChangeCallback != null}) {
+            // 지도 영역이 변경되면 발생한다.
+            kakao.maps.event.addListener(map, 'bounds_changed', function () {
+                const bounds = getBounds();
+
+                postMessage('${JavascriptEvent.boundsChanged.name}', JSON.stringify(bounds));
+            });
+        }
 
         if (${widget.onMapTap != null}) {
             // 지도를 클릭하면 발생한다.
@@ -143,8 +266,8 @@ class _KakaoMapState extends State<KakaoMap> {
 
                 // window.parent.postMessage("onMapTap:" + JSON.stringify(
                 //     clickLatLng), "*");
-                    
-                 postMessage('onMapTap', JSON.stringify(clickLatLng));
+
+                postMessage('onMapTap', JSON.stringify(clickLatLng));
 
             });
         }
@@ -160,8 +283,29 @@ class _KakaoMapState extends State<KakaoMap> {
         console.log('>>>>>>> c')
     }
 
+    function getBounds() {
+        let bounds = map.getBounds();
+        const sw = {
+            latitude: bounds.getSouthWest().getLat(),
+            longitude: bounds.getSouthWest().getLng(),
+        };
+
+        const ne = {
+            latitude: bounds.getNorthEast().getLat(),
+            longitude: bounds.getNorthEast().getLng(),
+        };
+
+        let result = {
+            sw: sw,
+            ne: ne
+        };
+
+       return result;
+    }
 
     function postMessage(name, message) {
+        console.log('-------------------- name : ' + name);
+
         if (${kIsWeb}) {
             window.parent.postMessage(name + ":" + message, "*");
         } else {
@@ -1292,9 +1436,9 @@ class _KakaoMapState extends State<KakaoMap> {
     
     function sendMessage(name, message) {
         if (${kIsWeb}) {
-        window.parent.postMessage(name + ":" + message, "*");
+          window.parent.postMessage(name + ":" + message, "*");
         } else {
-        window.flutter_inappwebview.callHandler(name, message);
+          window.flutter_inappwebview.callHandler(name, message);
         }
     }
 

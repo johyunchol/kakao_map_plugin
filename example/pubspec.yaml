@@ -31,6 +31,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_dotenv: ^5.1.0
   flutter_inappwebview: ^6.1.5
+  logger: ^2.5.0
 
 dev_dependencies:
   flutter_test:
