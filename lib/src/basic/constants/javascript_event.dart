@@ -8,6 +8,11 @@ enum JavascriptEvent {
   zoomStart('zoomStart'),
   zoomChanged('zoomChanged'),
   boundsChanged('boundsChanged'),
+  dragStart('dragStart'),
+  drag('drag'),
+  dragEnd('dragEnd'),
+  cameraIdle('cameraIdle'),
+  tilesLoaded('tilesLoaded'),
   ;
 
   const JavascriptEvent(this.name);

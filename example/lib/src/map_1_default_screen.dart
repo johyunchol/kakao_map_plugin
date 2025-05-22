@@ -39,9 +39,9 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
           mapController = controller;
         });
       },
-      onMapDoubleTap: (latLng) {
-        logger.d('>>>>> 맵 더블 클릭 : ${latLng.toString()}');
-      },
+      // onMapDoubleTap: (latLng) {
+      //   logger.d('>>>>> 맵 더블 클릭 : ${latLng.toString()}');
+      // },
       // onCenterChangeCallback: (latlng, zoomLevel) {
       //   logger.d('>>>>> 중심좌표 변경 : ${latlng.toString()}');
       // },
@@ -57,6 +57,12 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
       //
       //   logger.d(message);
       // },
+      // onDragChangeCallback: (latLng, zoomLevel, dragType) {
+      //   logger.d('>>>>> 드래그 : ${latLng.toString()} / $zoomLevel / $dragType');
+      // },
+      onCameraIdle: (latLng, zoomLevel) {
+        logger.d('>>>>> 카메라 이동 완료 : ${latLng.toString()} / $zoomLevel');
+      },
     );
   }
 
