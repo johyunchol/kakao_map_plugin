@@ -15,7 +15,7 @@ class Map1DefaultScreen extends StatefulWidget {
 }
 
 class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
-  late KakaoMapWebController mapController;
+  late KakaoMapController mapController;
 
   @override
   Widget build(BuildContext context) {
@@ -23,16 +23,16 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: kIsWeb ? web() : Container(color: Colors.red),
+      // body: kIsWeb ? web() : Container(color: Colors.red),
+      body: web(),
     );
   }
 
   Widget web() {
     print('>>>>>> 여기는 web');
-    return KakaoMapWeb(
+    return KakaoMap(
       onMapCreated: (controller) {
-        print('>>>>> 맵 생성!!!!!!!!');
-
+        print('>>>>> 맵 생성!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
         setState(() {
           mapController = controller;

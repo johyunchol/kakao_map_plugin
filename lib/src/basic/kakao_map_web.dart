@@ -226,7 +226,7 @@ class _KakaoMapWebState extends State<KakaoMapWeb> {
       onWebViewCreated: (InAppWebViewController controller) {
         _mapController = KakaoMapWebController(controller);
 
-        addJavascriptHandler();
+        // addJavascriptHandler();
       },
       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
         Factory(() => EagerGestureRecognizer()),
@@ -1544,35 +1544,5 @@ class _KakaoMapWebState extends State<KakaoMapWeb> {
           onMessageReceived: (JavaScriptMessage result) {
         TransCoordService.transCodeCallback(result.message);
       });
-  }
-
-  void addJavascriptHandler() {
-    _messageSubscription?.cancel(); // 🔁 기존 listener 제거
-    _messageSubscription =
-        web.window.onMessage.listen((web.MessageEvent event) {
-      final jsData = event.data;
-
-      if (jsData is JSString) {
-        final dartString = jsData.toDart;
-
-        if (dartString.startsWith('onMapCreated:')) {
-          final message = dartString.substring('onMapCreated:'.length);
-          print('📩 JS에서 받은 메시지: $message');
-          if (widget.onMapCreated != null) {
-            widget.onMapCreated!(_mapController);
-          }
-        }
-
-        if (dartString.startsWith('onMapTap:')) {
-          final message = dartString.substring('onMapTap:'.length);
-          print('📩 JS에서 받은 메시지: $message');
-          if (widget.onMapTap != null) {
-            widget.onMapTap!(LatLng.fromJson(jsonDecode(message)));
-          }
-        }
-      } else {
-        print('⚠️ JS 데이터가 문자열이 아님: $jsData');
-      }
-    });
   }
 }

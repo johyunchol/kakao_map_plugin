@@ -3,8 +3,7 @@ library kakao_map_plugin;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:web/web.dart' as web;
-import 'dart:js_interop';
+import 'package:kakao_map_plugin/src/basic/kakao_map_js_handler.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';

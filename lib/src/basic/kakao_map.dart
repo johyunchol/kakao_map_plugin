@@ -69,48 +69,107 @@ class KakaoMap extends StatefulWidget {
 
 class _KakaoMapState extends State<KakaoMap> {
   late final KakaoMapController _mapController;
-
-  @override
-  void initState() {
-    super.initState();
-
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000));
-    addJavaScriptChannels(controller);
-    controller.loadHtmlString(_loadMap(),
-        baseUrl: AuthRepository.instance.baseUrl);
-
-    if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
-    }
-
-    _mapController = KakaoMapController(controller);
-  }
+  final GlobalKey webViewKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(
-      controller: _mapController.webViewController,
+    return InAppWebView(
+      key: webViewKey,
+      initialData: InAppWebViewInitialData(data: _loadMap2()),
+      onWebViewCreated: (InAppWebViewController controller) {
+        _mapController = KakaoMapController(controller);
+
+        addJavascriptHandler(_mapController, javascriptMessage);
+      },
       gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
         Factory(() => EagerGestureRecognizer()),
       },
     );
+  }
+
+  void javascriptMessage(String name, String message) {
+    switch (name) {
+      case 'onMapCreated':
+        widget.onMapCreated?.call(_mapController);
+        break;
+
+      case 'onMapTap':
+        widget.onMapTap?.call(LatLng.fromJson(jsonDecode(message)));
+        break;
+    }
+  }
+
+  String _loadMap2() {
+    return _htmlWrapper('''<script>
+    let map = null;
+    let geocoder = null;
+    let places = null;
+    let polylines = [];
+    let circles = [];
+    let rectangles = [];
+    let polygons = [];
+    let markers = [];
+    let customOverlays = [];
+    let clusterer = null;
+    const defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
+
+    window.onload = function () {
+        const container = document.getElementById('map');
+        let center = defaultCenter;
+        if (${widget.center != null}) {
+            center = new kakao.maps.LatLng(
+                ${widget.center?.latitude}, ${widget.center?.longitude});
+        }
+
+        const options = {
+            center: center,
+            level: ${widget.currentLevel}      };
+
+        map = new kakao.maps.Map(container, options);
+        // geocoder = new kakao.maps.services.Geocoder();
+        // places = new kakao.maps.services.Places();
+
+        if (${widget.onMapTap != null}) {
+            // 지도를 클릭하면 발생한다.
+            kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+                // 클릭한 위도, 경도 정보를 가져옵니다
+                const latLng = mouseEvent.latLng;
+
+                const clickLatLng = {
+                    latitude: latLng.getLat(),
+                    longitude: latLng.getLng(),
+                    zoomLevel: map.getLevel(),
+                }
+
+                // window.parent.postMessage("onMapTap:" + JSON.stringify(
+                //     clickLatLng), "*");
+                    
+                 postMessage('onMapTap', JSON.stringify(clickLatLng));
+
+            });
+        }
+
+
+        console.log('>>>>>>> a')
+        console.log('>>>>>>> b')
+        let result = {"test": 1};
+        // window.parent.postMessage("onMapCreated:"+JSON.stringify(result), "*");
+        // window.flutter_inappwebview.callHandler('onMapCreated', result);
+        postMessage('onMapCreated', JSON.stringify(result));
+
+        console.log('>>>>>>> c')
+    }
+
+
+    function postMessage(name, message) {
+        if (${kIsWeb}) {
+            window.parent.postMessage(name + ":" + message, "*");
+        } else {
+            window.flutter_inappwebview.callHandler(name, message);
+        }
+    }
+
+</script>''');
   }
 
   String _loadMap() {
@@ -300,9 +359,10 @@ class _KakaoMapState extends State<KakaoMap> {
 
         map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false)
 
-        onMapCreated.postMessage({"test": 1});
+        // onMapCreated.postMessage();
+        let result = {"test": 1};
+        sendMessage('onMapCreated', JSON.stringify(result));
     }
-
 
     function clearPolyline(ids) {
         if (empty(ids)) {
@@ -1229,6 +1289,15 @@ class _KakaoMapState extends State<KakaoMap> {
             }
         }, options)
     }
+    
+    function sendMessage(name, message) {
+        if (${kIsWeb}) {
+        window.parent.postMessage(name + ":" + message, "*");
+        } else {
+        window.flutter_inappwebview.callHandler(name, message);
+        }
+    }
+
 </script>
     ''');
   }
