@@ -1235,6 +1235,23 @@ class _KakaoMapState extends State<KakaoMap> {
 
   @override
   void didUpdateWidget(KakaoMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Handle center changes - important for IndexedStack scenarios
+    if (widget.center != oldWidget.center && widget.center != null) {
+      _mapController.setCenter(widget.center!);
+    }
+
+    // Handle level/zoom changes
+    if (widget.currentLevel != oldWidget.currentLevel) {
+      _mapController.setLevel(widget.currentLevel);
+    }
+
+    // Relayout the map to ensure proper rendering after parameter changes
+    // This is especially important when the widget becomes visible again
+    _mapController.relayout();
+
+    // Handle overlay updates
     _mapController.addPolyline(polylines: widget.polylines);
     _mapController.addCircle(circles: widget.circles);
     _mapController.addRectangle(rectangles: widget.rectangles);
@@ -1242,7 +1259,6 @@ class _KakaoMapState extends State<KakaoMap> {
     _mapController.addMarker(markers: widget.markers);
     _mapController.addMarkerClusterer(clusterer: widget.clusterer);
     _mapController.addCustomOverlay(customOverlays: widget.customOverlays);
-    super.didUpdateWidget(oldWidget);
   }
 
   void addJavaScriptChannels(WebViewController controller) {
