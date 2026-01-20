@@ -7,6 +7,18 @@ class KakaoMapController {
 
   KakaoMapController(this._webViewController);
 
+  /// Escape a string for safe use inside JavaScript single-quoted strings.
+  /// This handles quotes, backslashes, and newlines that could break JS syntax.
+  String _escapeForJs(String input) {
+    return input
+        .replaceAll(r'\', r'\\')    // Escape backslashes first
+        .replaceAll("'", r"\'")     // Escape single quotes
+        .replaceAll('"', r'\"')     // Escape double quotes
+        .replaceAll('\n', r'\n')    // Escape newlines
+        .replaceAll('\r', r'\r')    // Escape carriage returns
+        .replaceAll('\t', r'\t');   // Escape tabs
+  }
+
   /// draw polylines
   addPolyline({List<Polyline>? polylines}) async {
     if (polylines == null) {
@@ -72,8 +84,9 @@ class KakaoMapController {
     clearMarker(markerIds: markers.map((e) => e.markerId).toList());
     for (var marker in markers) {
       final imageSrc = marker.icon?.imageSrc ?? marker.markerImageSrc;
+      final escapedInfoWindowContent = _escapeForJs(marker.infoWindowContent);
       final markerString =
-          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '$imageSrc', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex}, '${marker.icon?.imageType?.name}')";
+          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '$imageSrc', '$escapedInfoWindowContent', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex}, '${marker.icon?.imageType?.name}')";
       await _webViewController.runJavaScript(markerString);
     }
   }
@@ -99,8 +112,9 @@ class KakaoMapController {
     clearCustomOverlay(
         overlayIds: customOverlays.map((e) => e.customOverlayId).toList());
     for (var customOverlay in customOverlays) {
+      final escapedContent = _escapeForJs(customOverlay.content);
       await _webViewController.runJavaScript(
-          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
+          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '$escapedContent', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
     }
   }
 
