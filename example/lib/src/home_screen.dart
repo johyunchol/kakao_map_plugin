@@ -49,6 +49,7 @@ import 'package:kakao_map_plugin_example/src/roadview_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_2_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_3_marker_text_screen.dart';
+import 'package:kakao_map_plugin_example/src/issue_69_gesture_test_screen.dart';
 
 String selectedTitle = '';
 
@@ -79,6 +80,9 @@ class _HomeScreenState extends State<HomeScreen>
     MenuGroup(
       name: '지도',
       items: [
+        MenuItem(
+            title: '[Issue#69] Gesture Test',
+            newPage: const Issue69GestureTestScreen()),
         MenuItem(title: '지도 생성하기', newPage: const Map1DefaultScreen()),
         MenuItem(title: '지도 이동시키기', newPage: const Map2MoveScreen()),
         MenuItem(title: '지도 레벨 바꾸기', newPage: const Map3LevelScreen()),
