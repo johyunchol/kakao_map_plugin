@@ -378,4 +378,20 @@ class KakaoMapController {
 
     return await TransCoordService.transCodeResult();
   }
+
+  /// Convert LatLng coordinates to pixel position on the map
+  /// Returns a Point with x, y pixel coordinates
+  Future<Point> coordToPixel(LatLng latLng) async {
+    final result = await _webViewController.runJavaScriptReturningResult(
+        "coordToPixel('${latLng.latitude}', '${latLng.longitude}');") as String;
+    return Point.fromJson(jsonDecode(result));
+  }
+
+  /// Convert pixel position to LatLng coordinates
+  /// Returns a LatLng with latitude and longitude
+  Future<LatLng> pixelToCoord(Point point) async {
+    final result = await _webViewController.runJavaScriptReturningResult(
+        "pixelToCoord('${point.x}', '${point.y}');") as String;
+    return LatLng.fromJson(jsonDecode(result));
+  }
 }

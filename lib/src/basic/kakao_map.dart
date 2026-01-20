@@ -1407,6 +1407,50 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
             }
         }, options)
     }
+
+    /**
+     * Convert LatLng coordinates to pixel position on the map
+     * @param latitude Number
+     * @param longitude Number
+     * @returns {x: number, y: number}
+     */
+    function coordToPixel(latitude, longitude) {
+        const latLng = new kakao.maps.LatLng(latitude, longitude);
+        const point = map.project(latLng);
+
+        let result = {
+            x: point.x,
+            y: point.y,
+        };
+
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Convert pixel position to LatLng coordinates
+     * @param x Number - pixel x coordinate
+     * @param y Number - pixel y coordinate
+     * @returns {latitude: number, longitude: number}
+     */
+    function pixelToCoord(x, y) {
+        const point = new kakao.maps.Point(x, y);
+        const latLng = map.unproject(point);
+
+        let result = {
+            latitude: latLng.getLat(),
+            longitude: latLng.getLng(),
+        };
+
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+
+        return result;
+    }
 </script>
     ''');
   }

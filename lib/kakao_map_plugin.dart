@@ -46,6 +46,7 @@ part 'src/model/keyword_address.dart';
 part 'src/model/lat_lng.dart';
 part 'src/model/lat_lng_bounds.dart';
 part 'src/model/level_options.dart';
+part 'src/model/point.dart';
 part 'src/model/road_address.dart';
 part 'src/model/search_address.dart';
 part 'src/model/trans_coord.dart';
