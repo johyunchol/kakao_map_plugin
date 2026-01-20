@@ -18,22 +18,49 @@ class KakaoStaticMap extends StatefulWidget {
   State<KakaoStaticMap> createState() => _KakaoStaticMapState();
 }
 
-class _KakaoStaticMapState extends State<KakaoStaticMap> {
+class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObserver {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
   late WebViewController _webViewController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initMarkers();
+    _initializeWebView();
+  }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Handle app lifecycle changes to fix WebView rendering issues
+    // when returning from background (Flutter 3.27+ issue)
+    if (state == AppLifecycleState.resumed && _isInitialized) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _webViewController.reload();
+        }
+      });
+    }
+  }
+
+  void _initializeWebView() {
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
         allowsInlineMediaPlayback: true,
         mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
       );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams();
     } else {
       params = const PlatformWebViewControllerCreationParams();
     }
@@ -47,11 +74,17 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+      final androidController = controller.platform as AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      // Set permission handler for Android (Flutter 3.27+ fix)
+      androidController
+          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
+        await request.grant();
+      });
     }
 
     _webViewController = controller;
+    _isInitialized = true;
   }
 
   @override

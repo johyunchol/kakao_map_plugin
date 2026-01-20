@@ -67,19 +67,47 @@ class KakaoMap extends StatefulWidget {
   State<KakaoMap> createState() => _KakaoMapState();
 }
 
-class _KakaoMapState extends State<KakaoMap> {
+class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late final KakaoMapController _mapController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeWebView();
+  }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Handle app lifecycle changes to fix WebView rendering issues
+    // when returning from background (Flutter 3.27+ issue)
+    if (state == AppLifecycleState.resumed && _isInitialized) {
+      // Trigger relayout to fix potential rendering issues
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _mapController.relayout();
+        }
+      });
+    }
+  }
+
+  void _initializeWebView() {
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
         allowsInlineMediaPlayback: true,
         mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
       );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams();
     } else {
       params = const PlatformWebViewControllerCreationParams();
     }
@@ -96,11 +124,17 @@ class _KakaoMapState extends State<KakaoMap> {
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+      final androidController = controller.platform as AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      // Set display mode to ensure proper rendering on Android (Flutter 3.27+ fix)
+      androidController
+          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
+        await request.grant();
+      });
     }
 
     _mapController = KakaoMapController(controller);
+    _isInitialized = true;
   }
 
   @override
