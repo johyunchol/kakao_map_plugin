@@ -35,7 +35,7 @@ class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
                 onPressed: () async {
                   isDraggable = !isDraggable;
 
-                  await mapController.setDraggable(isDraggable);
+                  mapController.setDraggable(isDraggable);
                   setState(() {});
                 },
                 color: isDraggable ? Colors.blue : Colors.grey,
