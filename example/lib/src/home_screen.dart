@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_map_plugin_example/src/issue_30_escape_test_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
@@ -119,6 +120,9 @@ class _HomeScreenState extends State<HomeScreen>
       ],
     ),
     MenuGroup(name: '오버레이', items: [
+      MenuItem(
+          title: '[Issue #30] Quote Escaping Test',
+          newPage: const Issue30EscapeTestScreen()),
       MenuItem(title: '마커 생성하기', newPage: const Overlay1MarkerScreen()),
       MenuItem(
           title: '드래그 가능한 마커 생성하기',
