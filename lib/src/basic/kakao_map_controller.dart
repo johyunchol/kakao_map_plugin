@@ -21,25 +21,32 @@ class KakaoMapController {
 
   /// draw polylines
   addPolyline({List<Polyline>? polylines}) async {
-    if (polylines == null) {
-      return;
-    }
+    if (polylines == null) return;
 
-    clearPolyline(polylineIds: polylines.map((e) => e.polylineId).toList());
-    for (var polyline in polylines) {
+    final safePolylines = List<Polyline>.from(polylines);
+
+    clearPolyline(
+      polylineIds: safePolylines.map((e) => e.polylineId).toList(),
+    );
+
+    for (var polyline in safePolylines) {
       await _webViewController.runJavaScript(
-          "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});");
+          "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});"
+      );
     }
   }
 
   /// draw circles
   addCircle({List<Circle>? circles}) async {
-    if (circles == null) {
-      return;
-    }
+    if (circles == null) return;
 
-    clearCircle(circleIds: circles.map((e) => e.circleId).toList());
-    for (var circle in circles) {
+    final safeCircles = List<Circle>.from(circles);
+
+    clearCircle(
+      circleIds: safeCircles.map((e) => e.circleId).toList(),
+    );
+
+    for (var circle in safeCircles) {
       final circleString =
           "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}', ${circle.zIndex});";
 
@@ -49,12 +56,15 @@ class KakaoMapController {
 
   /// draw rectangles
   addRectangle({List<Rectangle>? rectangles}) async {
-    if (rectangles == null) {
-      return;
-    }
+    if (rectangles == null) return;
 
-    clearRectangle(rectangleIds: rectangles.map((e) => e.rectangleId).toList());
-    for (var rectangle in rectangles) {
+    final safeRectangles = List<Rectangle>.from(rectangles);
+
+    clearRectangle(
+      rectangleIds: safeRectangles.map((e) => e.rectangleId).toList(),
+    );
+
+    for (var rectangle in safeRectangles) {
       final rectangleString =
           "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}', ${rectangle.zIndex});";
 
@@ -64,14 +74,18 @@ class KakaoMapController {
 
   /// draw polygons
   addPolygon({List<Polygon>? polygons}) async {
-    if (polygons == null) {
-      return;
-    }
+    if (polygons == null) return;
 
-    clearPolygon(polygonIds: polygons.map((e) => e.polygonId).toList());
-    for (var polygon in polygons) {
+    final safePolygons = List<Polygon>.from(polygons);
+
+    clearPolygon(
+      polygonIds: safePolygons.map((e) => e.polygonId).toList(),
+    );
+
+    for (var polygon in safePolygons) {
       await _webViewController.runJavaScript(
-          "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});");
+          "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});"
+      );
     }
   }
 
@@ -81,8 +95,10 @@ class KakaoMapController {
       return;
     }
 
-    clearMarker(markerIds: markers.map((e) => e.markerId).toList());
-    for (var marker in markers) {
+    final safeMarkers = List<Marker>.from(markers);
+
+    clearMarker(markerIds: safeMarkers.map((e) => e.markerId).toList());
+    for (var marker in safeMarkers) {
       final imageSrc = marker.icon?.imageSrc ?? marker.markerImageSrc;
       final escapedInfoWindowContent = _escapeForJs(marker.infoWindowContent);
       final markerString =
@@ -109,9 +125,11 @@ class KakaoMapController {
       return;
     }
 
+    final overlays = List<CustomOverlay>.from(customOverlays);
+
     clearCustomOverlay(
-        overlayIds: customOverlays.map((e) => e.customOverlayId).toList());
-    for (var customOverlay in customOverlays) {
+        overlayIds: overlays.map((e) => e.customOverlayId).toList());
+    for (var customOverlay in overlays) {
       final escapedContent = _escapeForJs(customOverlay.content);
       await _webViewController.runJavaScript(
           "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '$escapedContent', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
