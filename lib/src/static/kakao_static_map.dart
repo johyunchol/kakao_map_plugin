@@ -6,12 +6,19 @@ class KakaoStaticMap extends StatefulWidget {
   final LatLng? center;
   final List<Marker>? markers;
 
+  /// Specifies which gestures should be consumed by the map.
+  ///
+  /// When this set is empty (default), the map will only handle pointer events
+  /// for gestures that were not claimed by any other gesture recognizer.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const KakaoStaticMap({
     super.key,
     this.onMapCreated,
     this.currentLevel = 3,
     this.center,
     this.markers,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
   @override
@@ -91,9 +98,7 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
   Widget build(BuildContext context) {
     return WebViewWidget(
       controller: _webViewController,
-      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-        Factory(() => EagerGestureRecognizer()),
-      },
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 
