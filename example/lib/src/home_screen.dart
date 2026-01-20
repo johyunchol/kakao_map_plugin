@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kakao_map_plugin_example/src/issue_30_escape_test_screen.dart';
-import 'package:kakao_map_plugin_example/src/issue_60_custom_overlay_tap_test_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
@@ -54,7 +52,6 @@ import 'package:kakao_map_plugin_example/src/roadview_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_2_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_3_marker_text_screen.dart';
-import 'package:kakao_map_plugin_example/src/issue_69_gesture_test_screen.dart';
 
 String selectedTitle = '';
 
@@ -85,9 +82,6 @@ class _HomeScreenState extends State<HomeScreen>
     MenuGroup(
       name: '지도',
       items: [
-        MenuItem(
-            title: '[Issue#69] Gesture Test',
-            newPage: const Issue69GestureTestScreen()),
         MenuItem(title: '지도 생성하기', newPage: const Map1DefaultScreen()),
         MenuItem(title: '지도 이동시키기', newPage: const Map2MoveScreen()),
         MenuItem(title: '지도 레벨 바꾸기', newPage: const Map3LevelScreen()),
@@ -124,16 +118,13 @@ class _HomeScreenState extends State<HomeScreen>
         MenuItem(
             title: '타일로드 이벤트 등록하기', newPage: const Map22TilesLoadedScreen()),
         MenuItem(
-            title: '좌표-픽셀 변환하기',
-            newPage: const Map23CoordPixelConvertScreen()),
+            title: '좌표-픽셀 변환하기', newPage: const Map23CoordPixelConvertScreen()),
+
         // MenuItem(title: '커스텀 타일셋1', newPage: const Map1DefaultScreen()),
         // MenuItem(title: '커스텀 타일셋2', newPage: const Map1DefaultScreen()),
       ],
     ),
     MenuGroup(name: '오버레이', items: [
-      MenuItem(
-          title: '[Issue #30] Quote Escaping Test',
-          newPage: const Issue30EscapeTestScreen()),
       MenuItem(title: '마커 생성하기', newPage: const Overlay1MarkerScreen()),
       MenuItem(
           title: '드래그 가능한 마커 생성하기',
@@ -174,9 +165,6 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '커스텀 오버레이 생성하기2',
           newPage: const Overlay22CustomOverlay2Screen()),
-      MenuItem(
-          title: '[Issue #60] CustomOverlay Tap Test',
-          newPage: const Issue60CustomOverlayTapTestScreen()),
       // MenuItem(title: '닫기가 가능한 커스텀 오버레이', newPage: const Overlay23RemovableCustomOverlayScreen()),
       // MenuItem(title: '이미지 마커와 커스텀 오버레이', newPage: const Overlay24ImageMarkerCustomOverlayScreen()),
       // MenuItem(title: '커스텀오버레이를 드래그 하기', newPage: const Overlay25DragCustomOverlayScreen()),
