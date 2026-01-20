@@ -1,3 +1,12 @@
+## 0.4.0
+
+* **BREAKING**: Minimum SDK version updated to Dart 3.3.0 and Flutter 3.19.0.
+* Migrated from deprecated `dart:html` to `package:web` for web platform support.
+* Improved static analysis score for pub.dev.
+* Removed unused variables and imports.
+* Updated Kotlin version to 2.1.0 for Android.
+* Cleaned up example app by removing internal test screens.
+
 ## 0.3.7
 
 * Changed the parameter order of coord2Address and coord2RegionCode.
