@@ -102,7 +102,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
     );
   }
 
-  getMarkers() {
+  void getMarkers() {
     int length = widget.markers?.length ?? 0;
 
     for (int i = 0; i < length; i++) {

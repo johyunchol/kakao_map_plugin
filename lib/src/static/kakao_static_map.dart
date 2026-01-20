@@ -102,7 +102,7 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
     );
   }
 
-  initMarkers() {
+  void initMarkers() {
     int length = widget.markers?.length ?? 0;
 
     for (int i = 0; i < length; i++) {
