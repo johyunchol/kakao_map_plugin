@@ -31,6 +31,20 @@ class KakaoMap extends StatefulWidget {
   final List<CustomOverlay>? customOverlays;
   final Clusterer? clusterer;
 
+  /// Specifies which gestures should be consumed by the map.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the map
+  /// on pointer events, e.g. if the map is inside a [ListView] the [ListView]
+  /// will want to handle vertical drags. The map will claim gestures that are
+  /// recognized by any of the recognizers on this list.
+  ///
+  /// When this set is empty (default), the map will only handle pointer events
+  /// for gestures that were not claimed by any other gesture recognizer.
+  ///
+  /// If you want the map to consume all gestures (previous behavior),
+  /// set this to `{Factory(() => EagerGestureRecognizer())}`.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const KakaoMap({
     super.key,
     this.onMapCreated,
@@ -61,6 +75,7 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
   @override
@@ -157,9 +172,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return WebViewWidget(
       controller: _mapController.webViewController,
-      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-        Factory(() => EagerGestureRecognizer()),
-      },
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 
