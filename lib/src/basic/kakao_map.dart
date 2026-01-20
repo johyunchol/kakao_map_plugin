@@ -67,12 +67,15 @@ class KakaoMap extends StatefulWidget {
   State<KakaoMap> createState() => _KakaoMapState();
 }
 
-class _KakaoMapState extends State<KakaoMap> {
+class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late final KakaoMapController _mapController;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
+    // Add observer to handle app lifecycle changes (for iOS WebView touch event issues)
+    WidgetsBinding.instance.addObserver(this);
 
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
@@ -101,6 +104,20 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     _mapController = KakaoMapController(controller);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // When app resumes from background on iOS, trigger relayout to fix touch events
+    if (state == AppLifecycleState.resumed && _isMapReady && Platform.isIOS) {
+      _mapController.relayout();
+    }
   }
 
   @override
@@ -796,6 +813,10 @@ class _KakaoMapState extends State<KakaoMap> {
         return newObj;
     }
 
+    // Debounce tracking for iOS touch events to prevent duplicate triggers
+    let lastOverlayTapTime = {};
+    const OVERLAY_TAP_DEBOUNCE_MS = 300;
+
     function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
         // customOverlays에 동일한 ID가 있는지 확인
         if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
@@ -807,9 +828,16 @@ class _KakaoMapState extends State<KakaoMap> {
 
         content = '<div id="' + customOverlayId + '">' + content + '</div>'
         if (${widget.onCustomOverlayTap != null}) {
+            // Use both onclick and ontouchend for better iOS compatibility
+            // The custom-overlay-clickable class provides iOS-specific touch optimizations
             content =
                 '<div id="' + customOverlayId +
-                '" onclick="addCustomOverlayListener(`' + customOverlayId +
+                '" class="custom-overlay-clickable"' +
+                ' onclick="handleOverlayTap(event, `' + customOverlayId +
+                '`, `' + latLng.latitude +
+                '`, `' + latLng.longitude +
+                '`)"' +
+                ' ontouchend="handleOverlayTap(event, `' + customOverlayId +
                 '`, `' + latLng.latitude +
                 '`, `' + latLng.longitude +
                 '`)">' + content + '</div>';
@@ -829,6 +857,27 @@ class _KakaoMapState extends State<KakaoMap> {
         customOverlays.push(customOverlay);
 
         customOverlay.setMap(map);
+    }
+
+    // Unified tap handler that works for both click and touch events
+    function handleOverlayTap(event, customOverlayId, latitude, longitude) {
+        // Prevent event bubbling to avoid triggering map click
+        if (event) {
+            event.stopPropagation();
+            // Prevent default to avoid any iOS-specific issues
+            if (event.type === 'touchend') {
+                event.preventDefault();
+            }
+        }
+
+        // Debounce to prevent duplicate events (iOS may fire both touchend and click)
+        const now = Date.now();
+        if (lastOverlayTapTime[customOverlayId] && (now - lastOverlayTapTime[customOverlayId]) < OVERLAY_TAP_DEBOUNCE_MS) {
+            return;
+        }
+        lastOverlayTapTime[customOverlayId] = now;
+
+        addCustomOverlayListener(customOverlayId, latitude, longitude);
     }
 
     function addCustomOverlayListener(customOverlayId, latitude, longitude) {
@@ -1249,6 +1298,7 @@ class _KakaoMapState extends State<KakaoMap> {
     controller
       ..addJavaScriptChannel('onMapCreated',
           onMessageReceived: (JavaScriptMessage result) {
+        _isMapReady = true;
         if (widget.onMapCreated != null) {
           widget.onMapCreated!(_mapController);
         }
