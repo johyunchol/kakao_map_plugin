@@ -125,6 +125,7 @@ class _KakaoMapState extends State<KakaoMap> {
     let markers = [];
     let customOverlays = [];
     let clusterer = null;
+    let clustererCustomOverlays = [];
     const defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
 
     window.onload = function () {
@@ -384,6 +385,12 @@ class _KakaoMapState extends State<KakaoMap> {
         if (!clusterer) return;
 
         clusterer.clear();
+
+        // Clear clusterer custom overlays
+        clustererCustomOverlays.forEach(function(overlay) {
+            overlay.setMap(null);
+        });
+        clustererCustomOverlays = [];
     }
 
     function clearCustomOverlay(ids) {
@@ -703,6 +710,13 @@ class _KakaoMapState extends State<KakaoMap> {
 
     function addMarkerClusterer(markerList, gridSize = 60, averageCenter = true, disableClickZoom = true, minLevel = 10, minClusterSize = 2, texts, calculator, styles) {
         markerList = JSON.parse(markerList);
+
+        // Clear existing clusterer custom overlays
+        clustererCustomOverlays.forEach(function(overlay) {
+            overlay.setMap(null);
+        });
+        clustererCustomOverlays = [];
+
         markerList.map(function (marker) {
             addMarker(
                 marker.markerId,
@@ -718,6 +732,32 @@ class _KakaoMapState extends State<KakaoMap> {
                 marker?.infoWindowFirstShow,
                 marker?.zIndex,
             )
+
+            // If marker has custom overlay content, create and store it
+            if (marker.customOverlayContent && marker.customOverlayContent !== 'null' && marker.customOverlayContent !== '') {
+                let position = new kakao.maps.LatLng(marker.latLng.latitude, marker.latLng.longitude);
+
+                let content = '<div id="clusterer_overlay_' + marker.markerId + '">' + marker.customOverlayContent + '</div>';
+                if (${widget.onCustomOverlayTap != null}) {
+                    content =
+                        '<div id="clusterer_overlay_' + marker.markerId +
+                        '" onclick="addCustomOverlayListener(`clusterer_overlay_' + marker.markerId +
+                        '`, `' + marker.latLng.latitude +
+                        '`, `' + marker.latLng.longitude +
+                        '`)">' + marker.customOverlayContent + '</div>';
+                }
+
+                let customOverlay = new kakao.maps.CustomOverlay({
+                    content: content,
+                    position: position,
+                    xAnchor: marker.customOverlayXAnchor || 0.5,
+                    yAnchor: marker.customOverlayYAnchor || 1.0,
+                    zIndex: marker.zIndex || 0,
+                });
+
+                customOverlay['markerId'] = marker.markerId;
+                clustererCustomOverlays.push(customOverlay);
+            }
         })
 
         clusterer = new kakao.maps.MarkerClusterer({
@@ -751,6 +791,14 @@ class _KakaoMapState extends State<KakaoMap> {
 
         clusterer.addMarkers(markers);
 
+        // Update custom overlay visibility based on clusterer state
+        updateClustererCustomOverlays();
+
+        // Add event listener for clustered event to update custom overlays
+        kakao.maps.event.addListener(clusterer, 'clustered', function() {
+            updateClustererCustomOverlays();
+        });
+
 
         if (${widget.onMarkerClustererTap != null}) {
             kakao.maps.event.addListener(clusterer, 'clusterclick', function (cluster) {
@@ -772,6 +820,46 @@ class _KakaoMapState extends State<KakaoMap> {
                 onMarkerClustererTap.postMessage(JSON.stringify(clickLatLng))
             });
         }
+    }
+
+    function updateClustererCustomOverlays() {
+        if (!clusterer || clustererCustomOverlays.length === 0) return;
+
+        // Get all clusters
+        let clusters = clusterer._clusters || [];
+        let clusteredMarkerIds = new Set();
+
+        // Collect marker IDs that are in clusters (more than 1 marker)
+        clusters.forEach(function(cluster) {
+            let clusterMarkers = cluster.getMarkers();
+            if (clusterMarkers.length > 1) {
+                clusterMarkers.forEach(function(marker) {
+                    clusteredMarkerIds.add(marker.id);
+                });
+            }
+        });
+
+        // Show/hide custom overlays based on whether their marker is clustered
+        clustererCustomOverlays.forEach(function(overlay) {
+            let markerId = overlay.markerId;
+
+            // Find the corresponding marker
+            let correspondingMarker = markers.find(m => m.id === markerId);
+
+            if (clusteredMarkerIds.has(markerId)) {
+                // Marker is in a cluster, hide custom overlay and show default marker (which will be hidden by cluster)
+                overlay.setMap(null);
+                if (correspondingMarker) {
+                    correspondingMarker.setVisible(true);
+                }
+            } else {
+                // Marker is not clustered, show custom overlay and hide default marker
+                overlay.setMap(map);
+                if (correspondingMarker) {
+                    correspondingMarker.setVisible(false);
+                }
+            }
+        });
     }
 
     function getMarkerClustererStyles(styles) {
