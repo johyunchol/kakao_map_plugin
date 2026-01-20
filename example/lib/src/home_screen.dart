@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
@@ -23,6 +25,7 @@ import 'package:kakao_map_plugin_example/src/map_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_20_center_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_21_bounds_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -114,6 +117,9 @@ class _HomeScreenState extends State<HomeScreen>
             title: '영역 변경 이벤트 등록하기', newPage: const Map21BoundsChangeScreen()),
         MenuItem(
             title: '타일로드 이벤트 등록하기', newPage: const Map22TilesLoadedScreen()),
+        MenuItem(
+            title: '좌표-픽셀 변환하기', newPage: const Map23CoordPixelConvertScreen()),
+
         // MenuItem(title: '커스텀 타일셋1', newPage: const Map1DefaultScreen()),
         // MenuItem(title: '커스텀 타일셋2', newPage: const Map1DefaultScreen()),
       ],
@@ -206,6 +212,12 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '클러스터 마커에 텍스트 표시하기',
           newPage: const Library10MarkerClustererTextScreen()),
+      MenuItem(
+          title: '클러스터러에 커스텀 오버레이 사용하기',
+          newPage: const Library11ClustererCustomOverlayScreen()),
+      MenuItem(
+          title: '클러스터러 커스텀 마커 이미지 테스트',
+          newPage: const Library11MarkerClustererCustomImageScreen()),
       // MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
       // MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
       // MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),

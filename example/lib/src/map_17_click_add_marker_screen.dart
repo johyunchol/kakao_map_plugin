@@ -17,7 +17,6 @@ class Map17ClickAddMarkerScreen extends StatefulWidget {
 class _Map17ClickAddMarkerScreenState extends State<Map17ClickAddMarkerScreen> {
   late KakaoMapController mapController;
 
-  late Marker marker;
   Set<Marker> markers = {};
 
   @override
@@ -32,7 +31,7 @@ class _Map17ClickAddMarkerScreenState extends State<Map17ClickAddMarkerScreen> {
             onMapCreated: ((controller) async {
               mapController = controller;
 
-              marker = Marker(
+              var marker = Marker(
                 markerId: markers.length.toString(),
                 latLng: await mapController.getCenter(),
                 width: 30,
@@ -45,8 +44,21 @@ class _Map17ClickAddMarkerScreenState extends State<Map17ClickAddMarkerScreen> {
 
               mapController.addMarker(markers: markers.toList());
             }),
-            onMapTap: ((latLng) {
-              marker.latLng = latLng;
+            onMapTap: ((latLng) async {
+              markers.clear();
+              mapController.clearMarker();
+
+              var marker = Marker(
+                markerId: markers.length.toString(),
+                latLng: latLng,
+                width: 30,
+                height: 44,
+                offsetX: 15,
+                offsetY: 44,
+              );
+
+              markers.add(marker);
+              mapController.addMarker(markers: markers.toList());
 
               mapController.panTo(latLng);
               setState(() {});

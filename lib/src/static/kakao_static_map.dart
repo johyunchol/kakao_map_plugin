@@ -6,34 +6,68 @@ class KakaoStaticMap extends StatefulWidget {
   final LatLng? center;
   final List<Marker>? markers;
 
+  /// Specifies which gestures should be consumed by the map.
+  ///
+  /// When this set is empty (default), the map will only handle pointer events
+  /// for gestures that were not claimed by any other gesture recognizer.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const KakaoStaticMap({
     super.key,
     this.onMapCreated,
     this.currentLevel = 3,
     this.center,
     this.markers,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
   @override
   State<KakaoStaticMap> createState() => _KakaoStaticMapState();
 }
 
-class _KakaoStaticMapState extends State<KakaoStaticMap> {
+class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObserver {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
   late WebViewController _webViewController;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     initMarkers();
+    _initializeWebView();
+  }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Handle app lifecycle changes to fix WebView rendering issues
+    // when returning from background (Flutter 3.27+ issue)
+    if (state == AppLifecycleState.resumed && _isInitialized) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _webViewController.reload();
+        }
+      });
+    }
+  }
+
+  void _initializeWebView() {
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
         allowsInlineMediaPlayback: true,
         mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
       );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams();
     } else {
       params = const PlatformWebViewControllerCreationParams();
     }
@@ -47,20 +81,24 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+      final androidController = controller.platform as AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      // Set permission handler for Android (Flutter 3.27+ fix)
+      androidController
+          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
+        await request.grant();
+      });
     }
 
     _webViewController = controller;
+    _isInitialized = true;
   }
 
   @override
   Widget build(BuildContext context) {
     return WebViewWidget(
       controller: _webViewController,
-      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-        Factory(() => EagerGestureRecognizer()),
-      },
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 
@@ -87,6 +125,13 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> {
   let map = null;
 
   window.onload = function () {
+    // Kakao Maps SDK가 완전히 로드된 후 지도를 초기화합니다
+    kakao.maps.load(function() {
+      initializeStaticMap();
+    });
+  }
+
+  function initializeStaticMap() {
     const staticMapContainer = document.getElementById('map');
 
     let center = new kakao.maps.LatLng(33.450701, 126.570667);

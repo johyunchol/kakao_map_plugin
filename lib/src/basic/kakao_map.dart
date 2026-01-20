@@ -31,6 +31,20 @@ class KakaoMap extends StatefulWidget {
   final List<CustomOverlay>? customOverlays;
   final Clusterer? clusterer;
 
+  /// Specifies which gestures should be consumed by the map.
+  ///
+  /// It is possible for other gesture recognizers to be competing with the map
+  /// on pointer events, e.g. if the map is inside a [ListView] the [ListView]
+  /// will want to handle vertical drags. The map will claim gestures that are
+  /// recognized by any of the recognizers on this list.
+  ///
+  /// When this set is empty (default), the map will only handle pointer events
+  /// for gestures that were not claimed by any other gesture recognizer.
+  ///
+  /// If you want the map to consume all gestures (previous behavior),
+  /// set this to `{Factory(() => EagerGestureRecognizer())}`.
+  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+
   const KakaoMap({
     super.key,
     this.onMapCreated,
@@ -61,25 +75,55 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
+    this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
   @override
   State<KakaoMap> createState() => _KakaoMapState();
 }
 
-class _KakaoMapState extends State<KakaoMap> {
+class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late final KakaoMapController _mapController;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
+    // Add observer to handle app lifecycle changes (for iOS WebView touch event issues)
+    WidgetsBinding.instance.addObserver(this);
+    _initializeWebView();
+  }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Handle app lifecycle changes to fix WebView rendering issues
+    // when returning from background (Flutter 3.27+ issue)
+    if (state == AppLifecycleState.resumed && _isMapReady) {
+      // Trigger relayout to fix potential rendering issues
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _mapController.relayout();
+        }
+      });
+    }
+  }
+
+  void _initializeWebView() {
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is WebKitWebViewPlatform) {
       params = WebKitWebViewControllerCreationParams(
         allowsInlineMediaPlayback: true,
         mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
       );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams();
     } else {
       params = const PlatformWebViewControllerCreationParams();
     }
@@ -96,8 +140,13 @@ class _KakaoMapState extends State<KakaoMap> {
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
-      (controller.platform as AndroidWebViewController)
-          .setMediaPlaybackRequiresUserGesture(false);
+      final androidController = controller.platform as AndroidWebViewController;
+      androidController.setMediaPlaybackRequiresUserGesture(false);
+      // Set display mode to ensure proper rendering on Android (Flutter 3.27+ fix)
+      androidController
+          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
+        await request.grant();
+      });
     }
 
     _mapController = KakaoMapController(controller);
@@ -107,9 +156,7 @@ class _KakaoMapState extends State<KakaoMap> {
   Widget build(BuildContext context) {
     return WebViewWidget(
       controller: _mapController.webViewController,
-      gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-        Factory(() => EagerGestureRecognizer()),
-      },
+      gestureRecognizers: widget.gestureRecognizers,
     );
   }
 
@@ -125,9 +172,18 @@ class _KakaoMapState extends State<KakaoMap> {
     let markers = [];
     let customOverlays = [];
     let clusterer = null;
-    const defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
+    let clustererCustomOverlays = [];
+    let defaultCenter = null;
 
     window.onload = function () {
+        // Kakao Maps SDK가 완전히 로드된 후 지도를 초기화합니다
+        kakao.maps.load(function() {
+            initializeMap();
+        });
+    }
+
+    function initializeMap() {
+        defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
         const container = document.getElementById('map');
         let center = defaultCenter;
         if (${widget.center != null}) {
@@ -384,6 +440,12 @@ class _KakaoMapState extends State<KakaoMap> {
         if (!clusterer) return;
 
         clusterer.clear();
+
+        // Clear clusterer custom overlays
+        clustererCustomOverlays.forEach(function(overlay) {
+            overlay.setMap(null);
+        });
+        clustererCustomOverlays = [];
     }
 
     function clearCustomOverlay(ids) {
@@ -410,7 +472,6 @@ class _KakaoMapState extends State<KakaoMap> {
     }
 
     function dispose() {
-        console.log("map clear!!")
         clear();
         map = null;
     }
@@ -569,7 +630,7 @@ class _KakaoMapState extends State<KakaoMap> {
         polygons.push(polygon);
     }
 
-    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex) {
+    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType) {
         // marker에 동일한 ID가 있는지 확인
         if (markers.some(existingMarker => existingMarker.id === markerId)) {
             return;
@@ -593,8 +654,17 @@ class _KakaoMapState extends State<KakaoMap> {
 
         // 마커가 지도 위에 표시되도록 설정합니다
         marker.setMap(map);
-
+        
         if (imageSrc !== '' && imageSrc !== 'null') {
+          if (imageType !== null && imageType === 'file') {
+              // Convert base64 to Blob and create Object URL
+              const byteCharacters = atob(imageSrc);
+              const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
+              const byteArray = new Uint8Array(byteNumbers);
+              const blob = new Blob([byteArray], { type: 'image/png' });
+              imageSrc = URL.createObjectURL(blob);
+          }
+        
             let imageSize = new kakao.maps.Size(width, height); // 마커이미지의 크기입니다
 
             let offset;
@@ -695,7 +765,25 @@ class _KakaoMapState extends State<KakaoMap> {
 
     function addMarkerClusterer(markerList, gridSize = 60, averageCenter = true, disableClickZoom = true, minLevel = 10, minClusterSize = 2, texts, calculator, styles) {
         markerList = JSON.parse(markerList);
+
+        // Clear existing clusterer custom overlays
+        clustererCustomOverlays.forEach(function(overlay) {
+            overlay.setMap(null);
+        });
+        clustererCustomOverlays = [];
+
         markerList.map(function (marker) {
+            // icon 객체에서 imageSrc와 imageType 추출, 없으면 markerImageSrc 사용
+            let imageSrc = '';
+            let imageType = null;
+            if (marker?.icon && marker.icon.imageSrc) {
+                imageSrc = marker.icon.imageSrc;
+                imageType = marker.icon.imageType;
+            } else if (marker?.markerImageSrc) {
+                imageSrc = marker.markerImageSrc;
+                imageType = 'url';
+            }
+
             addMarker(
                 marker.markerId,
                 JSON.stringify(marker.latLng),
@@ -704,12 +792,39 @@ class _KakaoMapState extends State<KakaoMap> {
                 marker?.height,
                 marker?.offsetX,
                 marker?.offsetY,
-                marker?.imageSrc,
-                marker?.infoWindowText,
+                imageSrc,
+                marker?.infoWindowContent,
                 marker?.infoWindowRemovable,
                 marker?.infoWindowFirstShow,
                 marker?.zIndex,
+                imageType,
             )
+
+            // If marker has custom overlay content, create and store it
+            if (marker.customOverlayContent && marker.customOverlayContent !== 'null' && marker.customOverlayContent !== '') {
+                let position = new kakao.maps.LatLng(marker.latLng.latitude, marker.latLng.longitude);
+
+                let content = '<div id="clusterer_overlay_' + marker.markerId + '">' + marker.customOverlayContent + '</div>';
+                if (${widget.onCustomOverlayTap != null}) {
+                    content =
+                        '<div id="clusterer_overlay_' + marker.markerId +
+                        '" onclick="addCustomOverlayListener(`clusterer_overlay_' + marker.markerId +
+                        '`, `' + marker.latLng.latitude +
+                        '`, `' + marker.latLng.longitude +
+                        '`)">' + marker.customOverlayContent + '</div>';
+                }
+
+                let customOverlay = new kakao.maps.CustomOverlay({
+                    content: content,
+                    position: position,
+                    xAnchor: marker.customOverlayXAnchor || 0.5,
+                    yAnchor: marker.customOverlayYAnchor || 1.0,
+                    zIndex: marker.zIndex || 0,
+                });
+
+                customOverlay['markerId'] = marker.markerId;
+                clustererCustomOverlays.push(customOverlay);
+            }
         })
 
         clusterer = new kakao.maps.MarkerClusterer({
@@ -743,6 +858,14 @@ class _KakaoMapState extends State<KakaoMap> {
 
         clusterer.addMarkers(markers);
 
+        // Update custom overlay visibility based on clusterer state
+        updateClustererCustomOverlays();
+
+        // Add event listener for clustered event to update custom overlays
+        kakao.maps.event.addListener(clusterer, 'clustered', function() {
+            updateClustererCustomOverlays();
+        });
+
 
         if (${widget.onMarkerClustererTap != null}) {
             kakao.maps.event.addListener(clusterer, 'clusterclick', function (cluster) {
@@ -764,6 +887,46 @@ class _KakaoMapState extends State<KakaoMap> {
                 onMarkerClustererTap.postMessage(JSON.stringify(clickLatLng))
             });
         }
+    }
+
+    function updateClustererCustomOverlays() {
+        if (!clusterer || clustererCustomOverlays.length === 0) return;
+
+        // Get all clusters
+        let clusters = clusterer._clusters || [];
+        let clusteredMarkerIds = new Set();
+
+        // Collect marker IDs that are in clusters (more than 1 marker)
+        clusters.forEach(function(cluster) {
+            let clusterMarkers = cluster.getMarkers();
+            if (clusterMarkers.length > 1) {
+                clusterMarkers.forEach(function(marker) {
+                    clusteredMarkerIds.add(marker.id);
+                });
+            }
+        });
+
+        // Show/hide custom overlays based on whether their marker is clustered
+        clustererCustomOverlays.forEach(function(overlay) {
+            let markerId = overlay.markerId;
+
+            // Find the corresponding marker
+            let correspondingMarker = markers.find(m => m.id === markerId);
+
+            if (clusteredMarkerIds.has(markerId)) {
+                // Marker is in a cluster, hide custom overlay and show default marker (which will be hidden by cluster)
+                overlay.setMap(null);
+                if (correspondingMarker) {
+                    correspondingMarker.setVisible(true);
+                }
+            } else {
+                // Marker is not clustered, show custom overlay and hide default marker
+                overlay.setMap(map);
+                if (correspondingMarker) {
+                    correspondingMarker.setVisible(false);
+                }
+            }
+        });
     }
 
     function getMarkerClustererStyles(styles) {
@@ -788,6 +951,10 @@ class _KakaoMapState extends State<KakaoMap> {
         return newObj;
     }
 
+    // Debounce tracking for iOS touch events to prevent duplicate triggers
+    let lastOverlayTapTime = {};
+    const OVERLAY_TAP_DEBOUNCE_MS = 300;
+
     function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
         // customOverlays에 동일한 ID가 있는지 확인
         if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
@@ -799,9 +966,16 @@ class _KakaoMapState extends State<KakaoMap> {
 
         content = '<div id="' + customOverlayId + '">' + content + '</div>'
         if (${widget.onCustomOverlayTap != null}) {
+            // Use both onclick and ontouchend for better iOS compatibility
+            // The custom-overlay-clickable class provides iOS-specific touch optimizations
             content =
                 '<div id="' + customOverlayId +
-                '" onclick="addCustomOverlayListener(`' + customOverlayId +
+                '" class="custom-overlay-clickable"' +
+                ' onclick="handleOverlayTap(event, `' + customOverlayId +
+                '`, `' + latLng.latitude +
+                '`, `' + latLng.longitude +
+                '`)"' +
+                ' ontouchend="handleOverlayTap(event, `' + customOverlayId +
                 '`, `' + latLng.latitude +
                 '`, `' + latLng.longitude +
                 '`)">' + content + '</div>';
@@ -821,6 +995,27 @@ class _KakaoMapState extends State<KakaoMap> {
         customOverlays.push(customOverlay);
 
         customOverlay.setMap(map);
+    }
+
+    // Unified tap handler that works for both click and touch events
+    function handleOverlayTap(event, customOverlayId, latitude, longitude) {
+        // Prevent event bubbling to avoid triggering map click
+        if (event) {
+            event.stopPropagation();
+            // Prevent default to avoid any iOS-specific issues
+            if (event.type === 'touchend') {
+                event.preventDefault();
+            }
+        }
+
+        // Debounce to prevent duplicate events (iOS may fire both touchend and click)
+        const now = Date.now();
+        if (lastOverlayTapTime[customOverlayId] && (now - lastOverlayTapTime[customOverlayId]) < OVERLAY_TAP_DEBOUNCE_MS) {
+            return;
+        }
+        lastOverlayTapTime[customOverlayId] = now;
+
+        addCustomOverlayListener(customOverlayId, latitude, longitude);
     }
 
     function addCustomOverlayListener(customOverlayId, latitude, longitude) {
@@ -1185,7 +1380,7 @@ class _KakaoMapState extends State<KakaoMap> {
             input_coord: request.input_coord,
         };
 
-        geocoder.coord2Address(request.y, request.x, function (result, status) {
+        geocoder.coord2Address(request.x, request.y, function (result, status) {
             if (typeof result === 'object') {
                 coord2AddressCallback.postMessage(JSON.stringify(result));
             }
@@ -1200,7 +1395,7 @@ class _KakaoMapState extends State<KakaoMap> {
             output_coord: request.output_coord,
         };
 
-        geocoder.coord2RegionCode(request.y, request.x, function (result, status) {
+        geocoder.coord2RegionCode(request.x, request.y, function (result, status) {
             if (typeof result === 'object') {
                 coord2RegionCodeCallback.postMessage(JSON.stringify(result));
             }
@@ -1220,6 +1415,50 @@ class _KakaoMapState extends State<KakaoMap> {
                 transCoordCallback.postMessage(JSON.stringify(result));
             }
         }, options)
+    }
+
+    /**
+     * Convert LatLng coordinates to pixel position on the map
+     * @param latitude Number
+     * @param longitude Number
+     * @returns {x: number, y: number}
+     */
+    function coordToPixel(latitude, longitude) {
+        const latLng = new kakao.maps.LatLng(latitude, longitude);
+        const point = map.project(latLng);
+
+        let result = {
+            x: point.x,
+            y: point.y,
+        };
+
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+
+        return result;
+    }
+
+    /**
+     * Convert pixel position to LatLng coordinates
+     * @param x Number - pixel x coordinate
+     * @param y Number - pixel y coordinate
+     * @returns {latitude: number, longitude: number}
+     */
+    function pixelToCoord(x, y) {
+        const point = new kakao.maps.Point(x, y);
+        const latLng = map.unproject(point);
+
+        let result = {
+            latitude: latLng.getLat(),
+            longitude: latLng.getLng(),
+        };
+
+        if (${Platform.isIOS}) {
+            result = JSON.stringify(result);
+        }
+
+        return result;
     }
 </script>
     ''');
@@ -1241,6 +1480,7 @@ class _KakaoMapState extends State<KakaoMap> {
     controller
       ..addJavaScriptChannel('onMapCreated',
           onMessageReceived: (JavaScriptMessage result) {
+        _isMapReady = true;
         if (widget.onMapCreated != null) {
           widget.onMapCreated!(_mapController);
         }

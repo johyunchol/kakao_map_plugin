@@ -8,7 +8,18 @@ String _htmlWrapper(String script) {
   <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
   <script type="text/javascript"
-          src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=true&appkey=${AuthRepository.instance.appKey}&libraries=services,clusterer,drawing'></script>
+          src='https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=${AuthRepository.instance.appKey}&libraries=services,clusterer,drawing'></script>
+  <style>
+    /* iOS touch event optimization for CustomOverlay tap */
+    .custom-overlay-clickable {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+  </style>
 </head>
 
 <body style="margin: 0;">

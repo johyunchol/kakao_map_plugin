@@ -7,6 +7,18 @@ class KakaoMapController {
 
   KakaoMapController(this._webViewController);
 
+  /// Escape a string for safe use inside JavaScript single-quoted strings.
+  /// This handles quotes, backslashes, and newlines that could break JS syntax.
+  String _escapeForJs(String input) {
+    return input
+        .replaceAll(r'\', r'\\')    // Escape backslashes first
+        .replaceAll("'", r"\'")     // Escape single quotes
+        .replaceAll('"', r'\"')     // Escape double quotes
+        .replaceAll('\n', r'\n')    // Escape newlines
+        .replaceAll('\r', r'\r')    // Escape carriage returns
+        .replaceAll('\t', r'\t');   // Escape tabs
+  }
+
   /// draw polylines
   addPolyline({List<Polyline>? polylines}) async {
     if (polylines == null) return;
@@ -79,7 +91,7 @@ class KakaoMapController {
 
   /// draw markers
   addMarker({List<Marker>? markers}) async {
-    if (markers == null) {
+    if (markers == null || markers.isEmpty) {
       return;
     }
 
@@ -87,8 +99,10 @@ class KakaoMapController {
 
     clearMarker(markerIds: safeMarkers.map((e) => e.markerId).toList());
     for (var marker in safeMarkers) {
+      final imageSrc = marker.icon?.imageSrc ?? marker.markerImageSrc;
+      final escapedInfoWindowContent = _escapeForJs(marker.infoWindowContent);
       final markerString =
-          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '${marker.markerImageSrc}', '${marker.infoWindowContent}', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex})";
+          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '$imageSrc', '$escapedInfoWindowContent', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex}, '${marker.icon?.imageType?.name}')";
       await _webViewController.runJavaScript(markerString);
     }
   }
@@ -115,11 +129,10 @@ class KakaoMapController {
 
     clearCustomOverlay(
         overlayIds: overlays.map((e) => e.customOverlayId).toList());
-
     for (var customOverlay in overlays) {
+      final escapedContent = _escapeForJs(customOverlay.content);
       await _webViewController.runJavaScript(
-          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '${customOverlay.content}', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')"
-      );
+          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '$escapedContent', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
     }
   }
 
@@ -382,5 +395,21 @@ class KakaoMapController {
         .runJavaScript("transCoord('${jsonEncode(request)}')");
 
     return await TransCoordService.transCodeResult();
+  }
+
+  /// Convert LatLng coordinates to pixel position on the map
+  /// Returns a Point with x, y pixel coordinates
+  Future<Point> coordToPixel(LatLng latLng) async {
+    final result = await _webViewController.runJavaScriptReturningResult(
+        "coordToPixel('${latLng.latitude}', '${latLng.longitude}');") as String;
+    return Point.fromJson(jsonDecode(result));
+  }
+
+  /// Convert pixel position to LatLng coordinates
+  /// Returns a LatLng with latitude and longitude
+  Future<LatLng> pixelToCoord(Point point) async {
+    final result = await _webViewController.runJavaScriptReturningResult(
+        "pixelToCoord('${point.x}', '${point.y}');") as String;
+    return LatLng.fromJson(jsonDecode(result));
   }
 }
