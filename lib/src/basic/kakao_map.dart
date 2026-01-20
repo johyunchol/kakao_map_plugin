@@ -176,9 +176,17 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     let customOverlays = [];
     let clusterer = null;
     let clustererCustomOverlays = [];
-    const defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
+    let defaultCenter = null;
 
     window.onload = function () {
+        // Kakao Maps SDK가 완전히 로드된 후 지도를 초기화합니다
+        kakao.maps.load(function() {
+            initializeMap();
+        });
+    }
+
+    function initializeMap() {
+        defaultCenter = new kakao.maps.LatLng(33.450701, 126.570667);
         const container = document.getElementById('map');
         let center = defaultCenter;
         if (${widget.center != null}) {

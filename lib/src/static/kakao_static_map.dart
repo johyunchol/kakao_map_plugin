@@ -120,6 +120,13 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
   let map = null;
 
   window.onload = function () {
+    // Kakao Maps SDK가 완전히 로드된 후 지도를 초기화합니다
+    kakao.maps.load(function() {
+      initializeStaticMap();
+    });
+  }
+
+  function initializeStaticMap() {
     const staticMapContainer = document.getElementById('map');
 
     let center = new kakao.maps.LatLng(33.450701, 126.570667);
