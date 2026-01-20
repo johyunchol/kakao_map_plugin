@@ -26,6 +26,7 @@ import 'package:kakao_map_plugin_example/src/map_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_20_center_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_21_bounds_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -117,6 +118,9 @@ class _HomeScreenState extends State<HomeScreen>
             title: '영역 변경 이벤트 등록하기', newPage: const Map21BoundsChangeScreen()),
         MenuItem(
             title: '타일로드 이벤트 등록하기', newPage: const Map22TilesLoadedScreen()),
+        MenuItem(
+            title: '좌표-픽셀 변환하기',
+            newPage: const Map23CoordPixelConvertScreen()),
         // MenuItem(title: '커스텀 타일셋1', newPage: const Map1DefaultScreen()),
         // MenuItem(title: '커스텀 타일셋2', newPage: const Map1DefaultScreen()),
       ],
