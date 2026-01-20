@@ -789,6 +789,17 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         clustererCustomOverlays = [];
 
         markerList.map(function (marker) {
+            // icon 객체에서 imageSrc와 imageType 추출, 없으면 markerImageSrc 사용
+            let imageSrc = '';
+            let imageType = null;
+            if (marker?.icon && marker.icon.imageSrc) {
+                imageSrc = marker.icon.imageSrc;
+                imageType = marker.icon.imageType;
+            } else if (marker?.markerImageSrc) {
+                imageSrc = marker.markerImageSrc;
+                imageType = 'url';
+            }
+
             addMarker(
                 marker.markerId,
                 JSON.stringify(marker.latLng),
@@ -797,11 +808,12 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
                 marker?.height,
                 marker?.offsetX,
                 marker?.offsetY,
-                marker?.imageSrc,
-                marker?.infoWindowText,
+                imageSrc,
+                marker?.infoWindowContent,
                 marker?.infoWindowRemovable,
                 marker?.infoWindowFirstShow,
                 marker?.zIndex,
+                imageType,
             )
 
             // If marker has custom overlay content, create and store it
