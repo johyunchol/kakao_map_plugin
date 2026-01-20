@@ -84,7 +84,6 @@ class KakaoMap extends StatefulWidget {
 
 class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late final KakaoMapController _mapController;
-  bool _isInitialized = false;
   bool _isMapReady = false;
 
   @override
@@ -106,7 +105,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     // Handle app lifecycle changes to fix WebView rendering issues
     // when returning from background (Flutter 3.27+ issue)
-    if (state == AppLifecycleState.resumed && _isInitialized) {
+    if (state == AppLifecycleState.resumed && _isMapReady) {
       // Trigger relayout to fix potential rendering issues
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
@@ -151,21 +150,6 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     }
 
     _mapController = KakaoMapController(controller);
-    _isInitialized = true;
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // When app resumes from background on iOS, trigger relayout to fix touch events
-    if (state == AppLifecycleState.resumed && _isMapReady && Platform.isIOS) {
-      _mapController.relayout();
-    }
   }
 
   @override

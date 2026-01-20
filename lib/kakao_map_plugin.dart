@@ -1,5 +1,3 @@
-library kakao_map_plugin;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
