@@ -41,6 +41,16 @@ class Marker {
   /// marker z-index
   int zIndex = 0;
 
+  /// custom overlay content for clusterer
+  /// When using with clusterer, this content will be displayed instead of default marker
+  String? customOverlayContent;
+
+  /// custom overlay x anchor (0.0 ~ 1.0)
+  double customOverlayXAnchor;
+
+  /// custom overlay y anchor (0.0 ~ 1.0)
+  double customOverlayYAnchor;
+
   Marker({
     required this.markerId,
     required this.latLng,
@@ -55,6 +65,9 @@ class Marker {
     this.infoWindowRemovable = true,
     this.infoWindowFirstShow = false,
     this.zIndex = 0,
+    this.customOverlayContent,
+    this.customOverlayXAnchor = 0.5,
+    this.customOverlayYAnchor = 1.0,
   });
 
   Map<String, dynamic> toJson() {
@@ -75,6 +88,9 @@ class Marker {
       'infoWindowRemovable': infoWindowRemovable,
       'infoWindowFirstShow': infoWindowFirstShow,
       'zIndex': zIndex,
+      'customOverlayContent': customOverlayContent,
+      'customOverlayXAnchor': customOverlayXAnchor,
+      'customOverlayYAnchor': customOverlayYAnchor,
     };
   }
 
