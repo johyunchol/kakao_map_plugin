@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
@@ -206,6 +207,9 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '클러스터 마커에 텍스트 표시하기',
           newPage: const Library10MarkerClustererTextScreen()),
+      MenuItem(
+          title: '클러스터러 커스텀 마커 이미지 테스트',
+          newPage: const Library11MarkerClustererCustomImageScreen()),
       // MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
       // MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
       // MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),

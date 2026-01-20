@@ -68,7 +68,12 @@ class Marker {
       'height': height,
       'offsetX': offsetX,
       'offsetY': offsetY,
-      'icon': icon,
+      'icon': icon != null
+          ? {
+              'imageSrc': icon!.imageSrc,
+              'imageType': icon!.imageType?.name,
+            }
+          : null,
       'markerImageSrc': markerImageSrc,
       'infoWindowContent': infoWindowContent,
       'draggable': draggable,
