@@ -1466,6 +1466,22 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
 
   @override
   void didUpdateWidget(KakaoMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // 중심 좌표 변경 감지 및 적용
+    if (widget.center != oldWidget.center && widget.center != null) {
+      _mapController.setCenter(widget.center!);
+    }
+
+    // 줌 레벨 변경 감지 및 적용
+    if (widget.currentLevel != oldWidget.currentLevel) {
+      _mapController.setLevel(widget.currentLevel);
+    }
+
+    // 가시성 복구 시 지도 크기 재계산 (IndexedStack 등에서 필요)
+    _mapController.relayout();
+
+    // 오버레이 업데이트
     _mapController.addPolyline(polylines: widget.polylines);
     _mapController.addCircle(circles: widget.circles);
     _mapController.addRectangle(rectangles: widget.rectangles);
@@ -1473,7 +1489,6 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     _mapController.addMarker(markers: widget.markers);
     _mapController.addMarkerClusterer(clusterer: widget.clusterer);
     _mapController.addCustomOverlay(customOverlays: widget.customOverlays);
-    super.didUpdateWidget(oldWidget);
   }
 
   void addJavaScriptChannels(WebViewController controller) {
