@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin_example/src/issue_30_escape_test_screen.dart';
+import 'package:kakao_map_plugin_example/src/issue_60_custom_overlay_tap_test_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
@@ -164,6 +165,9 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '커스텀 오버레이 생성하기2',
           newPage: const Overlay22CustomOverlay2Screen()),
+      MenuItem(
+          title: '[Issue #60] CustomOverlay Tap Test',
+          newPage: const Issue60CustomOverlayTapTestScreen()),
       // MenuItem(title: '닫기가 가능한 커스텀 오버레이', newPage: const Overlay23RemovableCustomOverlayScreen()),
       // MenuItem(title: '이미지 마커와 커스텀 오버레이', newPage: const Overlay24ImageMarkerCustomOverlayScreen()),
       // MenuItem(title: '커스텀오버레이를 드래그 하기', newPage: const Overlay25DragCustomOverlayScreen()),
