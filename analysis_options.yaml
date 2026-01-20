@@ -1,4 +1,14 @@
-include: package:flutter_lints/flutter.yaml
+include: package:lints/core.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+# pub.dev와 동일한 lint 규칙 사용
+# https://pub.dev/packages/lints
+
+linter:
+  rules:
+    # pub.dev static analysis 규칙
+    - always_declare_return_types
+
+    # Flutter 관련 추가 규칙
+    - use_key_in_widget_constructors
+    - use_build_context_synchronously
+    - avoid_print
