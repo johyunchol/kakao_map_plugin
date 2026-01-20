@@ -117,17 +117,28 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
 
   String _loadMap() {
     return _htmlWrapper('''<script>
-    
-  const container = document.getElementById('map'); //로드뷰를 표시할 div
-  let roadview = new kakao.maps.Roadview(container); //로드뷰 객체
-  let roadviewClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+  let roadview = null;
+  let roadviewClient = null;
 
-  let position = new kakao.maps.LatLng(${widget.center?.latitude ?? 33.450701}, ${widget.center?.longitude ?? 126.570667});
+  window.onload = function () {
+    // Kakao Maps SDK가 완전히 로드된 후 로드뷰를 초기화합니다
+    kakao.maps.load(function() {
+      initializeRoadview();
+    });
+  }
 
-  // 특정 위치의 좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
-  roadviewClient.getNearestPanoId(position, 50, function (panoId) {
-    roadview.setPanoId(panoId, position); //panoId와 중심좌표를 통해 로드뷰 실행
-  });
+  function initializeRoadview() {
+    const container = document.getElementById('map'); //로드뷰를 표시할 div
+    roadview = new kakao.maps.Roadview(container); //로드뷰 객체
+    roadviewClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
+
+    let position = new kakao.maps.LatLng(${widget.center?.latitude ?? 33.450701}, ${widget.center?.longitude ?? 126.570667});
+
+    // 특정 위치의 좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
+    roadviewClient.getNearestPanoId(position, 50, function (panoId) {
+      roadview.setPanoId(panoId, position); //panoId와 중심좌표를 통해 로드뷰 실행
+    });
+  }
 </script>''');
   }
 }
