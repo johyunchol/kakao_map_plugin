@@ -436,7 +436,7 @@ class _Library9MarkerClustererClickEventScreenState
 
           int level = await mapController.getLevel() - 1;
 
-          mapController.setLevel(
+          await mapController.setLevel(
             level,
             options: LevelOptions(
               animate: Animate(duration: 500),

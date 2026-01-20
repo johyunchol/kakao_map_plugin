@@ -136,81 +136,81 @@ class KakaoMapController {
     }
   }
 
-  void dispose() {
-    _webViewController.runJavaScript("dispose()");
+  Future<void> dispose() async {
+    await _webViewController.runJavaScript("dispose()");
   }
 
   /// clear overlays
-  void clear() {
-    _webViewController.runJavaScript('clear();');
+  Future<void> clear() async {
+    await _webViewController.runJavaScript('clear();');
   }
 
   /// clear polylines
-  void clearPolyline({List<String>? polylineIds}) {
+  Future<void> clearPolyline({List<String>? polylineIds}) async {
     String newPolylineIds = '';
     if (polylineIds != null) {
       newPolylineIds = jsonEncode(polylineIds);
     }
 
-    _webViewController.runJavaScript('clearPolyline($newPolylineIds);');
+    await _webViewController.runJavaScript('clearPolyline($newPolylineIds);');
   }
 
   /// clear circles
-  void clearCircle({List<String>? circleIds}) {
+  Future<void> clearCircle({List<String>? circleIds}) async {
     String newCircleIds = '';
     if (circleIds != null) {
       newCircleIds = jsonEncode(circleIds);
     }
 
-    _webViewController.runJavaScript('clearCircle($newCircleIds);');
+    await _webViewController.runJavaScript('clearCircle($newCircleIds);');
   }
 
   /// clear rectagles
-  void clearRectangle({List<String>? rectangleIds}) {
+  Future<void> clearRectangle({List<String>? rectangleIds}) async {
     String newRectangleIds = '';
     if (rectangleIds != null) {
       newRectangleIds = jsonEncode(rectangleIds);
     }
 
-    _webViewController.runJavaScript('clearRectangle($newRectangleIds);');
+    await _webViewController.runJavaScript('clearRectangle($newRectangleIds);');
   }
 
   /// clear polygon
-  void clearPolygon({List<String>? polygonIds}) {
+  Future<void> clearPolygon({List<String>? polygonIds}) async {
     String newPolygonIds = '';
     if (polygonIds != null) {
       newPolygonIds = jsonEncode(polygonIds);
     }
 
-    _webViewController.runJavaScript('clearPolygon($newPolygonIds);');
+    await _webViewController.runJavaScript('clearPolygon($newPolygonIds);');
   }
 
   /// clear markers
-  void clearMarker({List<String>? markerIds}) {
+  Future<void> clearMarker({List<String>? markerIds}) async {
     String newMarkerIds = '';
     if (markerIds != null) {
       newMarkerIds = jsonEncode(markerIds);
     }
 
-    _webViewController.runJavaScript('clearMarker($newMarkerIds);');
+    await _webViewController.runJavaScript('clearMarker($newMarkerIds);');
   }
 
-  void clearMarkerClusterer() {
-    _webViewController.runJavaScript('clearMarkerClusterer();');
+  Future<void> clearMarkerClusterer() async {
+    await _webViewController.runJavaScript('clearMarkerClusterer();');
   }
 
   /// clear custom overlay
-  void clearCustomOverlay({List<String>? overlayIds}) {
+  Future<void> clearCustomOverlay({List<String>? overlayIds}) async {
     String newOverlayIds = '';
     if (overlayIds != null) {
       newOverlayIds = jsonEncode(overlayIds);
     }
-    _webViewController.runJavaScript('clearCustomOverlay($newOverlayIds);');
+    await _webViewController.runJavaScript('clearCustomOverlay($newOverlayIds);');
   }
 
   /// move to center
-  void panTo(LatLng latLng) {
-    _webViewController
+  Future<void> panTo(LatLng latLng) async {
+    await _webViewController
         .runJavaScript("panTo('${latLng.latitude}', '${latLng.longitude}');");
   }
 
@@ -227,8 +227,8 @@ class KakaoMapController {
   }
 
   /// set center latitude, longitude
-  void setCenter(LatLng latLng) {
-    _webViewController.runJavaScript(
+  Future<void> setCenter(LatLng latLng) async {
+    await _webViewController.runJavaScript(
         "setCenter('${latLng.latitude}', '${latLng.longitude}');");
   }
 
@@ -240,11 +240,11 @@ class KakaoMapController {
   }
 
   /// set zoom level
-  void setLevel(int level, {LevelOptions? options}) {
+  Future<void> setLevel(int level, {LevelOptions? options}) async {
     if (options == null) {
-      _webViewController.runJavaScript("setLevel('$level');");
+      await _webViewController.runJavaScript("setLevel('$level');");
     } else {
-      _webViewController
+      await _webViewController
           .runJavaScript("setLevel('$level', '${jsonEncode(options)}');");
     }
   }
@@ -259,8 +259,8 @@ class KakaoMapController {
   }
 
   /// set map type id
-  void setMapTypeId(MapType mapType) {
-    _webViewController.runJavaScript("setMapTypeId('${mapType.id}');");
+  Future<void> setMapTypeId(MapType mapType) async {
+    await _webViewController.runJavaScript("setMapTypeId('${mapType.id}');");
   }
 
   /// get map type id
@@ -274,16 +274,16 @@ class KakaoMapController {
   }
 
   /// set bounds
-  void setBounds() {
-    _webViewController.runJavaScript("setBounds();");
+  Future<void> setBounds() async {
+    await _webViewController.runJavaScript("setBounds();");
   }
 
   /// set styles
-  void setStyle(int width, int height) {}
+  Future<void> setStyle(int width, int height) async {}
 
   /// redraw layout
-  void relayout() {
-    _webViewController.runJavaScript("relayout();");
+  Future<void> relayout() async {
+    await _webViewController.runJavaScript("relayout();");
   }
 
   /// get bounds from screen
@@ -299,19 +299,19 @@ class KakaoMapController {
   }
 
   /// add overlay map type id
-  void addOverlayMapTypeId(MapType mapType) {
-    _webViewController.runJavaScript("addOverlayMapTypeId('${mapType.id}');");
+  Future<void> addOverlayMapTypeId(MapType mapType) async {
+    await _webViewController.runJavaScript("addOverlayMapTypeId('${mapType.id}');");
   }
 
   /// remove overlay map type id
-  void removeOverlayMapTypeId(MapType mapType) {
-    _webViewController
+  Future<void> removeOverlayMapTypeId(MapType mapType) async {
+    await _webViewController
         .runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
   }
 
   /// change draggable
-  void setDraggable(bool draggable) {
-    _webViewController.runJavaScript("setDraggable($draggable);");
+  Future<void> setDraggable(bool draggable) async {
+    await _webViewController.runJavaScript("setDraggable($draggable);");
   }
 
   /// get current drag
@@ -323,8 +323,8 @@ class KakaoMapController {
   }
 
   /// set available zoom
-  void setZoomable(bool zoomable) {
-    _webViewController.runJavaScript("setZoomable($zoomable);");
+  Future<void> setZoomable(bool zoomable) async {
+    await _webViewController.runJavaScript("setZoomable($zoomable);");
   }
 
   /// get current available zoomable
