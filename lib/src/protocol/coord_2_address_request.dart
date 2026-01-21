@@ -1,24 +1,63 @@
 part of '../../kakao_map_plugin.dart';
 
+/// 좌표를 주소로 변환하는 요청 클래스입니다.
+///
+/// 카카오 로컬 API의 좌표 → 주소 변환을 위한 요청 파라미터를 정의합니다.
+/// 지정한 좌표의 주소 정보를 얻을 수 있습니다.
+///
+/// 예시:
+/// ```dart
+/// final request = Coord2AddressRequest(
+///   x: 127.423084873712,
+///   y: 37.0789561558879,
+///   inputCoord: Coords.WGS84,
+/// );
+/// ```
 class Coord2AddressRequest {
-  /// x 좌표, 경위도인 경우 longitude
+  /// X 좌표입니다. (필수)
+  ///
+  /// 경위도(WGS84) 좌표계인 경우 경도(longitude)를 의미합니다.
+  /// - WGS84: 경도 값
+  /// - WCONGNAMUL: X 좌표 값
+  /// - CONGNAMUL: X 좌표 값
+  /// - WTM: X 좌표 값
+  /// - TM: X 좌표 값
   final double x;
 
-  /// y 좌표, 경위도인 경우 latitude
+  /// Y 좌표입니다. (필수)
+  ///
+  /// 경위도(WGS84) 좌표계인 경우 위도(latitude)를 의미합니다.
+  /// - WGS84: 위도 값
+  /// - WCONGNAMUL: Y 좌표 값
+  /// - CONGNAMUL: Y 좌표 값
+  /// - WTM: Y 좌표 값
+  /// - TM: Y 좌표 값
   final double y;
 
-  /// 입력 좌표 체계. 기본값은 WGS84
+  /// 입력 좌표 체계입니다. (선택)
+  ///
+  /// 기본값은 WGS84이며, 다음 좌표계를 지원합니다:
+  /// - WGS84: 위경도 좌표계 (기본값)
+  /// - WCONGNAMUL: 공공데이터포털에서 사용하는 좌표계
+  /// - CONGNAMUL: 국가에서 사용하는 좌표계
+  /// - WTM: 평면직각좌표계
+  /// - TM: 평면직각좌표계
   final Coords? inputCoord;
 
+  /// Coord2AddressRequest 생성자입니다.
+  ///
+  /// [x]와 [y]는 필수 파라미터이며, [inputCoord]는 선택 파라미터입니다.
   Coord2AddressRequest({
     required this.x,
     required this.y,
     this.inputCoord,
   });
 
+  /// JSON 객체로부터 Coord2AddressRequest 인스턴스를 생성합니다.
   factory Coord2AddressRequest.fromJson(Map<String, dynamic> json) =>
       _$Coord2AddressRequestFromJson(json);
 
+  /// Coord2AddressRequest 인스턴스를 JSON 객체로 변환합니다.
   Map<String, dynamic> toJson() => _$Coord2AddressRequestToJson(this);
 
   @override

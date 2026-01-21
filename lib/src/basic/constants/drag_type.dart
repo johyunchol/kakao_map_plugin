@@ -1,3 +1,15 @@
 part of '../../../kakao_map_plugin.dart';
 
-enum DragType { start, move, end }
+/// 지도 드래그 상태를 나타내는 열거형입니다.
+///
+/// 사용자가 지도를 드래그할 때의 단계를 정의합니다.
+enum DragType {
+  /// 드래그 시작
+  start,
+
+  /// 드래그 이동 중
+  move,
+
+  /// 드래그 종료
+  end
+}

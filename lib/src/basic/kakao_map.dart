@@ -1,34 +1,168 @@
 part of '../../kakao_map_plugin.dart';
 
+/// 카카오 지도 위젯입니다.
+///
+/// WebView 기반으로 카카오 맵 JavaScript API를 사용하여 지도를 표시합니다.
+/// 다양한 오버레이(마커, 폴리라인, 원, 다각형 등)와 이벤트 콜백을 지원합니다.
+///
+/// 예시:
+/// ```dart
+/// KakaoMap(
+///   onMapCreated: (controller) {
+///     // 지도 생성 완료 후 컨트롤러를 사용하여 지도 제어
+///   },
+///   center: LatLng(37.5665, 126.9780),
+///   currentLevel: 3,
+///   markers: [
+///     Marker(
+///       markerId: 'marker1',
+///       latLng: LatLng(37.5665, 126.9780),
+///     ),
+///   ],
+///   onMarkerTap: (markerId, latLng, zoomLevel) {
+///     print('마커 클릭: $markerId');
+///   },
+/// )
+/// ```
 class KakaoMap extends StatefulWidget {
+  /// 지도 생성이 완료되었을 때 호출되는 콜백입니다.
+  ///
+  /// [KakaoMapController]를 통해 지도를 제어할 수 있습니다.
   final MapCreateCallback? onMapCreated;
+
+  /// 지도를 클릭했을 때 호출되는 콜백입니다.
+  ///
+  /// 클릭한 위치의 [LatLng] 좌표를 반환합니다.
   final OnMapTap? onMapTap;
+
+  /// 마커를 클릭했을 때 호출되는 콜백입니다.
+  ///
+  /// 마커 ID, 마커 위치, 현재 줌 레벨을 반환합니다.
   final OnMarkerTap? onMarkerTap;
+
+  /// 마커 클러스터를 클릭했을 때 호출되는 콜백입니다.
+  ///
+  /// 클러스터의 중심 좌표, 줌 레벨, 클러스터에 포함된 마커 목록을 반환합니다.
   final OnMarkerClustererTap? onMarkerClustererTap;
+
+  /// 지도를 더블 클릭했을 때 호출되는 콜백입니다.
+  ///
+  /// 클릭한 위치의 [LatLng] 좌표를 반환합니다.
   final OnMapDoubleTap? onMapDoubleTap;
+
+  /// 커스텀 오버레이를 클릭했을 때 호출되는 콜백입니다.
+  ///
+  /// 오버레이 ID와 위치를 반환합니다.
   final OnCustomOverlayTap? onCustomOverlayTap;
+
+  /// 지도의 중심 좌표나 레벨 이동이 끝났을 때 호출되는 콜백입니다.
+  ///
+  /// idle 이벤트 발생 시 현재 중심 좌표와 줌 레벨을 반환합니다.
   final OnCameraIdle? onCameraIdle;
+
+  /// 지도 드래그 이벤트 콜백입니다.
+  ///
+  /// 드래그 시작(start), 드래그 중(move), 드래그 종료(end) 시점에 호출됩니다.
   final OnDragChangeCallback? onDragChangeCallback;
+
+  /// 마커 드래그 이벤트 콜백입니다.
+  ///
+  /// 드래그 가능한 마커의 드래그 시작과 종료 시점에 호출됩니다.
   final OnMarkerDragChangeCallback? onMarkerDragChangeCallback;
+
+  /// 줌 레벨 변경 이벤트 콜백입니다.
+  ///
+  /// 줌 시작(start)과 줌 종료(end) 시점에 호출됩니다.
   final OnZoomChangeCallback? onZoomChangeCallback;
+
+  /// 지도 중심 좌표 변경 이벤트 콜백입니다.
+  ///
+  /// 중심 좌표가 변경될 때마다 호출됩니다.
   final OnCenterChangeCallback? onCenterChangeCallback;
+
+  /// 지도 영역(bounds) 변경 이벤트 콜백입니다.
+  ///
+  /// 지도 영역이 변경될 때마다 호출됩니다.
   final OnBoundsChangeCallback? onBoundsChangeCallback;
+
+  /// 타일 이미지 로드 완료 이벤트 콜백입니다.
+  ///
+  /// 지도 이동이나 줌 레벨 변경 후 타일 이미지 로드가 완료되면 호출됩니다.
   final OnTilesLoadedCallback? onTilesLoadedCallback;
+
+  /// 지도 타입 컨트롤(일반지도/스카이뷰) 표시 여부입니다.
+  ///
+  /// 기본값은 false입니다.
   final bool? mapTypeControl;
+
+  /// 지도 타입 컨트롤의 위치입니다.
+  ///
+  /// 기본값은 [ControlPosition.topRight]입니다.
   final ControlPosition mapTypeControlPosition;
+
+  /// 줌 컨트롤 표시 여부입니다.
+  ///
+  /// 기본값은 false입니다.
   final bool? zoomControl;
+
+  /// 줌 컨트롤의 위치입니다.
+  ///
+  /// 기본값은 [ControlPosition.right]입니다.
   final ControlPosition zoomControlPosition;
+
+  /// 지도의 최소 줌 레벨입니다.
+  ///
+  /// 기본값은 0입니다. 값이 클수록 확대된 상태입니다.
   final int minLevel;
+
+  /// 지도의 초기 줌 레벨입니다.
+  ///
+  /// 기본값은 3입니다. 값이 클수록 확대된 상태입니다.
   final int currentLevel;
+
+  /// 지도의 최대 줌 레벨입니다.
+  ///
+  /// 기본값은 25입니다. 값이 클수록 확대된 상태입니다.
   final int maxLevel;
+
+  /// 지도의 초기 중심 좌표입니다.
+  ///
+  /// 설정하지 않으면 제주도(33.450701, 126.570667)로 설정됩니다.
   final LatLng? center;
 
+  /// 지도에 표시할 폴리라인 목록입니다.
+  ///
+  /// 선을 그려서 경로나 영역을 표시할 때 사용합니다.
   final List<Polyline>? polylines;
+
+  /// 지도에 표시할 원 목록입니다.
+  ///
+  /// 반경을 가진 원형 영역을 표시할 때 사용합니다.
   final List<Circle>? circles;
+
+  /// 지도에 표시할 사각형 목록입니다.
+  ///
+  /// 사각형 영역을 표시할 때 사용합니다.
   final List<Rectangle>? rectangles;
+
+  /// 지도에 표시할 다각형 목록입니다.
+  ///
+  /// 임의의 다각형 영역을 표시할 때 사용합니다.
   final List<Polygon>? polygons;
+
+  /// 지도에 표시할 마커 목록입니다.
+  ///
+  /// 특정 위치를 표시할 때 사용합니다.
   final List<Marker>? markers;
+
+  /// 지도에 표시할 커스텀 오버레이 목록입니다.
+  ///
+  /// HTML 기반의 커스텀 UI를 지도에 표시할 때 사용합니다.
   final List<CustomOverlay>? customOverlays;
+
+  /// 마커 클러스터러 설정입니다.
+  ///
+  /// 많은 마커를 그룹화하여 표시할 때 사용합니다.
   final Clusterer? clusterer;
 
   /// Specifies which gestures should be consumed by the map.
