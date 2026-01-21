@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/coord_2_region_code.dart';
 
 /// 좌표를 행정구역 코드로 변환한 응답 클래스입니다.
 ///

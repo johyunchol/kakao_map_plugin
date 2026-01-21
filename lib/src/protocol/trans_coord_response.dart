@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/trans_coord.dart';
 
 /// 좌표계 변환 응답 클래스입니다.
 ///

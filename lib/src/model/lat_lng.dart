@@ -1,5 +1,3 @@
-part of '../../kakao_map_plugin.dart';
-
 /// 위도(latitude)와 경도(longitude)를 나타내는 좌표 클래스입니다.
 ///
 /// 카카오 지도 API에서 지도의 위치나 마커의 위치를 지정할 때 사용됩니다.

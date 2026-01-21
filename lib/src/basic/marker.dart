@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/lat_lng.dart';
+import 'marker_icon.dart';
 
 /// 지도에 표시할 마커를 나타내는 클래스입니다.
 ///

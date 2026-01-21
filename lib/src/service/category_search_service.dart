@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:kakao_map_plugin/src/protocol/category_search_response.dart';
+import 'package:kakao_map_plugin/src/service/base_service.dart';
 
 /// 카테고리로 장소를 검색하는 서비스입니다.
 ///
@@ -33,7 +36,7 @@ class CategorySearchService extends BaseService<CategorySearchResponse> {
   /// 이 메서드는 네이티브 코드에서 직접 호출됩니다.
   static void categorySearchCallback(String message) {
     final resultData = jsonDecode(message);
-    _instance._completer.complete(CategorySearchResponse.fromJson(resultData));
+    _instance.completer.complete(CategorySearchResponse.fromJson(resultData));
   }
 
   /// 카테고리 검색 결과를 비동기로 반환합니다.

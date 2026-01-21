@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import 'animate.dart';
+import 'lat_lng.dart';
 
 /// 지도 확대/축소 레벨 변경 시 적용할 옵션을 나타내는 클래스입니다.
 ///

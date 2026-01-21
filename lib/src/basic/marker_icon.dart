@@ -1,4 +1,8 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:flutter/services.dart';
+
+import 'constants/image_type.dart';
 
 /// 마커에 사용할 커스텀 아이콘을 나타내는 클래스입니다.
 ///

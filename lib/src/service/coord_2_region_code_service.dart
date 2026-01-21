@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:kakao_map_plugin/src/protocol/coord_2_region_code_response.dart';
+import 'package:kakao_map_plugin/src/service/base_service.dart';
 
 /// 좌표를 행정구역 정보로 변환하는 서비스입니다.
 ///

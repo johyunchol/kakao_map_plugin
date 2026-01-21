@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../basic/constants/coords.dart';
 
 /// 좌표를 주소로 변환하는 요청 클래스입니다.
 ///

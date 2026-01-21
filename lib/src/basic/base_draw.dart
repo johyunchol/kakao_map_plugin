@@ -1,4 +1,6 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:ui' show Color;
+
+import 'constants/stroke_style.dart';
 
 /// 지도 위에 그려지는 도형의 기본 스타일을 정의하는 클래스입니다.
 ///
