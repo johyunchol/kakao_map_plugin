@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:ui' show Color;
 
 /// Color 클래스를 위한 16진수 변환 확장 메서드입니다.
 ///

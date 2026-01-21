@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import 'lat_lng.dart';
 
 /// 지도의 영역을 나타내는 사각형 경계(Bounds) 클래스입니다.
 ///

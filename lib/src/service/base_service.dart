@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:async';
+import 'dart:convert';
 
 /// 모든 서비스 클래스의 기본이 되는 추상 클래스입니다.
 ///

@@ -1,6 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import '../repository/auth_repository.dart';
 
-String _htmlWrapper(String script) {
+/// HTML wrapper for embedding Kakao Map JavaScript
+String htmlWrapper(String script) {
   return '''
 <html lang="en">
 <head>

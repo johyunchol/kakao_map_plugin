@@ -1,4 +1,38 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:webview_flutter/webview_flutter.dart';
+
+import '../model/lat_lng.dart';
+import '../model/lat_lng_bounds.dart';
+import '../model/level_options.dart';
+import '../model/point.dart';
+import '../protocol/address_search_request.dart';
+import '../protocol/address_search_response.dart';
+import '../protocol/category_search_request.dart';
+import '../protocol/category_search_response.dart';
+import '../protocol/coord_2_address_request.dart';
+import '../protocol/coord_2_address_response.dart';
+import '../protocol/coord_2_region_code_request.dart';
+import '../protocol/coord_2_region_code_response.dart';
+import '../protocol/keyword_search_request.dart';
+import '../protocol/keyword_search_response.dart';
+import '../protocol/trans_coord_request.dart';
+import '../protocol/trans_coord_response.dart';
+import '../service/address_search_service.dart';
+import '../service/category_search_service.dart';
+import '../service/coord_2_address_service.dart';
+import '../service/coord_2_region_code_service.dart';
+import '../service/keyword_search_service.dart';
+import '../service/trans_coord_service.dart';
+import 'circle.dart';
+import 'clusterer.dart';
+import 'constants/map_type.dart';
+import 'custom_overlay.dart';
+import 'hex_color.dart';
+import 'marker.dart';
+import 'polygon.dart';
+import 'polyline.dart';
+import 'rectangle.dart';
 
 /// 카카오 지도를 제어하는 컨트롤러 클래스입니다.
 ///

@@ -1,4 +1,6 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:ui' show Color;
+
+import 'hex_color.dart';
 
 /// 클러스터의 시각적 스타일을 정의하는 클래스입니다.
 ///

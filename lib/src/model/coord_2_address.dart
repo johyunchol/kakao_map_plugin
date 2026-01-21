@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'address.dart';
+import 'road_address.dart';
 
 /// 좌표를 주소로 변환한 결과 정보를 나타내는 클래스입니다.
 ///

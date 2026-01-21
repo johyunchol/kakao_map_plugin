@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/lat_lng.dart';
+import 'base_draw.dart';
 
 /// 지도에 선을 그리는 폴리라인을 나타내는 클래스입니다.
 ///

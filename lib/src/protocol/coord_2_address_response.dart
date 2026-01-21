@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/coord_2_address.dart';
 
 /// 좌표를 주소로 변환한 응답 클래스입니다.
 ///

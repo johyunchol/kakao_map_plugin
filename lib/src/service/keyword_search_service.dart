@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:kakao_map_plugin/src/protocol/keyword_search_response.dart';
+import 'package:kakao_map_plugin/src/service/base_service.dart';
 
 /// 키워드로 장소를 검색하는 서비스입니다.
 ///
@@ -34,7 +37,7 @@ class KeywordSearchService extends BaseService<KeywordSearchResponse> {
   /// 이 메서드는 네이티브 코드에서 직접 호출됩니다.
   static void keywordSearchCallback(String message) {
     final resultData = jsonDecode(message);
-    _instance._completer.complete(KeywordSearchResponse.fromJson(resultData));
+    _instance.completer.complete(KeywordSearchResponse.fromJson(resultData));
   }
 
   /// 키워드 검색 결과를 비동기로 반환합니다.

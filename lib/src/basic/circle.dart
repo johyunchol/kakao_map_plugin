@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/lat_lng.dart';
+import 'base_draw.dart';
 
 /// 지도에 원을 그리는 클래스입니다.
 ///

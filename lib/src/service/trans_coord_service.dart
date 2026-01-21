@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:kakao_map_plugin/src/protocol/trans_coord_response.dart';
+import 'package:kakao_map_plugin/src/service/base_service.dart';
 
 /// 좌표계를 변환하는 서비스입니다.
 ///

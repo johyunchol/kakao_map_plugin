@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import 'clusterer_style.dart';
+import 'marker.dart';
 
 /// 지도의 마커들을 클러스터링하여 표시하는 클래스입니다.
 ///

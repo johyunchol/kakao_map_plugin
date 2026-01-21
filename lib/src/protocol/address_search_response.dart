@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/search_address.dart';
 
 /// 주소 검색 응답 클래스입니다.
 ///

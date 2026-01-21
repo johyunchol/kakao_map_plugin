@@ -1,4 +1,18 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+
+import '../basic/callbacks.dart';
+import '../basic/marker.dart';
+import '../constants/wrapper.dart';
+import '../model/lat_lng.dart';
+import '../repository/auth_repository.dart';
+
 
 class KakaoRoadMap extends StatefulWidget {
   final MapCreateCallback? onMapCreated;
@@ -121,7 +135,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
   }
 
   String _loadMap() {
-    return _htmlWrapper('''<script>
+    return htmlWrapper('''<script>
   let roadview = null;
   let roadviewClient = null;
 

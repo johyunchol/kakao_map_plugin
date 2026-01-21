@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/lat_lng.dart';
 
 /// 지도에 커스텀 HTML 컨텐츠를 표시하는 오버레이 클래스입니다.
 ///

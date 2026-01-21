@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../basic/constants/analyze_type.dart';
 
 /// 주소 검색 요청 클래스입니다.
 ///

@@ -1,4 +1,5 @@
-part of '../../kakao_map_plugin.dart';
+import '../basic/constants/category_type.dart';
+import '../basic/constants/sort_by.dart';
 
 /// 키워드 검색 요청 클래스입니다.
 ///

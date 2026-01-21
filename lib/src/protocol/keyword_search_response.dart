@@ -1,4 +1,4 @@
-part of '../../kakao_map_plugin.dart';
+import '../model/keyword_address.dart';
 
 /// 키워드 검색 응답 클래스입니다.
 ///

@@ -1,4 +1,7 @@
-part of '../../kakao_map_plugin.dart';
+import 'dart:convert';
+
+import 'address.dart';
+import 'road_address.dart';
 
 /// JSON 문자열로부터 SearchAddress 객체를 생성합니다.
 ///
