@@ -48,6 +48,7 @@ part 'src/model/point.dart';
 part 'src/model/road_address.dart';
 part 'src/model/search_address.dart';
 part 'src/model/trans_coord.dart';
+part 'src/model/map_event_data.dart';
 part 'src/protocol/address_search_request.dart';
 part 'src/protocol/address_search_response.dart';
 part 'src/protocol/category_search_request.dart';

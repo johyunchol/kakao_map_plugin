@@ -1637,107 +1637,118 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       ..addJavaScriptChannel('onMapTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapTap != null) {
-          widget.onMapTap!(LatLng.fromJson(jsonDecode(result.message)));
+          final data = _MapTapEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
+          widget.onMapTap!(data.toLatLng());
         }
       })
       ..addJavaScriptChannel('onMapDoubleTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMapDoubleTap != null) {
-          widget.onMapDoubleTap!(LatLng.fromJson(jsonDecode(result.message)));
+          final data = _MapTapEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
+          widget.onMapDoubleTap!(data.toLatLng());
         }
       })
       ..addJavaScriptChannel('onMarkerTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerTap != null) {
+          final data = _MarkerTapEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onMarkerTap!(
-            jsonDecode(result.message)['markerId'],
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+            data.markerId,
+            data.toLatLng(),
+            data.zoomLevel,
           );
         }
       })
       ..addJavaScriptChannel('onMarkerClustererTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerClustererTap != null) {
-          List<String> markerIdList =
-              (jsonDecode(result.message)['markers'] as List<dynamic>)
-                  .cast<String>();
+          final data = _ClusterTapEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onMarkerClustererTap!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
-            widget.clusterer?.getMarkersByIds(markerIdList) ?? [],
+            data.toLatLng(),
+            data.zoomLevel,
+            widget.clusterer?.getMarkersByIds(data.markerIds) ?? [],
           );
         }
       })
       ..addJavaScriptChannel('onCustomOverlayTap',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCustomOverlayTap != null) {
+          final data = _CustomOverlayTapEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onCustomOverlayTap!(
-            jsonDecode(result.message)['customOverlayId'],
-            LatLng.fromJson(jsonDecode(result.message)),
+            data.customOverlayId,
+            data.toLatLng(),
           );
         }
       })
       ..addJavaScriptChannel('onMarkerDragChangeCallback',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onMarkerDragChangeCallback != null) {
+          final data = _MarkerDragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onMarkerDragChangeCallback!(
-            jsonDecode(result.message)['markerId'],
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
-            jsonDecode(result.message)['drag'] == 'dragstart'
-                ? MarkerDragType.start
-                : MarkerDragType.end,
+            data.markerId,
+            data.toLatLng(),
+            data.zoomLevel,
+            data.dragType,
           );
         }
       })
       ..addJavaScriptChannel('zoomStart',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onZoomChangeCallback != null) {
-          widget.onZoomChangeCallback!(
-            jsonDecode(result.message)['zoomLevel'],
-            ZoomType.start,
+          final data = _ZoomEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
           );
+          widget.onZoomChangeCallback!(data.zoomLevel, ZoomType.start);
         }
       })
       ..addJavaScriptChannel('zoomChanged',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onZoomChangeCallback != null) {
-          widget.onZoomChangeCallback!(
-            jsonDecode(result.message)['zoomLevel'],
-            ZoomType.end,
+          final data = _ZoomEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
           );
+          widget.onZoomChangeCallback!(data.zoomLevel, ZoomType.end);
         }
       })
       ..addJavaScriptChannel('centerChanged',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCenterChangeCallback != null) {
-          widget.onCenterChangeCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+          final data = _CenterChangeEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
           );
+          widget.onCenterChangeCallback!(data.toLatLng(), data.zoomLevel);
         }
       })
       ..addJavaScriptChannel('boundsChanged',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onBoundsChangeCallback != null) {
-          final latLngBounds = jsonDecode(result.message);
-
-          final sw = latLngBounds['sw'];
-          final ne = latLngBounds['ne'];
-
-          widget.onBoundsChangeCallback!(LatLngBounds(
-            LatLng(sw['latitude'], sw['longitude']),
-            LatLng(ne['latitude'], ne['longitude']),
-          ));
+          final data = _BoundsChangeEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
+          widget.onBoundsChangeCallback!(data.toLatLngBounds());
         }
       })
       ..addJavaScriptChannel('dragStart',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
+          final data = _DragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onDragChangeCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+            data.toLatLng(),
+            data.zoomLevel,
             DragType.start,
           );
         }
@@ -1745,9 +1756,12 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       ..addJavaScriptChannel('drag',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
+          final data = _DragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onDragChangeCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+            data.toLatLng(),
+            data.zoomLevel,
             DragType.move,
           );
         }
@@ -1755,9 +1769,12 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       ..addJavaScriptChannel('dragEnd',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onDragChangeCallback != null) {
+          final data = _DragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
+          );
           widget.onDragChangeCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+            data.toLatLng(),
+            data.zoomLevel,
             DragType.end,
           );
         }
@@ -1765,19 +1782,19 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       ..addJavaScriptChannel('cameraIdle',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onCameraIdle != null) {
-          widget.onCameraIdle!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+          final data = _DragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
           );
+          widget.onCameraIdle!(data.toLatLng(), data.zoomLevel);
         }
       })
       ..addJavaScriptChannel('tilesLoaded',
           onMessageReceived: (JavaScriptMessage result) {
         if (widget.onTilesLoadedCallback != null) {
-          widget.onTilesLoadedCallback!(
-            LatLng.fromJson(jsonDecode(result.message)),
-            jsonDecode(result.message)['zoomLevel'],
+          final data = _DragEventData.fromJson(
+            jsonDecode(result.message) as Map<String, dynamic>,
           );
+          widget.onTilesLoadedCallback!(data.toLatLng(), data.zoomLevel);
         }
       })
       ..addJavaScriptChannel("keywordSearchCallback",
