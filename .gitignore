@@ -30,7 +30,20 @@ migrate_working_dir/
 build/
 lib/generated/
 
-# agent
-.claude
-.specify
+# AI 코딩 도구 관련 (개인 설정/세션 상태 — 저장소 및 배포 패키지에 포함하지 않음)
+# 지침 파일
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.cursorrules
+.windsurfrules
+# 도구 상태/캐시 디렉터리
+.claude/
+.omc/
+.omo/
+.sisyphus/
+.playwright-mcp/
+.specify/
+.cursor/
 specs/
