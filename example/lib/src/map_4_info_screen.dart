@@ -46,6 +46,8 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
               message +=
                   '북동쪽 좌표는 ${neLatLng.latitude}, ${neLatLng.longitude} 입니다\n';
 
+              // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+              if (!mounted) return;
               setState(() {});
             }),
             mapTypeControl: true,

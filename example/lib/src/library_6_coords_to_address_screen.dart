@@ -24,36 +24,43 @@ class _Library6CoordsToAddressScreenState
   String address2 = '';
 
   coord2Address() async {
-    LatLng latLng = await mapController.getCenter();
+    // 화면이 먼저 닫히면 요청이 타임아웃으로 끝날 수 있으므로 오류를 잡아 둔다.
+    try {
+      LatLng latLng = await mapController.getCenter();
 
-    final request = Coord2AddressRequest(
-      x: latLng.longitude,
-      y: latLng.latitude,
-    );
+      final request = Coord2AddressRequest(
+        x: latLng.longitude,
+        y: latLng.latitude,
+      );
 
-    final response = await mapController.coord2Address(request);
-    final coord2address = response.list.first;
+      final response = await mapController.coord2Address(request);
+      final coord2address = response.list.first;
 
-    final request2 = Coord2RegionCodeRequest(
-      x: latLng.longitude,
-      y: latLng.latitude,
-    );
-    final response2 = await mapController.coord2RegionCode(request2);
-    final coord2RegionCode = response2.list.first;
+      final request2 = Coord2RegionCodeRequest(
+        x: latLng.longitude,
+        y: latLng.latitude,
+      );
+      final response2 = await mapController.coord2RegionCode(request2);
+      final coord2RegionCode = response2.list.first;
 
-    setState(() {
-      address1 =
-          '${coord2RegionCode.region1DepthName} ${coord2RegionCode.region2DepthName} ${coord2RegionCode.region3DepthName}';
+      if (!mounted) return;
+      setState(() {
+        address1 =
+            '${coord2RegionCode.region1DepthName} ${coord2RegionCode.region2DepthName} ${coord2RegionCode.region3DepthName}';
 
-      address2 = '';
-      if (coord2address.roadAddress != null) {
-        address2 += '도로명주소 : ${coord2address.roadAddress?.addressName}\n';
-      }
+        address2 = '';
+        if (coord2address.roadAddress != null) {
+          address2 += '도로명주소 : ${coord2address.roadAddress?.addressName}\n';
+        }
 
-      if (coord2address.address != null) {
-        address2 += '지번주소 : ${coord2address.address?.addressName ?? ''}';
-      }
-    });
+        if (coord2address.address != null) {
+          address2 += '지번주소 : ${coord2address.address?.addressName ?? ''}';
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('요청 실패: $e');
+    }
   }
 
   @override

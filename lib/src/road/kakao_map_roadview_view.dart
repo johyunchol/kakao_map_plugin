@@ -5,11 +5,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../basic/callbacks.dart';
 import '../basic/js_literal.dart';
+import '../bridge/bridge_factory.dart';
+import '../bridge/kakao_map_bridge.dart';
+import '../bridge/platform_flags.dart';
+import '../bridge/webview_bridge.dart';
 import '../constants/wrapper.dart';
 import '../js/roadview/js_roadview_link.dart';
 import '../model/lat_lng.dart';
@@ -38,15 +40,23 @@ enum RoadviewViewMode {
 /// 지도와 로드뷰가 하나의 WebView 안에 함께 있으므로, 두 대상을 모두
 /// 이 컨트롤러로 제어합니다.
 class KakaoMapRoadviewController {
-  final WebViewController _webViewController;
+  final KakaoMapBridge _bridge;
 
   /// 내부적으로 사용하는 WebView 컨트롤러입니다.
-  WebViewController get webViewController => _webViewController;
+  ///
+  /// WebView 를 쓰지 않는 플랫폼(web)에서는 [StateError] 를 던집니다.
+  WebViewController get webViewController =>
+      _bridge.webViewController ??
+      (throw StateError('이 플랫폼에서는 WebView 컨트롤러를 제공하지 않습니다.'));
 
   /// [KakaoMapRoadviewController]를 생성합니다.
-  KakaoMapRoadviewController(this._webViewController);
+  KakaoMapRoadviewController(WebViewController webViewController)
+      : _bridge = WebViewBridge.fromController(webViewController);
 
-  Future<void> _run(String script) => _webViewController.runJavaScript(script);
+  /// 라이브러리 내부용. 통신 계층을 직접 주입해 생성합니다.
+  KakaoMapRoadviewController.fromBridge(this._bridge);
+
+  Future<void> _run(String script) => _bridge.runJavaScript(script);
 
   Map<String, dynamic> _decode(Object? raw) {
     dynamic value = jsonDecode(raw is String ? raw : raw.toString());
@@ -95,14 +105,14 @@ class KakaoMapRoadviewController {
   /// 로드뷰의 현재 시점을 반환합니다.
   Future<Viewpoint> getViewpoint() async {
     final raw =
-        await _webViewController.runJavaScriptReturningResult('getViewpoint();');
+        await _bridge.runJavaScriptReturningResult('getViewpoint();');
     return Viewpoint.fromJson(_decode(raw));
   }
 
   /// 로드뷰의 현재 좌표를 반환합니다.
   Future<LatLng> getPosition() async {
     final raw =
-        await _webViewController.runJavaScriptReturningResult('getPosition();');
+        await _bridge.runJavaScriptReturningResult('getPosition();');
     return LatLng.fromJson(_decode(raw));
   }
 
@@ -191,7 +201,7 @@ class KakaoMapRoadviewView extends StatefulWidget {
 
 class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
     with WidgetsBindingObserver {
-  late WebViewController _webViewController;
+  late final KakaoMapBridge _bridge;
   KakaoMapRoadviewController? _controller;
   Timer? _relayoutTimer;
   bool _isReady = false;
@@ -210,6 +220,7 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _relayoutTimer?.cancel();
+    unawaited(_bridge.dispose().catchError((_) {}));
     super.dispose();
   }
 
@@ -227,41 +238,11 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
   }
 
   void _initializeWebView() {
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      params = AndroidWebViewControllerCreationParams();
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-
-    _controller = KakaoMapRoadviewController(controller);
-
-    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    _addJavaScriptChannels(controller);
-    controller.loadHtmlString(_loadHtml(),
-        baseUrl: AuthRepository.instance.baseUrl);
-
-    if (controller.platform is AndroidWebViewController) {
-      if (kDebugMode) {
-        AndroidWebViewController.enableDebugging(true);
-      }
-      final androidController = controller.platform as AndroidWebViewController;
-      androidController.setMediaPlaybackRequiresUserGesture(false);
-      androidController.setOnPlatformPermissionRequest(
-          (PlatformWebViewPermissionRequest request) async {
-        await request.grant();
-      });
-    }
-
-    _webViewController = controller;
+    final bridge = createKakaoMapBridge();
+    _bridge = bridge;
+    _controller = KakaoMapRoadviewController.fromBridge(bridge);
+    _addJavaScriptChannels(bridge);
+    bridge.loadHtml(_loadHtml(), baseUrl: AuthRepository.instance.baseUrl);
   }
 
   void _handleChannel(String raw, void Function(Map<String, dynamic>) emit) {
@@ -276,10 +257,9 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
     }
   }
 
-  void _addJavaScriptChannels(WebViewController controller) {
-    controller
-      ..addJavaScriptChannel('onMapCreated',
-          onMessageReceived: (JavaScriptMessage message) {
+  void _addJavaScriptChannels(KakaoMapBridge bridge) {
+    bridge
+      ..addJavaScriptChannel('onMapCreated', (String message) {
         if (!mounted) return;
         _isReady = true;
         // 초기 표시 모드를 적용한 뒤 사용자 콜백을 호출합니다.
@@ -290,23 +270,20 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
           if (mounted) widget.onCreated?.call(_controller!);
         }).catchError((_) {}));
       })
-      ..addJavaScriptChannel('onRoadviewInit',
-          onMessageReceived: (JavaScriptMessage message) {
+      ..addJavaScriptChannel('onRoadviewInit', (String message) {
         if (!mounted) return;
         widget.onRoadviewInit?.call();
       })
-      ..addJavaScriptChannel('onRoadviewPositionChange',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewPositionChange', (String message) {
+        _handleChannel(message, (json) {
           widget.onPositionChange?.call(LatLng(
             (json['latitude'] as num).toDouble(),
             (json['longitude'] as num).toDouble(),
           ));
         });
       })
-      ..addJavaScriptChannel('onRoadviewNotFound',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewNotFound', (String message) {
+        _handleChannel(message, (json) {
           widget.onRoadviewNotFound?.call(LatLng(
             (json['latitude'] as num).toDouble(),
             (json['longitude'] as num).toDouble(),
@@ -332,8 +309,7 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
             });
           }
         }
-        return WebViewWidget(
-          controller: _webViewController,
+        return _bridge.buildView(
           gestureRecognizers: widget.gestureRecognizers,
         );
       },
@@ -348,7 +324,7 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
       radius: widget.radius,
       showRoadviewOverlay: widget.showRoadviewOverlay,
       useMapWalker: widget.useMapWalker,
-      isIOS: defaultTargetPlatform == TargetPlatform.iOS,
+      isIOS: isIOSWebView,
     )}
 </script>''');
   }

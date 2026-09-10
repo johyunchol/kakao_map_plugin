@@ -51,6 +51,8 @@ class _Overlay5MarkerInfoWindowScreenState
             infoWindowFirstShow: true,
           ));
 
+          // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+          if (!mounted) return;
           setState(() {});
         }),
         markers: markers.toList(),

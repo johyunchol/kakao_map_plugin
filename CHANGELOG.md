@@ -36,6 +36,11 @@
 * 검색 요청이 타임아웃될 때 레거시 `xxxResult()` 콜백 경로도 함께 종료되지 않던 문제를 수정했습니다(이제 타임아웃 시 레거시 경로도 함께 종료됩니다).
 * `services` 라이브러리를 제외하고 지도를 만든 경우, 검색 API 호출이 조용히 멈추지 않고 `SERVICES_LIBRARY_NOT_LOADED` 오류로 완료됩니다.
 
+### Web 지원
+* **web 플랫폼을 지원합니다.** web 에서는 WebView 대신 같은 HTML 을 같은 origin 의 iframe 문서에 넣어 그립니다. 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 가 모바일과 동일하게 동작하며, 기존 코드 변경은 필요 없습니다.
+* 카카오 콘솔 **Web 플랫폼 사이트 도메인**에 앱의 origin(포트 포함)을 등록해야 합니다. `baseUrl` 우회는 web 에서 동작하지 않습니다.
+* 내부적으로 Dart↔JS 통신을 `KakaoMapBridge` 로 추상화했습니다(모바일 `WebViewBridge`, web `IframeBridge`). `KakaoMapController(WebViewController)` 등 기존 생성자는 그대로 유지되며, web 에서 `webViewController` getter 는 `StateError` 를 던집니다.
+
 ### 로드뷰
 * `KakaoRoadMap` 이 `onMapCreated` 를 호출하지 않고, 마커가 그려지지 않으며, rebuild 마다 마커가 무한 증식하던 문제를 수정했습니다.
 * 백그라운드 복귀 시 iOS 에서 로드뷰가 빈 화면이 되던 문제를 수정했습니다(`reload()` 대신 `relayout()` 사용).
