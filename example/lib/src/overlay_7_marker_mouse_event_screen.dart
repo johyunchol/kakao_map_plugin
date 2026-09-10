@@ -31,8 +31,9 @@ class _Overlay7MarkerMouseEventScreenState
 
   static const _normalSrc =
       'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png';
+  // 공식 샘플의 강조 이미지(marker_number_red.png)는 더 이상 제공되지 않아 단일 이미지로 대체합니다.
   static const _overSrc =
-      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_red.png';
+      'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png';
 
   static final _positions = <String, LatLng>{
     'm0': LatLng(33.450705, 126.570677),
@@ -43,24 +44,31 @@ class _Overlay7MarkerMouseEventScreenState
 
   List<Marker> _markers() => [
         for (final entry in _positions.entries)
-          Marker(
-            markerId: entry.key,
-            latLng: entry.value,
-            // 강조 상태면 빨간 스프라이트를 조금 크게, 아니면 파란 스프라이트를 씁니다.
-            markerImageSrc: activeId == entry.key ? _overSrc : _normalSrc,
-            width: activeId == entry.key ? 40 : 36,
-            height: activeId == entry.key ? 42 : 37,
-            offsetX: activeId == entry.key ? 20 : 18,
-            offsetY: activeId == entry.key ? 42 : 37,
-            // 스프라이트 시트에서 번호별 이미지를 잘라 씁니다. (Marker.spriteOrigin)
-            spriteOrigin: Point(
-                0,
-                activeId == entry.key
-                    ? int.parse(entry.key.substring(1)) * 46 + 10
-                    : int.parse(entry.key.substring(1)) * 46),
-            spriteWidth: 36,
-            spriteHeight: 691,
-          ),
+          if (activeId == entry.key)
+            // 강조 상태: 빨간 마커를 조금 크게 (단일 이미지)
+            Marker(
+              markerId: entry.key,
+              latLng: entry.value,
+              markerImageSrc: _overSrc,
+              width: 40,
+              height: 43,
+              offsetX: 20,
+              offsetY: 43,
+            )
+          else
+            // 기본 상태: 번호 스프라이트 시트에서 번호별 이미지를 잘라 씁니다. (Marker.spriteOrigin)
+            Marker(
+              markerId: entry.key,
+              latLng: entry.value,
+              markerImageSrc: _normalSrc,
+              width: 36,
+              height: 37,
+              offsetX: 18,
+              offsetY: 37,
+              spriteOrigin: Point(0, int.parse(entry.key.substring(1)) * 46),
+              spriteWidth: 36,
+              spriteHeight: 691,
+            ),
       ];
 
   void _setActive(String? id, String event) {
