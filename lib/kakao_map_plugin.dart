@@ -1,4 +1,4 @@
-library kakao_map_plugin;
+library;
 
 // Constants
 export 'src/basic/constants/analyze_type.dart';
@@ -7,6 +7,7 @@ export 'src/basic/constants/control_position.dart';
 export 'src/basic/constants/coords.dart';
 export 'src/basic/constants/drag_type.dart';
 export 'src/basic/constants/image_type.dart';
+export 'src/basic/constants/kakao_map_library.dart';
 export 'src/basic/constants/map_type.dart';
 export 'src/basic/constants/marker_drag_type.dart';
 export 'src/basic/constants/sort_by.dart';
