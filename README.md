@@ -92,7 +92,13 @@ web 에서 다른 점:
 
 * `AuthRepository.initialize(baseUrl:)` 은 무시됩니다. 도메인 검사는 실제 페이지 origin 으로 이뤄집니다.
 * `gestureRecognizers` 는 쓰이지 않습니다. iframe 안의 포인터 이벤트는 브라우저가 직접 처리합니다.
-* `KakaoMapController.webViewController` 는 web 에서 `StateError` 를 던집니다(WebView 가 없습니다).
+* `KakaoMapController.webViewController` 는 web 에서 `StateError` 를 던집니다(WebView 가 없습니다). 플랫폼에 관계없이 지도 문서 안에서 JavaScript 를 직접 실행하려면 `controller.runJavaScript()` / `controller.evaluateJavaScript()` 를 사용하세요.
+
+    ``` dart
+    // 플러그인이 아직 감싸지 않은 SDK 기능을 직접 호출할 때 (Android / iOS / Web 공통)
+    await mapController.runJavaScript('map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT);');
+    final raw = await mapController.evaluateJavaScript('JSON.stringify(map.getLevel())');
+    ```
 * 그 외 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 는 모바일과 동일하게 동작합니다.
 
 ---
@@ -807,3 +813,11 @@ web 에서 다른 점:
 ## 실행화면
 
 ![example](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/videos/example.gif?raw=true)
+
+### Web
+
+같은 코드가 브라우저에서 그대로 동작합니다. (Chrome, `flutter run -d chrome`)
+
+| 지도 | 지도 + 로드뷰(동동이) | Drawing Library |
+|---|---|---|
+| ![web map](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_map.png?raw=true) | ![web roadview](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_roadview.png?raw=true) | ![web drawing](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_drawing.png?raw=true) |
