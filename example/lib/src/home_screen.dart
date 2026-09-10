@@ -16,7 +16,7 @@ import 'package:kakao_map_plugin_example/src/map_11_terrain_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_12_map_type_radio_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_13_map_type_check_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_14_region_reset_screen.dart';
-import 'package:kakao_map_plugin_example/src/map_15_relayout_screen.dart.dart';
+import 'package:kakao_map_plugin_example/src/map_15_relayout_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_16_click_listener_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_17_click_add_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_18_get_center_screen.dart';
@@ -39,6 +39,7 @@ import 'package:kakao_map_plugin_example/src/overlay_11_markers_control_screen.d
 import 'package:kakao_map_plugin_example/src/overlay_12_markers_event1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_14_markers_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_15_shape_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_16_line_distance_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_1_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_21_custom_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_22_custom_overlay2_screen.dart';
@@ -154,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen>
           newPage: const Overlay14MarkersImage2Screen()),
       MenuItem(
           title: '원, 선, 사각형, 다각형 표시하기', newPage: const Overlay15ShapeScreen()),
-      // MenuItem(title: '선의 거리 계산하기', newPage: const Overlay16LineDistanceScreen()),
+      MenuItem(title: '선의 거리 계산하기', newPage: const Overlay16LineDistanceScreen()),
       // MenuItem(title: '다각형의 면적 계산하기', newPage: const Overlay17PolygonAreaScreen()),
       // MenuItem(title: '다각형에 이벤트 등록하기1', newPage: const Overlay18PolygonEvent1Screen()),
       // MenuItem(title: '다각형에 이벤트 등록하기2', newPage: const Overlay19PolygonEvent2Screen()),

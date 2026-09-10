@@ -3,7 +3,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 다각형에 이벤트 등록하기2
-/// https://apis.map.kakao.com/web/sample/calculatePolygonArea2/
+/// https://apis.map.kakao.com/web/sample/addPolygonMouseEvent2/
 class Overlay19PolygonEvent2Screen extends StatefulWidget {
   const Overlay19PolygonEvent2Screen({Key? key, this.title}) : super(key: key);
 

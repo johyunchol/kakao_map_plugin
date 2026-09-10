@@ -3,7 +3,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 이미지 지도에 마커 표시하기
-/// https://apis.map.kakao.com/web/sample/staticMapWithMarker/
+/// https://apis.map.kakao.com/web/sample/staticMapWithMarkerText/
 class Static3MarkerTextScreen extends StatefulWidget {
   const Static3MarkerTextScreen({Key? key, this.title}) : super(key: key);
 

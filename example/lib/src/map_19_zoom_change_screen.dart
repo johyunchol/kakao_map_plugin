@@ -3,7 +3,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 확대, 축소 이벤트 등록하기
-/// https://apis.map.kakao.com/web/sample/addMapClickEventWithMarker/
+/// https://apis.map.kakao.com/web/sample/addMapZoomChangedEvent/
 class Map19ZoomChangeScreen extends StatefulWidget {
   const Map19ZoomChangeScreen({Key? key, this.title}) : super(key: key);
 

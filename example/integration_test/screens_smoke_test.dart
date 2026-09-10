@@ -20,7 +20,7 @@ import 'package:kakao_map_plugin_example/src/map_11_terrain_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_12_map_type_radio_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_13_map_type_check_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_14_region_reset_screen.dart';
-import 'package:kakao_map_plugin_example/src/map_15_relayout_screen.dart.dart';
+import 'package:kakao_map_plugin_example/src/map_15_relayout_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_16_click_listener_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_17_click_add_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_18_get_center_screen.dart';
@@ -43,6 +43,7 @@ import 'package:kakao_map_plugin_example/src/overlay_11_markers_control_screen.d
 import 'package:kakao_map_plugin_example/src/overlay_12_markers_event1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_14_markers_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_15_shape_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_16_line_distance_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_1_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_21_custom_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_22_custom_overlay2_screen.dart';
@@ -96,6 +97,7 @@ final Map<String, Widget Function()> screens = {
   'Overlay12MarkersEvent1Screen': () => const Overlay12MarkersEvent1Screen(),
   'Overlay14MarkersImage2Screen': () => const Overlay14MarkersImage2Screen(),
   'Overlay15ShapeScreen': () => const Overlay15ShapeScreen(),
+  'Overlay16LineDistanceScreen': () => const Overlay16LineDistanceScreen(),
   'Overlay21CustomOverlay1Screen': () => const Overlay21CustomOverlay1Screen(),
   'Overlay22CustomOverlay2Screen': () => const Overlay22CustomOverlay2Screen(),
   'Overlay27PolygonHoleScreen': () => const Overlay27PolygonHoleScreen(),

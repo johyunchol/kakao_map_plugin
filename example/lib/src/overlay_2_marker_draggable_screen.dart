@@ -3,7 +3,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 마커 생성하기
-/// https://apis.map.kakao.com/web/sample/basicMarker/
+/// https://apis.map.kakao.com/web/sample/draggableMarker/
 class Overlay2MarkerDraggableScreen extends StatefulWidget {
   const Overlay2MarkerDraggableScreen({Key? key, this.title}) : super(key: key);
 
