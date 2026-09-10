@@ -671,4 +671,64 @@ void main() {
     await expectNoJsErrors(c);
     await unmount(tester);
   });
+  testWidgets('커스텀 타일셋을 등록해 기본 지도와 오버레이로 쓸 수 있다', (tester) async {
+    final c = await mount(tester, MapProps(center: LatLng(37.5, 127.0)));
+
+    await c.addTileset(const Tileset(
+      id: 'TEST_URL',
+      urlTemplate: 'https://i1.daumcdn.net/dmaps/apis/white.png?z={z}&y={y}&x={x}',
+      copyright: [TilesetCopyright('test')],
+    ));
+    await c.addTileset(const Tileset(
+      id: 'TEST_DOM',
+      tileFunction:
+          "function (x, y, z) { var d = document.createElement('div'); d.textContent = x + ',' + y + ',' + z; return d; }",
+    ));
+    expect(await c.getActiveTilesetId(), isNull);
+
+    // 기본 지도 타입으로 전환하면 SDK 가 우리 주소 함수를 실제로 호출한다.
+    await c.setTileset('TEST_URL');
+    expect(await c.getActiveTilesetId(), 'TEST_URL');
+    await waitUntil(tester, c, "(__tilesetStats['TEST_URL'] || 0) > 0");
+    // 템플릿 치환이 되었는지 확인한다.
+    final url = await js(c,
+        "kakao.maps.MapTypeId['TEST_URL'] !== undefined && __tilesets['TEST_URL'] ? 'ok' : 'missing'");
+    expect(url, 'ok');
+
+    // getTile 타일셋은 오버레이로 겹친다.
+    await c.addOverlayTileset('TEST_DOM');
+    await waitUntil(tester, c, "(__tilesetStats['TEST_DOM'] || 0) > 0");
+
+    // 표시 중인 타일셋을 같은 ID 로 다시 등록하면 새 타일셋으로 갈아끼워진다.
+    // (호출 횟수는 재등록 시 0 으로 초기화되므로 다시 늘어나야 새 타일 함수가 쓰인 것)
+    await c.addTileset(const Tileset(
+      id: 'TEST_URL',
+      urlTemplate: 'https://i1.daumcdn.net/dmaps/apis/white.png?v2&z={z}&y={y}&x={x}',
+    ));
+    expect(await c.getActiveTilesetId(), 'TEST_URL');
+    await waitUntil(tester, c, "(__tilesetStats['TEST_URL'] || 0) > 0");
+    await c.addTileset(const Tileset(
+      id: 'TEST_DOM',
+      tileFunction:
+          "function (x, y, z) { var d = document.createElement('div'); d.textContent = 'v2 ' + x; return d; }",
+    ));
+    await waitUntil(tester, c, "(__tilesetStats['TEST_DOM'] || 0) > 0");
+    await c.removeOverlayTileset('TEST_DOM');
+    expect(await js(c, "__tilesetOverlays['TEST_DOM'] === undefined"), isTrue);
+
+    // SDK 기본 지도 타입 ID 는 등록이 거부되고 오류만 기록된다.
+    await c.addTileset(const Tileset(id: 'ROADMAP', urlTemplate: 'x'));
+    final errs = await js(c, 'window.__kakaoMapErrors') as List;
+    expect(errs.where((e) => '$e'.contains('TILESET_ID_RESERVED')), hasLength(1));
+    expect(await js(c, "__tilesets['ROADMAP'] === undefined"), isTrue);
+    await js(c, 'window.__kakaoMapErrors.length = 0');
+
+    // 일반 지도로 되돌린다.
+    await c.setMapTypeId(MapType.normal);
+    expect(await c.getActiveTilesetId(), isNull);
+    expect(await c.getMapTypeId(), MapType.normal);
+
+    await expectNoJsErrors(c);
+    await unmount(tester);
+  });
 }

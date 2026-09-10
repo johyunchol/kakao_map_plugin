@@ -63,6 +63,7 @@ import '../js/js_drawing.dart';
 import '../js/js_custom_overlay.dart';
 import '../js/js_map_control.dart';
 import '../js/js_search.dart';
+import '../js/js_tileset.dart';
 import '../js/js_utils.dart';
 
 /// 카카오 지도 위젯입니다.
@@ -520,6 +521,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     )}
     ${JsMapControl.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
     ${JsUtils.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
+    ${JsTileset.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
     ${JsDrawing.getScript(
       hasDrawEndCallback: widget.onDrawingEnd != null,
       hasDrawRemoveCallback: widget.onDrawingRemove != null,

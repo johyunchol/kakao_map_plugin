@@ -5,12 +5,12 @@ import 'package:integration_test/integration_test.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_12_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_14_drawing_undo_redo_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_13_drawing_toolbox_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_12_drawing_get_data_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_11_drawing_library_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_16_drawing_undo_redo_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_15_drawing_toolbox_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_14_drawing_get_data_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_13_drawing_library_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_4_category_bounds_screen.dart';
@@ -34,6 +34,8 @@ import 'package:kakao_map_plugin_example/src/map_20_center_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_21_bounds_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_24_custom_tileset_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_25_get_tile_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -110,6 +112,8 @@ final Map<String, Widget Function()> screens = {
   'Map21BoundsChangeScreen': () => const Map21BoundsChangeScreen(),
   'Map22TilesLoadedScreen': () => const Map22TilesLoadedScreen(),
   'Map23CoordPixelConvertScreen': () => const Map23CoordPixelConvertScreen(),
+  'Map24CustomTilesetScreen': () => const Map24CustomTilesetScreen(),
+  'Map25GetTileScreen': () => const Map25GetTileScreen(),
   'Overlay1MarkerScreen': () => const Overlay1MarkerScreen(),
   'Overlay26MarkerTrackerScreen': () => const Overlay26MarkerTrackerScreen(),
   'Overlay25DragCustomOverlayScreen': () => const Overlay25DragCustomOverlayScreen(),
@@ -150,10 +154,10 @@ final Map<String, Widget Function()> screens = {
   'Static2MarkerScreen': () => const Static2MarkerScreen(),
   'Static3MarkerTextScreen': () => const Static3MarkerTextScreen(),
   'Library1KeywordScreen': () => const Library1KeywordScreen(),
-  'Library14DrawingUntoRedoScreen': () => const Library14DrawingUntoRedoScreen(),
-  'Library13DrawingToolboxScreen': () => const Library13DrawingToolboxScreen(),
-  'Library12DrawingGetDataScreen': () => const Library12DrawingGetDataScreen(),
-  'Library11DrawingLibraryScreen': () => const Library11DrawingLibraryScreen(),
+  'Library16DrawingUndoRedoScreen': () => const Library16DrawingUndoRedoScreen(),
+  'Library15DrawingToolboxScreen': () => const Library15DrawingToolboxScreen(),
+  'Library14DrawingGetDataScreen': () => const Library14DrawingGetDataScreen(),
+  'Library13DrawingLibraryScreen': () => const Library13DrawingLibraryScreen(),
   'Library2KeywordListScreen': () => const Library2KeywordListScreen(),
   'Library3CategoryScreen': () => const Library3CategoryScreen(),
   'Library4CategoryBoundsScreen': () => const Library4CategoryBoundsScreen(),
@@ -164,7 +168,7 @@ final Map<String, Widget Function()> screens = {
   'Library9MarkerClustererClickEventScreen': () => const Library9MarkerClustererClickEventScreen(),
   'Library10MarkerClustererTextScreen': () => const Library10MarkerClustererTextScreen(),
   'Library11ClustererCustomOverlayScreen': () => const Library11ClustererCustomOverlayScreen(),
-  'Library11MarkerClustererCustomImageScreen': () => const Library11MarkerClustererCustomImageScreen(),
+  'Library12MarkerClustererCustomImageScreen': () => const Library12MarkerClustererCustomImageScreen(),
 };
 
 Future<void> pumpFor(WidgetTester tester, Duration duration) async {

@@ -74,6 +74,7 @@ export 'src/basic/marker_icon.dart';
 export 'src/basic/polygon.dart';
 export 'src/basic/polyline.dart';
 export 'src/basic/rectangle.dart';
+export 'src/basic/tileset.dart';
 
 // Maps
 export 'src/road/kakao_road_map.dart';

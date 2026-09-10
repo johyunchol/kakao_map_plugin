@@ -4,18 +4,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// Drawing undo, redo
 /// https://apis.map.kakao.com/web/sample/drawingUndo/
-class Library14DrawingUntoRedoScreen extends StatefulWidget {
-  const Library14DrawingUntoRedoScreen({Key? key, this.title}) : super(key: key);
+class Library16DrawingUndoRedoScreen extends StatefulWidget {
+  const Library16DrawingUndoRedoScreen({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  State<Library14DrawingUntoRedoScreen> createState() =>
-      _Library14DrawingUntoRedoScreenState();
+  State<Library16DrawingUndoRedoScreen> createState() =>
+      _Library16DrawingUndoRedoScreenState();
 }
 
-class _Library14DrawingUntoRedoScreenState
-    extends State<Library14DrawingUntoRedoScreen> {
+class _Library16DrawingUndoRedoScreenState
+    extends State<Library16DrawingUndoRedoScreen> {
   KakaoMapController? mapController;
   int drawnCount = 0;
   String message = '선을 그린 뒤 되돌리기와 다시실행을 눌러 보세요.';

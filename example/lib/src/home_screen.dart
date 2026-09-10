@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_11_drawing_library_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_12_drawing_get_data_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_13_drawing_toolbox_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_14_drawing_undo_redo_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_13_drawing_library_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_14_drawing_get_data_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_15_drawing_toolbox_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_16_drawing_undo_redo_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
-import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_12_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
@@ -30,6 +30,8 @@ import 'package:kakao_map_plugin_example/src/map_20_center_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_21_bounds_change_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_24_custom_tileset_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_25_get_tile_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -144,9 +146,8 @@ class _HomeScreenState extends State<HomeScreen>
             title: '타일로드 이벤트 등록하기', newPage: const Map22TilesLoadedScreen()),
         MenuItem(
             title: '좌표-픽셀 변환하기', newPage: const Map23CoordPixelConvertScreen()),
-
-        // MenuItem(title: '커스텀 타일셋1', newPage: const Map1DefaultScreen()),
-        // MenuItem(title: '커스텀 타일셋2', newPage: const Map1DefaultScreen()),
+        MenuItem(title: '커스텀 타일셋1', newPage: const Map24CustomTilesetScreen()),
+        MenuItem(title: '커스텀 타일셋2', newPage: const Map25GetTileScreen()),
       ],
     ),
     MenuGroup(name: '오버레이', items: [
@@ -244,11 +245,11 @@ class _HomeScreenState extends State<HomeScreen>
           newPage: const Library11ClustererCustomOverlayScreen()),
       MenuItem(
           title: '클러스터러 커스텀 마커 이미지 테스트',
-          newPage: const Library11MarkerClustererCustomImageScreen()),
-      MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
-      MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
-      MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),
-      MenuItem(title: 'Drawing undo, redo', newPage: const Library14DrawingUntoRedoScreen()),
+          newPage: const Library12MarkerClustererCustomImageScreen()),
+      MenuItem(title: 'Drawing Library 사용하기', newPage: const Library13DrawingLibraryScreen()),
+      MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library14DrawingGetDataScreen()),
+      MenuItem(title: 'Toolbox 사용하기', newPage: const Library15DrawingToolboxScreen()),
+      MenuItem(title: 'Drawing undo, redo', newPage: const Library16DrawingUndoRedoScreen()),
     ]),
   ];
 

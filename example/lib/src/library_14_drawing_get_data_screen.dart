@@ -4,18 +4,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// Drawing Library 에서 데이터 얻기
 /// https://apis.map.kakao.com/web/sample/drawingGetData/
-class Library12DrawingGetDataScreen extends StatefulWidget {
-  const Library12DrawingGetDataScreen({Key? key, this.title}) : super(key: key);
+class Library14DrawingGetDataScreen extends StatefulWidget {
+  const Library14DrawingGetDataScreen({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  State<Library12DrawingGetDataScreen> createState() =>
-      _Library12DrawingGetDataScreenState();
+  State<Library14DrawingGetDataScreen> createState() =>
+      _Library14DrawingGetDataScreenState();
 }
 
-class _Library12DrawingGetDataScreenState
-    extends State<Library12DrawingGetDataScreen> {
+class _Library14DrawingGetDataScreenState
+    extends State<Library14DrawingGetDataScreen> {
   KakaoMapController? mapController;
   List<String> summary = [];
 

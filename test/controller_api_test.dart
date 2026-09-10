@@ -93,4 +93,99 @@ void main() {
       expect(fake.scripts[1], 'panTo(37.6, 127.1);');
     });
   });
+  group('Tileset', () {
+    test('addTileset 은 타일셋 정의를 JSON 문자열로 보낸다', () async {
+      await controller.addTileset(const Tileset(
+        id: 'MY_TILES',
+        urlTemplate: 'https://tiles.example.com/{z}/{y}/{x}.png',
+        copyright: [TilesetCopyright('© Example', minZoom: 3)],
+        minZoom: 1,
+        maxZoom: 10,
+      ));
+
+      final script = fake.scripts.single;
+      final match = RegExp(r'^addTileset\((".*")\);$').firstMatch(script);
+      expect(match, isNotNull, reason: script);
+
+      final payload = jsonDecode(jsonDecode(match!.group(1)!) as String);
+      expect(payload['id'], 'MY_TILES');
+      expect(payload['width'], 256);
+      expect(payload['height'], 256);
+      expect(payload['urlTemplate'], 'https://tiles.example.com/{z}/{y}/{x}.png');
+      expect(payload.containsKey('urlFunction'), isFalse);
+      expect(payload.containsKey('tileFunction'), isFalse);
+      expect(payload['copyright'], [
+        {'msg': '© Example', 'shortMsg': '© Example', 'minZoom': 3},
+      ]);
+      expect(payload['dark'], isFalse);
+      expect(payload['minZoom'], 1);
+      expect(payload['maxZoom'], 10);
+    });
+
+    test('타일 함수 원문은 따옴표가 있어도 그대로 전달된다', () async {
+      const fn = "function (x, y, z) { return 'a' + x + \"b\" + `c` + z; }";
+      await controller.addTileset(const Tileset(id: 'FN', urlFunction: fn));
+
+      final match =
+          RegExp(r'^addTileset\((".*")\);$').firstMatch(fake.scripts.single);
+      final payload = jsonDecode(jsonDecode(match!.group(1)!) as String);
+      expect(payload['urlFunction'], fn);
+    });
+
+    test('규칙에 맞지 않는 ID 는 ArgumentError 를 던지고 JS 를 보내지 않는다', () async {
+      for (final bad in ['__proto__.x', 'has space', '1STARTS_WITH_DIGIT', 'a-b', '한글']) {
+        await expectLater(
+          controller.addTileset(Tileset(id: bad, urlTemplate: 'a')),
+          throwsArgumentError,
+          reason: bad,
+        );
+      }
+      expect(fake.scripts, isEmpty);
+
+      // 규칙에 맞는 ID 는 통과한다 (__proto__ 자체는 JS 쪽 null-prototype 레지스트리가 처리)
+      await controller.addTileset(const Tileset(id: '__proto__', urlTemplate: 'a'));
+      await controller.addTileset(const Tileset(id: 'my_tiles2', urlTemplate: 'a'));
+      expect(fake.scripts, hasLength(2));
+    });
+
+    test('타일 소스를 둘 이상 지정하면 assert 로 막는다', () {
+      expect(
+        () => Tileset(id: 'X', urlTemplate: 'a', urlFunction: 'b'),
+        throwsA(isA<AssertionError>()),
+      );
+      expect(() => Tileset(id: 'X'), throwsA(isA<AssertionError>()));
+      expect(() => Tileset(id: '', urlTemplate: 'a'),
+          throwsA(isA<AssertionError>()));
+    });
+
+    test('setTileset / addOverlayTileset / removeOverlayTileset 는 ID 를 문자열 리터럴로 보낸다',
+        () async {
+      await controller.setTileset('A');
+      await controller.addOverlayTileset('B');
+      await controller.removeOverlayTileset('C');
+      expect(fake.scripts, [
+        'setTileset("A");',
+        'addOverlayTileset("B");',
+        'removeOverlayTileset("C");',
+      ]);
+    });
+
+    test('getActiveTilesetId 는 Android 객체 결과와 iOS 문자열 결과를 모두 파싱한다',
+        () async {
+      fake.returningResult = '{"tilesetId":"MY_TILES"}';
+      expect(await controller.getActiveTilesetId(), 'MY_TILES');
+
+      fake.returningResult = '"{\\"tilesetId\\":null}"';
+      expect(await controller.getActiveTilesetId(), isNull);
+    });
+
+    test('getMapTypeId 는 커스텀 타일셋 상태(숫자가 아닌 값)에서도 예외 없이 normal 을 돌려준다',
+        () async {
+      fake.returningResult = '{"mapTypeId":"MY_TILES"}';
+      expect(await controller.getMapTypeId(), MapType.normal);
+
+      fake.returningResult = '{"mapTypeId":2}';
+      expect(await controller.getMapTypeId(), MapType.skyView);
+    });
+  });
 }

@@ -33,6 +33,7 @@ import 'constants/map_type.dart';
 import 'constants/drawing_overlay_type.dart';
 import 'custom_overlay.dart';
 import 'drawing_options.dart';
+import 'tileset.dart';
 import 'marker.dart';
 import 'overlay_payload.dart';
 import 'polygon.dart';
@@ -549,14 +550,20 @@ class KakaoMapController {
 
   /// 현재 지도 타입을 반환합니다.
   ///
+  /// [setTileset] 으로 커스텀 타일셋을 기본 지도로 쓰고 있으면
+  /// [MapType.normal] 을 반환합니다. 타일셋 ID 는 [getActiveTilesetId] 로 확인하세요.
+  ///
   /// Returns: 현재 지도 타입 [MapType]
   Future<MapType> getMapTypeId() async {
     final result = await _webViewController
         .runJavaScriptReturningResult("getMapTypeId();") as String;
 
-    final mapTypeId = (jsonDecode(result)['mapTypeId'] as num).toInt();
+    final mapTypeId = jsonDecode(result)['mapTypeId'];
+    // 커스텀 타일셋이 기본 지도 타입이면 숫자가 아닌 값이 온다. 이때는
+    // [MapType.normal] 로 돌려주고, 실제 ID 는 [getActiveTilesetId] 로 확인한다.
+    if (mapTypeId is! num) return MapType.normal;
 
-    return MapType.getById(mapTypeId);
+    return MapType.getById(mapTypeId.toInt());
   }
 
   /// 지도가 표시할 영역을 설정합니다.
@@ -900,5 +907,70 @@ class KakaoMapController {
   /// 도형 그리기 도구 상자를 제거합니다.
   Future<void> removeDrawingToolbox() async {
     await _webViewController.runJavaScript('removeDrawingToolbox();');
+  }
+  // ---------------------------------------------------------------------------
+  // Tileset
+  // ---------------------------------------------------------------------------
+
+  /// 커스텀 타일셋을 등록합니다.
+  ///
+  /// 등록만 하고 화면에는 아직 반영하지 않습니다. 기본 지도로 쓰려면
+  /// [setTileset], 기존 지도 위에 겹치려면 [addOverlayTileset] 을 호출하세요.
+  ///
+  /// 예시:
+  /// ```dart
+  /// await controller.addTileset(const Tileset(
+  ///   id: 'MY_TILES',
+  ///   urlTemplate: 'https://tiles.example.com/{z}/{y}/{x}.png',
+  /// ));
+  /// await controller.setTileset('MY_TILES');
+  /// ```
+  ///
+  /// [Tileset.id] 가 영문자·숫자·밑줄 규칙에 맞지 않으면 [ArgumentError] 를 던집니다.
+  Future<void> addTileset(Tileset tileset) async {
+    if (!_tilesetIdPattern.hasMatch(tileset.id)) {
+      throw ArgumentError.value(
+        tileset.id,
+        'tileset.id',
+        '영문자, 숫자, 밑줄만 쓸 수 있고 숫자로 시작할 수 없습니다.',
+      );
+    }
+    await _webViewController
+        .runJavaScript('addTileset(${_jsJson(tileset.toJson())});');
+  }
+
+  static final RegExp _tilesetIdPattern = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
+
+  /// 등록한 타일셋을 기본 지도 타입으로 사용합니다.
+  ///
+  /// 일반 지도로 되돌리려면 `setMapTypeId(MapType.normal)` 을 호출하세요.
+  /// 등록하지 않은 [tilesetId] 는 무시됩니다.
+  Future<void> setTileset(String tilesetId) async {
+    await _webViewController
+        .runJavaScript('setTileset(${_jsStr(tilesetId)});');
+  }
+
+  /// 등록한 타일셋을 현재 지도 위에 겹쳐 올립니다.
+  ///
+  /// [removeOverlayTileset] 으로 내릴 수 있습니다.
+  Future<void> addOverlayTileset(String tilesetId) async {
+    await _webViewController
+        .runJavaScript('addOverlayTileset(${_jsStr(tilesetId)});');
+  }
+
+  /// [addOverlayTileset] 으로 올린 타일셋을 내립니다.
+  Future<void> removeOverlayTileset(String tilesetId) async {
+    await _webViewController
+        .runJavaScript('removeOverlayTileset(${_jsStr(tilesetId)});');
+  }
+
+  /// 기본 지도 타입으로 쓰고 있는 커스텀 타일셋의 ID 를 반환합니다.
+  ///
+  /// 일반 지도 타입([MapType])을 쓰고 있으면 null 을 반환합니다.
+  Future<String?> getActiveTilesetId() async {
+    final raw = await _webViewController
+        .runJavaScriptReturningResult('getActiveTilesetId();');
+    final result = _decodeMapResult(raw, 'getActiveTilesetId');
+    return result['tilesetId']?.toString();
   }
 }

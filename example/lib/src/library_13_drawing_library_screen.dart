@@ -4,18 +4,18 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// Drawing Library 사용하기
 /// https://apis.map.kakao.com/web/sample/basicDrawingLibrary/
-class Library11DrawingLibraryScreen extends StatefulWidget {
-  const Library11DrawingLibraryScreen({Key? key, this.title}) : super(key: key);
+class Library13DrawingLibraryScreen extends StatefulWidget {
+  const Library13DrawingLibraryScreen({Key? key, this.title}) : super(key: key);
 
   final String? title;
 
   @override
-  State<Library11DrawingLibraryScreen> createState() =>
-      _Library11DrawingLibraryScreenState();
+  State<Library13DrawingLibraryScreen> createState() =>
+      _Library13DrawingLibraryScreenState();
 }
 
-class _Library11DrawingLibraryScreenState
-    extends State<Library11DrawingLibraryScreen> {
+class _Library13DrawingLibraryScreenState
+    extends State<Library13DrawingLibraryScreen> {
   KakaoMapController? mapController;
   DrawingOverlayType selected = DrawingOverlayType.marker;
   String message = '아래에서 도형을 고르고 지도를 조작해 보세요.';

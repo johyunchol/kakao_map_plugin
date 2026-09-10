@@ -4,19 +4,19 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 
 /// 마커 클러스터러에 커스텀 이미지 마커 사용하기
 /// Issue #70: 클러스터링 시 커스텀 마커 이미지가 적용되지 않는 문제 테스트
-class Library11MarkerClustererCustomImageScreen extends StatefulWidget {
-  const Library11MarkerClustererCustomImageScreen({Key? key, this.title})
+class Library12MarkerClustererCustomImageScreen extends StatefulWidget {
+  const Library12MarkerClustererCustomImageScreen({Key? key, this.title})
       : super(key: key);
 
   final String? title;
 
   @override
-  State<Library11MarkerClustererCustomImageScreen> createState() =>
-      _Library11MarkerClustererCustomImageScreenState();
+  State<Library12MarkerClustererCustomImageScreen> createState() =>
+      _Library12MarkerClustererCustomImageScreenState();
 }
 
-class _Library11MarkerClustererCustomImageScreenState
-    extends State<Library11MarkerClustererCustomImageScreen> {
+class _Library12MarkerClustererCustomImageScreenState
+    extends State<Library12MarkerClustererCustomImageScreen> {
   late KakaoMapController mapController;
 
   Clusterer? clusterer;
