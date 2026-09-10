@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:kakao_map_plugin/src/protocol/coord_2_address_response.dart';
 import 'package:kakao_map_plugin/src/service/base_service.dart';
 
@@ -34,8 +32,10 @@ class Coord2AddressService extends BaseService<Coord2AddressResponse> {
   /// [message]는 네이티브 플랫폼에서 전달한 JSON 문자열입니다.
   /// 이 메서드는 네이티브 코드에서 직접 호출됩니다.
   static void coord2AddressCallback(String message) {
-    final resultData = jsonDecode(message);
-    _instance.completer.complete(Coord2AddressResponse.fromJson(resultData));
+    _instance.handleMessage(
+      message,
+      (json) => Coord2AddressResponse.fromJson(json as List<dynamic>),
+    );
   }
 
   /// 좌표-주소 변환 결과를 비동기로 반환합니다.

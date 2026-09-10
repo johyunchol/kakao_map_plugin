@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:kakao_map_plugin/src/protocol/address_search_response.dart';
 import 'package:kakao_map_plugin/src/service/base_service.dart';
 
@@ -32,8 +30,10 @@ class AddressSearchService extends BaseService<AddressSearchResponse> {
   /// [message]는 네이티브 플랫폼에서 전달한 JSON 문자열입니다.
   /// 이 메서드는 네이티브 코드에서 직접 호출됩니다.
   static Future<void> addressSearchCallback(String message) async {
-    final resultData = jsonDecode(message);
-    _instance.completer.complete(AddressSearchResponse.fromJson(resultData));
+    _instance.handleMessage(
+      message,
+      (json) => AddressSearchResponse.fromJson(json as List<dynamic>),
+    );
   }
 
   /// 주소 검색 결과를 비동기로 반환합니다.
