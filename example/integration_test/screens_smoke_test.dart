@@ -54,6 +54,12 @@ import 'package:kakao_map_plugin_example/src/overlay_4_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_5_marker_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_6_marker_click_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_1_default_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_9_toggle_button_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_8_button_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_6_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_5_overlay2_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_3_move_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_2_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_4_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_7_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_1_default_screen.dart';
@@ -104,6 +110,12 @@ final Map<String, Widget Function()> screens = {
   'Overlay22CustomOverlay2Screen': () => const Overlay22CustomOverlay2Screen(),
   'Overlay27PolygonHoleScreen': () => const Overlay27PolygonHoleScreen(),
   'RoadView1DefaultScreen': () => const RoadView1DefaultScreen(),
+  'RoadView9ToggleButtonScreen': () => const RoadView9ToggleButtonScreen(),
+  'RoadView8ButtonScreen': () => const RoadView8ButtonScreen(),
+  'RoadView6CustomOverlayScreen': () => const RoadView6CustomOverlayScreen(),
+  'RoadView5Overlay2Screen': () => const RoadView5Overlay2Screen(),
+  'RoadView3MoveScreen': () => const RoadView3MoveScreen(),
+  'RoadView2DefaultScreen': () => const RoadView2DefaultScreen(),
   'RoadView4Overlay1Screen': () => const RoadView4Overlay1Screen(),
   'RoadView7ImageScreen': () => const RoadView7ImageScreen(),
   'Static1DefaultScreen': () => const Static1DefaultScreen(),

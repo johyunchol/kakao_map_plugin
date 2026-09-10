@@ -50,6 +50,12 @@ import 'package:kakao_map_plugin_example/src/overlay_4_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_5_marker_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_6_marker_click_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_1_default_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_9_toggle_button_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_8_button_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_6_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_5_overlay2_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_3_move_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_2_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_4_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_7_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_1_default_screen.dart';
@@ -177,12 +183,14 @@ class _HomeScreenState extends State<HomeScreen>
     ]),
     MenuGroup(name: '로드뷰', items: [
       MenuItem(title: '로드뷰 생성하기', newPage: const RoadView1DefaultScreen()),
-      // MenuItem(title: '로드뷰 도로를 이용하여 로드뷰 생성하기', newPage: const RoadView2DefaultScreen()),
-      // MenuItem(title: '동동이를 이용하여 로드뷰와 지도 연동하기', newPage: const RoadView3MoveScreen()),
+      MenuItem(title: '로드뷰 도로를 이용하여 로드뷰 생성하기', newPage: const RoadView2DefaultScreen()),
+      MenuItem(title: '동동이를 이용하여 로드뷰와 지도 연동하기', newPage: const RoadView3MoveScreen()),
       MenuItem(title: '로드뷰에 마커와 인포윈도우 올리기', newPage: const RoadView4Overlay1Screen()),
-      // MenuItem(title: '마커의 고도와 반경 조절하기', newPage: const RoadView5Overlay2Screen()),
-      // MenuItem(title: '로드뷰에 커스텀오버레이 올리기', newPage: const RoadView6CustomOverlayScreen()),
+      MenuItem(title: '마커의 고도와 반경 조절하기', newPage: const RoadView5Overlay2Screen()),
+      MenuItem(title: '로드뷰에 커스텀오버레이 올리기', newPage: const RoadView6CustomOverlayScreen()),
       MenuItem(title: '로드뷰에 이미지 올리기', newPage: const RoadView7ImageScreen()),
+      MenuItem(title: '버튼으로 로드뷰 보기', newPage: const RoadView8ButtonScreen()),
+      MenuItem(title: '로드뷰 토글 버튼', newPage: const RoadView9ToggleButtonScreen()),
     ]),
     MenuGroup(name: '정적지도', items: [
       MenuItem(title: '이미지 지도 생성하기', newPage: const Static1DefaultScreen()),

@@ -75,4 +75,5 @@ export 'src/basic/rectangle.dart';
 // Maps
 export 'src/road/kakao_road_map.dart';
 export 'src/road/kakao_roadview_controller.dart';
+export 'src/road/kakao_map_roadview_view.dart';
 export 'src/static/kakao_static_map.dart';
