@@ -22,7 +22,30 @@ class JsMapInit {
     required bool hasOnTilesLoadedCallback,
     required bool isIOS,
     required bool hasOnMapDoubleTap,
+    bool hasOnMapTypeChanged = false,
+    int? initialMapTypeId,
+    bool? disableDoubleClick,
+    bool? disableDoubleClickZoom,
+    bool? scrollwheel,
+    bool? keyboardShortcuts,
   }) {
+    // 지정한 생성 옵션만 넣어 SDK 기본값을 유지합니다.
+    final extraOptions = StringBuffer();
+    if (initialMapTypeId != null) {
+      extraOptions.write(',\n            mapTypeId: $initialMapTypeId');
+    }
+    if (disableDoubleClick != null) {
+      extraOptions.write(',\n            disableDoubleClick: $disableDoubleClick');
+    }
+    if (disableDoubleClickZoom != null) {
+      extraOptions.write(',\n            disableDoubleClickZoom: $disableDoubleClickZoom');
+    }
+    if (scrollwheel != null) {
+      extraOptions.write(',\n            scrollwheel: $scrollwheel');
+    }
+    if (keyboardShortcuts != null) {
+      extraOptions.write(',\n            keyboardShortcuts: $keyboardShortcuts');
+    }
     return '''
     window.onload = function () {
         // Kakao Maps SDK가 완전히 로드된 후 지도를 초기화합니다
@@ -40,7 +63,8 @@ class JsMapInit {
             return false;
         }
         if (!geocoder) geocoder = new kakao.maps.services.Geocoder();
-        if (!places) places = new kakao.maps.services.Places();
+        // map 을 넘겨야 useMapCenter / useMapBounds 검색 옵션이 동작합니다.
+        if (!places) places = map ? new kakao.maps.services.Places(map) : new kakao.maps.services.Places();
         return true;
     }
 
@@ -54,7 +78,7 @@ class JsMapInit {
 
         const options = {
             center: center,
-            level: $currentLevel
+            level: $currentLevel$extraOptions
         };
 
         map = new kakao.maps.Map(container, options);
@@ -216,6 +240,13 @@ class JsMapInit {
                 }
 
                 tilesLoaded.postMessage(JSON.stringify(result));
+            });
+        }
+
+        if ($hasOnMapTypeChanged) {
+            // 지도 타입이 바뀌면 발생한다. (지도타입 컨트롤, setMapTypeId 모두)
+            kakao.maps.event.addListener(map, 'maptypeid_changed', function () {
+                mapTypeChanged.postMessage(JSON.stringify({ mapTypeId: map.getMapTypeId() }));
             });
         }
 

@@ -111,6 +111,11 @@ class KakaoRoadMap extends StatefulWidget {
   /// 주변에 로드뷰가 없어 표시하지 못했을 때 호출됩니다.
   final OnRoadviewNotFound? onRoadviewNotFound;
 
+  /// 문서 안의 링크를 탭했을 때 호출되는 콜백입니다. 지정하지 않으면 링크 탭은 무시됩니다.
+  ///
+  /// 플러그인은 지도가 사라지지 않도록 링크 이동을 항상 가로챕니다.
+  final OnLinkTap? onLinkTap;
+
   /// 로드뷰 위 마커를 탭했을 때 호출됩니다.
   final OnCustomOverlayTap? onMarkerTap;
 
@@ -140,6 +145,7 @@ class KakaoRoadMap extends StatefulWidget {
     this.onViewpointChange,
     this.onPositionChange,
     this.onRoadviewNotFound,
+    this.onLinkTap,
     this.onMarkerTap,
     this.onCustomOverlayTap,
   });
@@ -218,6 +224,12 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
 
   void _addJavaScriptChannels(KakaoMapBridge bridge) {
     bridge
+      ..addJavaScriptChannel('onLinkTap', (String message) {
+        _handleChannel(message, (json) {
+          final url = Uri.tryParse(json['url']?.toString() ?? '');
+          if (url != null) widget.onLinkTap?.call(url);
+        });
+      })
       ..addJavaScriptChannel('onRoadviewInit', (String message) {
         if (!mounted) return;
         _isRoadviewReady = true;

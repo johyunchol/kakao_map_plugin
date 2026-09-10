@@ -33,6 +33,22 @@ class _Overlay17PolygonAreaScreenState
     super.initState();
   }
 
+  /// 지도에 그려진 다각형의 면적을 SDK(`getArea`)로 다시 계산해 반영합니다.
+  ///
+  /// 다각형은 위젯 속성으로 전달되어 다음 프레임에 지도에 반영되므로, 프레임이
+  /// 끝난 뒤 조회합니다.
+  Future<void> _refreshAreaFromSdk() async {
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    try {
+      final sdkArea = await mapController.getPolygonArea('areaPolygon');
+      if (!mounted) return;
+      setState(() => area = sdkArea);
+    } catch (e) {
+      debugPrint('면적 조회 실패: $e');
+    }
+  }
+
   /// 위경도 좌표를 미터 단위 평면 좌표로 근사 변환한 뒤
   /// 신발끈 공식(shoelace formula)으로 다각형의 면적(㎡)을 계산합니다.
   double _calculatePolygonArea(List<LatLng> vertices) {
@@ -97,7 +113,9 @@ class _Overlay17PolygonAreaScreenState
           fillOpacity: 0.3,
         ),
       };
+      // 즉시 표시용 근사값. 지도에 다각형이 그려진 뒤 SDK 계산값으로 바꿉니다.
       area = _calculatePolygonArea(points);
+      _refreshAreaFromSdk();
     } else {
       polygons = {};
       area = 0;

@@ -176,6 +176,11 @@ class KakaoMapRoadviewView extends StatefulWidget {
   /// 주변에 로드뷰가 없어 이동하지 못했을 때 호출됩니다.
   final OnRoadviewNotFound? onRoadviewNotFound;
 
+  /// 문서 안의 링크를 탭했을 때 호출되는 콜백입니다. 지정하지 않으면 링크 탭은 무시됩니다.
+  ///
+  /// 플러그인은 지도가 사라지지 않도록 링크 이동을 항상 가로챕니다.
+  final OnLinkTap? onLinkTap;
+
   /// Specifies which gestures should be consumed by the view.
   final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
 
@@ -192,6 +197,7 @@ class KakaoMapRoadviewView extends StatefulWidget {
     this.onRoadviewInit,
     this.onPositionChange,
     this.onRoadviewNotFound,
+    this.onLinkTap,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
@@ -269,6 +275,12 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
             .then((_) {
           if (mounted) widget.onCreated?.call(_controller!);
         }).catchError((_) {}));
+      })
+      ..addJavaScriptChannel('onLinkTap', (String message) {
+        _handleChannel(message, (json) {
+          final url = Uri.tryParse(json['url']?.toString() ?? '');
+          if (url != null) widget.onLinkTap?.call(url);
+        });
       })
       ..addJavaScriptChannel('onRoadviewInit', (String message) {
         if (!mounted) return;

@@ -503,9 +503,102 @@ class KakaoMapController {
   /// [points]: 화면에 표시할 좌표 목록입니다.
   ///
   /// 모든 좌표가 화면에 보이도록 줌 레벨과 중심 좌표를 자동으로 조정합니다.
-  Future<void> fitBounds(List<LatLng> points) async {
-    await _bridge
-        .runJavaScript("fitBounds(${_jsJson(points)});");
+  ///
+  /// [padding] 을 주면 영역 바깥에 그만큼(px)의 상하좌우 여백을 확보합니다.
+  /// 지정하지 않으면 SDK 기본값(32px)을 사용합니다.
+  Future<void> fitBounds(List<LatLng> points, {int? padding}) async {
+    await _bridge.runJavaScript(padding == null
+        ? "fitBounds(${_jsJson(points)});"
+        : "fitBounds(${_jsJson(points)}, ${_jsPrimitive(padding)});");
+  }
+
+  /// 영역이 화면에 들어오도록 지도를 부드럽게 이동합니다.
+  ///
+  /// [padding] 은 영역 바깥에 확보할 상하좌우 여백(px)입니다. 이동 거리가 화면보다
+  /// 크면 애니메이션 없이 이동합니다.
+  Future<void> panToBounds(LatLngBounds bounds, {int padding = 32}) async {
+    await _bridge.runJavaScript('panToBounds('
+        '${_jsPrimitive(bounds.sw.latitude)}, ${_jsPrimitive(bounds.sw.longitude)}, '
+        '${_jsPrimitive(bounds.ne.latitude)}, ${_jsPrimitive(bounds.ne.longitude)}, '
+        '${_jsPrimitive(padding)});');
+  }
+
+  /// 중심을 지정한 픽셀만큼 부드럽게 이동합니다.
+  ///
+  /// 바텀시트가 열릴 때 지도 중심을 위로 밀어 올리는 등에 씁니다.
+  Future<void> panBy(int dx, int dy) async {
+    await _bridge.runJavaScript('panBy(${_jsPrimitive(dx)}, ${_jsPrimitive(dy)});');
+  }
+
+  /// 중심 좌표와 확대 레벨을 한 번에 바꿉니다.
+  ///
+  /// [animate] 가 true 면 이동을 애니메이션으로 보여 주고, [duration] 으로 시간을
+  /// 지정할 수 있습니다(지정하지 않으면 SDK 기본값). 이동 거리가 화면보다 크면
+  /// 애니메이션 없이 이동합니다.
+  Future<void> jump(
+    LatLng center,
+    int level, {
+    bool animate = false,
+    Duration? duration,
+  }) async {
+    final Object option = !animate
+        ? false
+        : duration == null
+            ? true
+            : {'duration': duration.inMilliseconds};
+    await _bridge.runJavaScript('jump('
+        '${_jsPrimitive(center.latitude)}, ${_jsPrimitive(center.longitude)}, '
+        '${_jsPrimitive(level)}, ${_jsJson(option)});');
+  }
+
+  /// 지도의 최소 확대 레벨을 바꿉니다. 이 레벨보다 더 확대할 수 없습니다.
+  Future<void> setMinLevel(int level) async {
+    await _bridge.runJavaScript('setMinLevel(${_jsPrimitive(level)});');
+  }
+
+  /// 지도의 최대 확대 레벨을 바꿉니다. 이 레벨보다 더 축소할 수 없습니다.
+  Future<void> setMaxLevel(int level) async {
+    await _bridge.runJavaScript('setMaxLevel(${_jsPrimitive(level)});');
+  }
+
+  /// 폴리라인의 총 길이를 미터 단위로 반환합니다. SDK 가 계산한 값입니다.
+  ///
+  /// 해당 ID 의 폴리라인이 없으면 [StateError] 를 던집니다.
+  Future<double> getPolylineLength(String polylineId) async => _decodeMeasure(
+        await _bridge.runJavaScriptReturningResult(
+            'getPolylineLength(${_jsStr(polylineId)});'),
+        '폴리라인 $polylineId',
+      );
+
+  /// 다각형의 면적을 제곱미터 단위로 반환합니다. SDK 가 계산한 값입니다.
+  ///
+  /// 해당 ID 의 다각형이 없으면 [StateError] 를 던집니다.
+  Future<double> getPolygonArea(String polygonId) async => _decodeMeasure(
+        await _bridge.runJavaScriptReturningResult(
+            'getPolygonArea(${_jsStr(polygonId)});'),
+        '다각형 $polygonId',
+      );
+
+  /// 다각형의 둘레 길이를 미터 단위로 반환합니다. SDK 가 계산한 값입니다.
+  ///
+  /// 해당 ID 의 다각형이 없으면 [StateError] 를 던집니다.
+  Future<double> getPolygonLength(String polygonId) async => _decodeMeasure(
+        await _bridge.runJavaScriptReturningResult(
+            'getPolygonLength(${_jsStr(polygonId)});'),
+        '다각형 $polygonId',
+      );
+
+  /// 측정 결과(숫자 또는 null)를 플랫폼 표기 차이에 관계없이 double 로 되돌립니다.
+  double _decodeMeasure(Object? raw, String label) {
+    dynamic value = raw;
+    if (value is String) {
+      final text = value.trim().replaceAll('"', '');
+      value = text.isEmpty || text == 'null' ? null : num.tryParse(text);
+    }
+    if (value is! num) {
+      throw StateError('$label 을(를) 찾을 수 없습니다. 지도에 추가된 뒤 호출하세요.');
+    }
+    return value.toDouble();
   }
 
   /// 특정 마커의 드래그 가능 여부를 변경합니다.

@@ -3,6 +3,7 @@ import '../model/lat_lng_bounds.dart';
 import '../model/viewpoint.dart';
 import '../road/kakao_roadview_controller.dart';
 import 'constants/drag_type.dart';
+import 'constants/map_type.dart';
 import 'constants/drawing_overlay_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
@@ -190,3 +191,17 @@ typedef OnRoadviewPositionChange = void Function(LatLng latLng);
 /// 이 경우 로드뷰는 비어 있는 상태로 남으므로 안내 UI 를 표시하는 데 사용합니다.
 /// [latLng] 로드뷰를 찾으려 했던 좌표
 typedef OnRoadviewNotFound = void Function(LatLng latLng);
+
+/// 지도 타입 변경 콜백입니다.
+///
+/// 사용자가 지도타입 컨트롤을 누르거나 코드로 지도 타입을 바꿔 `maptypeid_changed`
+/// 가 발생하면 호출됩니다. 커스텀 타일셋이 기본 지도이면 [MapType.normal] 이 전달됩니다.
+typedef OnMapTypeChanged = void Function(MapType mapType);
+
+/// 지도 문서 안의 링크를 탭했을 때 호출되는 콜백입니다.
+///
+/// 인포윈도우·커스텀 오버레이 HTML 안의 `<a href>` 를 탭하면 WebView 가 그 주소로
+/// 이동해 지도가 사라지는 문제를 막기 위해, 플러그인은 링크 이동을 가로채고 대신 이
+/// 콜백을 호출합니다. 외부 브라우저로 열려면 `url_launcher` 등으로 [url] 을 여세요.
+/// 콜백을 지정하지 않으면 링크 탭은 무시됩니다.
+typedef OnLinkTap = void Function(Uri url);

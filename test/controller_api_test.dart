@@ -195,4 +195,54 @@ void main() {
       expect(await controller.getMapTypeId(), MapType.skyView);
     });
   });
+  group('카메라 / 레벨 / 측정', () {
+    test('panBy, setMinLevel, setMaxLevel 은 숫자 리터럴로 전달된다', () async {
+      await controller.panBy(10, -20);
+      await controller.setMinLevel(2);
+      await controller.setMaxLevel(12);
+      expect(fake.scripts, [
+        'panBy(10, -20);',
+        'setMinLevel(2);',
+        'setMaxLevel(12);',
+      ]);
+    });
+
+    test('jump 는 animate 옵션을 false / true / {duration} 으로 보낸다', () async {
+      await controller.jump(LatLng(37.5, 127.0), 5);
+      await controller.jump(LatLng(37.5, 127.0), 5, animate: true);
+      await controller.jump(LatLng(37.5, 127.0), 5,
+          animate: true, duration: const Duration(milliseconds: 300));
+      final opts = fake.scripts
+          .map((s) => RegExp(r'jump\(.*, 5, (.*)\);$').firstMatch(s)!.group(1)!)
+          .map((s) => jsonDecode(jsonDecode(s) as String))
+          .toList();
+      expect(opts, [false, true, {'duration': 300}]);
+    });
+
+    test('panToBounds 는 sw/ne 와 padding 을 전달한다', () async {
+      await controller.panToBounds(
+          LatLngBounds(LatLng(37.4, 126.8), LatLng(37.6, 127.1)),
+          padding: 16);
+      expect(fake.scripts.single, 'panToBounds(37.4, 126.8, 37.6, 127.1, 16);');
+    });
+
+    test('fitBounds 는 padding 이 없으면 기존과 같은 호출을 보낸다 (하위호환)', () async {
+      await controller.fitBounds([LatLng(37.4, 126.8)]);
+      expect(fake.scripts.single, startsWith('fitBounds("'));
+      expect(fake.scripts.single, isNot(contains(', ')));
+      fake.scripts.clear();
+      await controller.fitBounds([LatLng(37.4, 126.8)], padding: 40);
+      expect(fake.scripts.single, endsWith(', 40);'));
+    });
+
+    test('getPolylineLength / getPolygonArea 는 문자열·숫자 결과를 모두 double 로 돌려준다',
+        () async {
+      fake.returningResult = '1234.5';
+      expect(await controller.getPolylineLength('p1'), 1234.5);
+      fake.returningResult = 987;
+      expect(await controller.getPolygonArea('g1'), 987.0);
+      fake.returningResult = 'null';
+      expect(() => controller.getPolygonLength('none'), throwsStateError);
+    });
+  });
 }

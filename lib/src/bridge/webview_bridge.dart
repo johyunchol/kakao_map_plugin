@@ -11,6 +11,9 @@ import 'kakao_map_bridge.dart';
 class WebViewBridge implements KakaoMapBridge {
   final WebViewController _controller;
 
+  /// loadHtml 에 전달된 baseUrl. 초기 문서 탐색을 허용하는 기준입니다.
+  String? _baseUrl;
+
   /// 이미 만들어진 [WebViewController] 를 감쌉니다.
   ///
   /// `KakaoMapController(WebViewController)` 처럼 사용자가 컨트롤러를 직접
@@ -34,10 +37,19 @@ class WebViewBridge implements KakaoMapBridge {
     }
 
     final controller = WebViewController.fromPlatformCreationParams(params)
-      ..setJavaScriptMode(JavaScriptMode.unrestricted);
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      // 지도 문서 자체의 확대·축소(페이지 줌)는 앱처럼 보이지 않으므로 끕니다.
+      ..enableZoom(false);
     if (transparentBackground) {
       controller.setBackgroundColor(const Color(0x00000000));
     }
+
+    final bridge = WebViewBridge.fromController(controller);
+    // 초기 문서 외의 페이지 이동(콘텐츠 안 링크 탭 등)은 지도를 사라지게 하므로 막습니다.
+    // 링크 탭은 문서 안 스크립트가 onLinkTap 채널로 따로 알립니다.
+    controller.setNavigationDelegate(NavigationDelegate(
+      onNavigationRequest: bridge._decideNavigation,
+    ));
 
     if (controller.platform is AndroidWebViewController) {
       if (kDebugMode) {
@@ -45,6 +57,10 @@ class WebViewBridge implements KakaoMapBridge {
       }
       final androidController = controller.platform as AndroidWebViewController;
       androidController.setMediaPlaybackRequiresUserGesture(false);
+      // 오버스크롤 글로우와 스크롤바는 지도에서 웹페이지처럼 보이는 요소이므로 끕니다.
+      androidController.setOverScrollMode(WebViewOverScrollMode.never);
+      androidController.setVerticalScrollBarEnabled(false);
+      androidController.setHorizontalScrollBarEnabled(false);
       // Flutter 3.27+ 에서 렌더링이 멈추는 문제를 피하기 위한 권한 처리입니다.
       // 주의: 지도 표시에 필요하지 않은 권한 요청까지 승인하므로, 카메라/마이크 등
       // 민감한 권한이 필요한 페이지를 불러오지 않는 한도 내에서만 사용하세요.
@@ -54,7 +70,28 @@ class WebViewBridge implements KakaoMapBridge {
       });
     }
 
-    return WebViewBridge.fromController(controller);
+    if (controller.platform is WebKitWebViewController) {
+      final webKitController = controller.platform as WebKitWebViewController;
+      // 바운스와 링크 미리보기(3D Touch/롱프레스)를 끕니다.
+      webKitController.setOverScrollMode(WebViewOverScrollMode.never);
+      webKitController.setAllowsLinkPreview(false);
+    }
+
+    return bridge;
+  }
+
+  /// 초기 문서(loadHtml 의 baseUrl)와 about:/data: 문서만 허용하고 나머지 메인 프레임
+  /// 이동은 막습니다. iframe 등 서브 프레임은 그대로 둡니다.
+  NavigationDecision _decideNavigation(NavigationRequest request) {
+    if (!request.isMainFrame) return NavigationDecision.navigate;
+    final url = request.url;
+    final initial = _baseUrl ?? 'about:blank';
+    if (url.startsWith(initial) ||
+        url.startsWith('about:') ||
+        url.startsWith('data:')) {
+      return NavigationDecision.navigate;
+    }
+    return NavigationDecision.prevent;
   }
 
   @override
@@ -73,8 +110,10 @@ class WebViewBridge implements KakaoMapBridge {
   }
 
   @override
-  Future<void> loadHtml(String html, {String? baseUrl}) =>
-      _controller.loadHtmlString(html, baseUrl: baseUrl);
+  Future<void> loadHtml(String html, {String? baseUrl}) {
+    _baseUrl = baseUrl;
+    return _controller.loadHtmlString(html, baseUrl: baseUrl);
+  }
 
   @override
   Future<void> reload() => _controller.reload();

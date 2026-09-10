@@ -100,7 +100,12 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
       mapList.add(marker);
     }
 
-    json = jsonEncode(mapList);
+    // <script> 블록 안에 그대로 끼워 넣으므로 '</script>' 와 줄바꿈 문자로 스크립트가
+    // 깨지지 않도록 JSON 이스케이프 형태로 바꿉니다. (JSON.parse 결과는 동일합니다)
+    json = jsonEncode(mapList)
+        .replaceAll('<', r'\u003c')
+        .replaceAll('\u2028', r'\u2028')
+        .replaceAll('\u2029', r'\u2029');
   }
 
   String _loadMap() {

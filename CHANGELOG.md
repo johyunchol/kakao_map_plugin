@@ -42,6 +42,20 @@
 * 카카오 콘솔 **Web 플랫폼 사이트 도메인**에 앱의 origin(포트 포함)을 등록해야 합니다. `baseUrl` 우회는 web 에서 동작하지 않습니다.
 * 내부적으로 Dart↔JS 통신을 `KakaoMapBridge` 로 추상화했습니다(모바일 `WebViewBridge`, web `IframeBridge`). `KakaoMapController(WebViewController)` 등 기존 생성자는 그대로 유지되며, web 에서 `webViewController` getter 는 `StateError` 를 던집니다.
 
+### 앱 느낌 개선 (기본 적용)
+* 지도 문서에 시스템 글꼴(`-apple-system`, Roboto, Noto Sans KR …)을 기본 적용하고, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃/컨텍스트 메뉴·페이지 핀치 줌·오버스크롤 글로우/바운스·스크롤바·포커스 링을 껐습니다. 선택 가능해야 하는 요소에는 `kmp-selectable` 클래스를 주세요. iOS 에서는 링크 미리보기도 끕니다.
+* 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라지던 문제를 수정했습니다. 링크 이동은 가로채고 `KakaoMap(onLinkTap:)`(로드뷰 위젯도 동일)으로 알립니다. 콜백이 없으면 무시됩니다.
+
+### 카메라 / 측정
+* `KakaoMap(minLevel:, maxLevel:)` 을 rebuild 로 바꿔도 반영되지 않던 문제를 수정하고, `setMinLevel()` / `setMaxLevel()` 을 추가했습니다.
+* `jump(center, level, animate:, duration:)`, `panBy(dx, dy)`, `panToBounds(bounds, padding:)`, `fitBounds(points, padding:)` 를 추가했습니다.
+* SDK 계산값을 돌려주는 `getPolylineLength()`, `getPolygonArea()`, `getPolygonLength()` 를 추가했습니다. 예제 "선의 거리 계산하기", "다각형의 면적 계산하기"가 공식 샘플과 같이 동작합니다.
+* 지도 생성 옵션 `mapTypeId`(초기 지도 타입), `disableDoubleClick`, `disableDoubleClickZoom`, `scrollwheel`, `keyboardShortcuts` 와 `onMapTypeChanged` 콜백을 추가했습니다.
+
+### 버그 수정 (추가)
+* `KeywordSearchRequest.useMapCenter / useMapBounds` 가 항상 무시되던 문제를 수정했습니다(`Places` 를 지도와 연결).
+* `KakaoStaticMap` 초기 HTML 에 마커 텍스트가 이스케이프 없이 들어가 `</script>` 가 포함되면 스크립트가 깨지던 문제를 수정했습니다.
+
 ### 로드뷰
 * `KakaoRoadMap` 이 `onMapCreated` 를 호출하지 않고, 마커가 그려지지 않으며, rebuild 마다 마커가 무한 증식하던 문제를 수정했습니다.
 * 백그라운드 복귀 시 iOS 에서 로드뷰가 빈 화면이 되던 문제를 수정했습니다(`reload()` 대신 `relayout()` 사용).

@@ -17,6 +17,7 @@ import 'constants/control_position.dart';
 import 'constants/kakao_map_library.dart';
 import 'constants/drag_type.dart';
 import 'constants/drawing_overlay_type.dart';
+import 'constants/map_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
 
@@ -155,6 +156,35 @@ class KakaoMap extends StatefulWidget {
   ///
   /// 지도 이동이나 줌 레벨 변경 후 타일 이미지 로드가 완료되면 호출됩니다.
   final OnTilesLoadedCallback? onTilesLoadedCallback;
+
+  /// 지도 타입이 바뀌었을 때 호출되는 콜백입니다.
+  ///
+  /// 지도타입 컨트롤을 눌렀을 때와 `setMapTypeId` 를 호출했을 때 모두 발생합니다.
+  final OnMapTypeChanged? onMapTypeChanged;
+
+  /// 인포윈도우·커스텀 오버레이 안의 링크를 탭했을 때 호출되는 콜백입니다.
+  ///
+  /// 플러그인은 지도 문서 안의 링크 이동을 항상 가로챕니다(이동하면 지도가 사라집니다).
+  /// 외부 브라우저로 열려면 이 콜백에서 `url_launcher` 등으로 처리하세요.
+  /// 지정하지 않으면 링크 탭은 무시됩니다.
+  final OnLinkTap? onLinkTap;
+
+  /// 지도를 만들 때 적용할 지도 타입입니다.
+  ///
+  /// 지정하지 않으면 일반 지도입니다. 생성 후에는 `setMapTypeId` 로 바꿉니다.
+  final MapType? mapTypeId;
+
+  /// 더블클릭(더블탭) 이벤트를 끕니다. 지정하지 않으면 SDK 기본값(사용)입니다.
+  final bool? disableDoubleClick;
+
+  /// 더블클릭(더블탭) 확대를 끕니다. 지정하지 않으면 SDK 기본값(사용)입니다.
+  final bool? disableDoubleClickZoom;
+
+  /// 마우스 휠/트랙패드 확대·축소를 사용할지 여부입니다. web 과 데스크톱에서 의미가 있습니다.
+  final bool? scrollwheel;
+
+  /// 키보드 방향키/+/- 조작을 사용할지 여부입니다. web 과 데스크톱에서 의미가 있습니다.
+  final bool? keyboardShortcuts;
 
   /// 지도 타입 컨트롤(일반지도/스카이뷰) 표시 여부입니다.
   ///
@@ -300,6 +330,13 @@ class KakaoMap extends StatefulWidget {
     this.onCenterChangeCallback,
     this.onBoundsChangeCallback,
     this.onTilesLoadedCallback,
+    this.onMapTypeChanged,
+    this.onLinkTap,
+    this.mapTypeId,
+    this.disableDoubleClick,
+    this.disableDoubleClickZoom,
+    this.scrollwheel,
+    this.keyboardShortcuts,
     this.mapTypeControl = false,
     this.mapTypeControlPosition = ControlPosition.topRight,
     this.zoomControl = false,
@@ -353,6 +390,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   // 마지막으로 JS 에 적용된 카메라 상태. 지도 준비 전 변경도 준비 시점에 반영합니다.
   LatLng? _appliedCenter;
   late int _appliedLevel;
+  late int _appliedMinLevel;
+  late int _appliedMaxLevel;
 
   // 오버레이 동기화를 직렬화하는 체인. 호출 순서를 보장하고 unhandled error 를 막습니다.
   Future<void> _syncChain = Future<void>.value();
@@ -373,6 +412,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _appliedCenter = widget.center;
     _appliedLevel = widget.currentLevel;
+    _appliedMinLevel = widget.minLevel;
+    _appliedMaxLevel = widget.maxLevel;
     _initializeWebView();
   }
 
@@ -473,6 +514,12 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       hasOnCameraIdle: widget.onCameraIdle != null,
       hasOnTilesLoadedCallback: widget.onTilesLoadedCallback != null,
       hasOnMapDoubleTap: widget.onMapDoubleTap != null,
+      hasOnMapTypeChanged: widget.onMapTypeChanged != null,
+      initialMapTypeId: widget.mapTypeId?.id,
+      disableDoubleClick: widget.disableDoubleClick,
+      disableDoubleClickZoom: widget.disableDoubleClickZoom,
+      scrollwheel: widget.scrollwheel,
+      keyboardShortcuts: widget.keyboardShortcuts,
       isIOS: isIOSWebView,
     )}
     ${JsOverlayClear.getScript()}
@@ -554,6 +601,16 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     if (widget.currentLevel != _appliedLevel) {
       _appliedLevel = widget.currentLevel;
       _mapController.setLevel(widget.currentLevel);
+    }
+
+    // minLevel / maxLevel 도 currentLevel 과 같이 rebuild 시 반영합니다.
+    if (widget.minLevel != _appliedMinLevel) {
+      _appliedMinLevel = widget.minLevel;
+      _mapController.setMinLevel(widget.minLevel);
+    }
+    if (widget.maxLevel != _appliedMaxLevel) {
+      _appliedMaxLevel = widget.maxLevel;
+      _mapController.setMaxLevel(widget.maxLevel);
     }
   }
 
@@ -939,6 +996,25 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           _ZoomEventData.fromJson,
           (data) =>
               widget.onZoomChangeCallback?.call(data.zoomLevel, ZoomType.start),
+        );
+      })
+      ..addJavaScriptChannel('mapTypeChanged', (String result) {
+        _handleChannel<MapType>(
+          result,
+          (json) {
+            final id = json['mapTypeId'];
+            return id is num ? MapType.getById(id.toInt()) : MapType.normal;
+          },
+          (type) => widget.onMapTypeChanged?.call(type),
+        );
+      })
+      ..addJavaScriptChannel('onLinkTap', (String result) {
+        _handleChannel<Uri?>(
+          result,
+          (json) => Uri.tryParse(json['url']?.toString() ?? ''),
+          (url) {
+            if (url != null) widget.onLinkTap?.call(url);
+          },
         );
       })
       ..addJavaScriptChannel('zoomChanged', (String result) {

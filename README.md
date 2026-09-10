@@ -118,6 +118,27 @@ web 에서 다른 점:
     ```
 * 그 외 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 는 모바일과 동일하게 동작합니다.
 
+### 플랫폼별 차이
+
+| 항목 | Android | iOS | Web |
+|---|---|---|---|
+| `gestureRecognizers` | ✅ | ✅ | 무시 (iframe 이 직접 처리) |
+| `AuthRepository.initialize(baseUrl:)` | ✅ | ✅ | 무시 (실제 origin 검사) |
+| `controller.webViewController` | ✅ | ✅ | `StateError` → `runJavaScript / evaluateJavaScript` 사용 |
+| 지도 위에 겹친 Flutter 위젯 탭 | ✅ | ✅ | `KakaoMapPointerInterceptor` 로 감싸야 함 |
+| `reload()` 후 HTML 재실행 | ✅ | ❌ (WKWebView 제약, 위젯 재생성 권장) | ✅ |
+| `scrollwheel`, `keyboardShortcuts` | 해당 없음 | 해당 없음 | ✅ |
+
+### 카카오 지도 API 로 지원되지 않는 것
+
+카카오 JavaScript API 자체에 없는 기능이라 이 플러그인으로도 제공할 수 없습니다.
+
+* 지도 회전(bearing)·기울기(tilt)·3D 건물·실내 지도
+* 지도 스타일 JSON / 다크 모드 기본 지도 (커스텀 타일셋으로 직접 만든 타일만 가능)
+* 타일에 그려진 POI(상호명 라벨) 탭 이벤트
+* 기본 지도 타일의 오프라인 캐싱
+* 지도 스냅샷(이미지 캡처) — 타일이 교차 출처라 캔버스에서 읽을 수 없습니다. 정적 지도가 필요하면 `KakaoStaticMap` 을 사용하세요
+
 ---
 
 ## 예제
@@ -822,6 +843,49 @@ web 에서 다른 점:
     ```
 
     `urlFunction` / `tileFunction` 은 WebView 안에서 그대로 실행되므로 앱이 직접 작성한 문자열만 넘기세요.
+
+* 정적 지도 - 움직이지 않는 지도 이미지가 필요할 때 (목록 썸네일, 공유 미리보기 등)
+
+    ``` dart
+    KakaoStaticMap(
+      center: LatLng(33.450701, 126.570667),
+      currentLevel: 3,
+      markers: [
+        Marker(markerId: 'm1', latLng: LatLng(33.450701, 126.570667), infoWindowContent: '카카오'),
+      ],
+    )
+    ```
+
+* 카메라 제어와 측정
+
+    ``` dart
+    // 중심 + 레벨을 한 번에, 애니메이션 시간 지정
+    await mapController.jump(LatLng(37.5665, 126.9780), 5, animate: true, duration: const Duration(milliseconds: 400));
+    // 영역이 보이도록 이동 (여백 px)
+    await mapController.panToBounds(LatLngBounds(LatLng(37.55, 126.96), LatLng(37.58, 127.0)), padding: 48);
+    await mapController.fitBounds(points, padding: 48);
+    // 바텀시트가 열릴 때 지도를 위로 밀어 올리기
+    await mapController.panBy(0, -150);
+    // 확대 범위 제한 (rebuild 시 KakaoMap(minLevel:, maxLevel:) 변경도 반영됩니다)
+    await mapController.setMinLevel(2);
+    await mapController.setMaxLevel(10);
+
+    // SDK 가 계산한 길이(m)·면적(㎡)
+    final meters = await mapController.getPolylineLength('route');
+    final squareMeters = await mapController.getPolygonArea('area');
+    ```
+
+* 지도 생성 옵션과 이벤트
+
+    ``` dart
+    KakaoMap(
+      mapTypeId: MapType.skyView,        // 처음부터 스카이뷰로
+      disableDoubleClickZoom: true,      // 더블탭 확대 끄기
+      onMapTypeChanged: (type) => print('지도 타입: $type'),
+      // 인포윈도우·커스텀 오버레이 안의 링크는 WebView 이동 대신 이 콜백으로 옵니다.
+      onLinkTap: (url) => launchUrl(url, mode: LaunchMode.externalApplication),
+    )
+    ```
 
 더 많은 카카오지도 샘플소스는 **[여기](https://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.
 

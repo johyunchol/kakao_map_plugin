@@ -23,6 +23,7 @@ class MapProps {
   final List<CustomOverlay>? customOverlays;
   final Clusterer? clusterer;
   final Set<KakaoMapLibrary>? libraries;
+  final OnLinkTap? onLinkTap;
 
   const MapProps({
     this.center,
@@ -34,6 +35,7 @@ class MapProps {
     this.customOverlays,
     this.clusterer,
     this.libraries,
+    this.onLinkTap,
   });
 }
 
@@ -74,6 +76,7 @@ class MapHost extends StatelessWidget {
               customOverlays: p.customOverlays,
               clusterer: p.clusterer,
               libraries: p.libraries,
+              onLinkTap: p.onLinkTap,
             ),
           ),
         ),
@@ -737,6 +740,34 @@ void main() {
     expect(await c.getActiveTilesetId(), isNull);
     expect(await c.getMapTypeId(), MapType.normal);
 
+    await expectNoJsErrors(c);
+    await unmount(tester);
+  });
+  testWidgets('콘텐츠 안 링크를 탭하면 문서가 이동하지 않고 onLinkTap 으로 전달된다', (tester) async {
+    final tapped = <Uri>[];
+    final c = await mount(
+      tester,
+      MapProps(
+        customOverlays: [
+          CustomOverlay(
+            customOverlayId: 'link',
+            latLng: LatLng(37.5665, 126.9780),
+            content: '<div><a id="probe-link" href="https://place.map.kakao.com/123">장소</a></div>',
+          ),
+        ],
+        onLinkTap: tapped.add,
+      ),
+    );
+    await waitUntil(tester, c, "!!document.getElementById('probe-link')");
+    final before = await js(c, 'location.href');
+
+    await c.runJavaScript("document.getElementById('probe-link').click();");
+    await pumpFor(tester, const Duration(milliseconds: 500));
+
+    expect(tapped, [Uri.parse('https://place.map.kakao.com/123')]);
+    // 지도 문서는 그대로 살아 있다.
+    expect(await js(c, 'location.href'), before);
+    expect(await js(c, 'typeof map === "object" && map !== null'), isTrue);
     await expectNoJsErrors(c);
     await unmount(tester);
   });

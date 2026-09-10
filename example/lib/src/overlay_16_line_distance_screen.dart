@@ -56,7 +56,10 @@ class _Overlay16LineDistanceScreenState
         }),
         onMapTap: (latLng) {
           if (!drawingFlag) {
+            // 첫 탭: 새 선을 시작합니다. (완료 버튼을 누를 때까지 탭마다 점이 추가됩니다)
+            drawingFlag = true;
             polylines.clear();
+            customOverlays.clear();
 
             polylines.add(
               Polyline(
@@ -79,27 +82,72 @@ class _Overlay16LineDistanceScreenState
               ),
             );
           } else {
-            // 선이 그려지고 있는 상태이면
-
-            // // 그려지고 있는 선의 좌표 배열을 얻어옵니다
-            // var path = clickLine.getPath();
-            //
-            // // 좌표 배열에 클릭한 위치를 추가합니다
-            // path.push(clickPosition);
-            //
-            // // 다시 선에 좌표 배열을 설정하여 클릭 위치까지 선을 그리도록 설정합니다
-            // clickLine.setPath(path);
-            //
-            // var distance = Math.round(clickLine.getLength());
-            // displayCircleDot(clickPosition, distance);
+            // 선이 그려지고 있는 상태이면 클릭한 위치까지 선을 잇고,
+            // SDK 가 계산한 길이(getLength)를 점과 함께 표시합니다.
+            final line =
+                polylines.firstWhere((p) => p.polylineId == 'clickLine');
+            final path = [...?line.points, latLng];
+            polylines.removeWhere((p) => p.polylineId == 'clickLine');
+            polylines.insert(
+              0,
+              Polyline(
+                polylineId: 'clickLine',
+                points: path,
+                strokeWidth: 3,
+                strokeColor: const Color(0xffdb4040),
+                strokeOpacity: 1,
+                strokeStyle: StrokeStyle.solid,
+              ),
+            );
+            _showDistanceDot(latLng);
           }
 
           setState(() {});
         },
         markers: markers.toList(),
         polylines: polylines,
+        customOverlays: customOverlays,
         center: LatLng(37.3608681, 126.9306506),
       ),
+      floatingActionButton: drawingFlag
+          ? KakaoMapPointerInterceptor(
+              child: FloatingActionButton.extended(
+                onPressed: () => setState(() => drawingFlag = false),
+                icon: const Icon(Icons.check),
+                label: const Text('그리기 완료'),
+              ),
+            )
+          : null,
     );
+  }
+
+  /// 클릭 지점에 점과 지금까지의 거리(m)를 표시합니다.
+  ///
+  /// 선은 위젯 속성으로 전달되어 다음 프레임에 지도에 반영되므로, 프레임이 끝난
+  /// 뒤 SDK 에 길이를 물어봅니다.
+  Future<void> _showDistanceDot(LatLng position) async {
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+    try {
+      final distance = await mapController.getPolylineLength('clickLine');
+      if (!mounted) return;
+      setState(() {
+        customOverlays.add(CustomOverlay(
+          customOverlayId: 'dot_${customOverlays.length}',
+          latLng: position,
+          content: '<div style="position:relative;">'
+              '<div style="width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;'
+              'background:#fff;border:2px solid #db4040;"></div>'
+              '<div style="position:absolute;left:12px;top:-14px;padding:2px 6px;border-radius:4px;'
+              'background:rgba(255,255,255,.95);border:1px solid #db4040;font-size:12px;white-space:nowrap;">'
+              '${distance.round()} m</div></div>',
+          xAnchor: 0,
+          yAnchor: 0,
+          zIndex: 3,
+        ));
+      });
+    } catch (e) {
+      debugPrint('거리 조회 실패: $e');
+    }
   }
 }

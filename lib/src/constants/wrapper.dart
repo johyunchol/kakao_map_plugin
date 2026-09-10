@@ -1,6 +1,50 @@
 import '../basic/constants/kakao_map_library.dart';
 import '../repository/auth_repository.dart';
 
+/// 두 래퍼가 공유하는 기본 스타일입니다.
+const String _baseStyles = '''
+    /* 앱처럼 보이도록 하는 기본 스타일: 시스템 글꼴, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃 제거,
+       오버스크롤/스크롤바/포커스 링 제거. 선택 가능해야 하는 요소는 .kmp-selectable 을 주세요. */
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Roboto, "Noto Sans KR", "Malgun Gothic", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      word-break: keep-all;
+    }
+    input, textarea, [contenteditable], .kmp-selectable { -webkit-user-select: text; user-select: text; }
+    img { -webkit-touch-callout: none; -webkit-user-drag: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    :focus:not(:focus-visible) { outline: none; }
+''';
+
+/// 두 래퍼가 공유하는 기본 스크립트입니다.
+const String _baseScript = '''
+  <script>
+    (function () {
+      // 페이지 자체의 핀치 줌(iOS)과 롱프레스/우클릭 메뉴를 막아 앱처럼 보이게 합니다.
+      document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+      document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+      // 콘텐츠 안의 링크를 탭하면 WebView 가 그 주소로 이동해 지도가 사라지므로,
+      // 이동을 막고 Flutter(onLinkTap)에 알립니다.
+      document.addEventListener('click', function (e) {
+        var el = e.target;
+        while (el && el !== document && !(el.tagName === 'A' && el.getAttribute('href'))) el = el.parentNode;
+        if (!el || el === document) return;
+        var href = el.getAttribute('href');
+        if (!href || href.charAt(0) === '#' || href.indexOf('javascript:') === 0) return;
+        e.preventDefault();
+        if (typeof onLinkTap !== 'undefined' && onLinkTap && onLinkTap.postMessage) {
+          onLinkTap.postMessage(JSON.stringify({ url: el.href }));
+        }
+      }, true);
+    })();
+  </script>
+''';
+
 /// 카카오 지도 JavaScript SDK 를 불러오는 HTML 문서를 생성합니다.
 ///
 /// [script]는 `<body>` 안에 삽입될 `<script>` 블록입니다.
@@ -16,7 +60,7 @@ String htmlWrapper(String script, {Set<KakaoMapLibrary>? libraries}) {
   final appKey = Uri.encodeQueryComponent(AuthRepository.instance.appKey);
 
   return '''
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -24,6 +68,7 @@ String htmlWrapper(String script, {Set<KakaoMapLibrary>? libraries}) {
   <script type="text/javascript"
           src="https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=$appKey$librariesParam"></script>
   <style>
+$_baseStyles
     /* iOS touch event optimization for CustomOverlay tap */
     .custom-overlay-clickable {
       cursor: pointer;
@@ -34,6 +79,7 @@ String htmlWrapper(String script, {Set<KakaoMapLibrary>? libraries}) {
       touch-action: manipulation;
     }
   </style>
+$_baseScript
 </head>
 
 <body style="margin: 0;">
@@ -67,7 +113,7 @@ String htmlWrapperWithRoadview(String script,
   final appKey = Uri.encodeQueryComponent(AuthRepository.instance.appKey);
 
   return """
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport"
@@ -75,6 +121,7 @@ String htmlWrapperWithRoadview(String script,
   <script type="text/javascript"
           src="https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=$appKey$librariesParam"></script>
   <style>
+$_baseStyles
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
 
     /* 지도와 로드뷰를 나란히 배치합니다. 방향과 비율은 JS 로 제어합니다. */
@@ -138,6 +185,7 @@ String htmlWrapperWithRoadview(String script,
     .MapWalker.m14 .angleBack { background-position: -626px -2px; }
     .MapWalker.m15 .angleBack { background-position: -730px -2px; }
   </style>
+$_baseScript
 </head>
 
 <body>

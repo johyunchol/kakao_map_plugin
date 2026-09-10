@@ -219,7 +219,7 @@ class JsMapControl {
         map.panTo(moveLatLon);
     }
 
-    function fitBounds(points) {
+    function fitBounds(points, padding) {
         let list = JSON.parse(points);
 
         let bounds = new kakao.maps.LatLngBounds();
@@ -228,7 +228,47 @@ class JsMapControl {
             bounds.extend(new kakao.maps.LatLng(list[i].latitude, list[i].longitude));
         }
 
-        map.setBounds(bounds);
+        if (padding === undefined || padding === null) {
+            map.setBounds(bounds);
+        } else {
+            map.setBounds(bounds, padding, padding, padding, padding);
+        }
+    }
+
+    /** 영역이 화면에 들어오도록 부드럽게 이동합니다. padding 은 상하좌우 여백(px)입니다. */
+    function panToBounds(swLat, swLng, neLat, neLng, padding) {
+        const bounds = new kakao.maps.LatLngBounds(
+            new kakao.maps.LatLng(swLat, swLng), new kakao.maps.LatLng(neLat, neLng));
+        map.panTo(bounds, padding);
+    }
+
+    /**
+     * 중심과 레벨을 한 번에 바꿉니다. animate 는 false | true | {duration: ms} 입니다.
+     */
+    function jump(latitude, longitude, level, animate) {
+        const option = parseIfString(animate);
+        const position = new kakao.maps.LatLng(latitude, longitude);
+        if (option) {
+            map.jump(position, level, { animate: option });
+        } else {
+            map.jump(position, level);
+        }
+    }
+
+    // ---- 도형 측정 (SDK 계산값 그대로) ----
+    function getPolylineLength(id) {
+        const line = polylineIndex.get(id);
+        return line ? line.getLength() : null;
+    }
+
+    function getPolygonArea(id) {
+        const polygon = polygonIndex.get(id);
+        return polygon ? polygon.getArea() : null;
+    }
+
+    function getPolygonLength(id) {
+        const polygon = polygonIndex.get(id);
+        return polygon ? polygon.getLength() : null;
     }
 
     /**
