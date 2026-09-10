@@ -95,6 +95,12 @@ class CustomOverlay {
   ///   zIndex: 10,
   /// );
   /// ```
+  /// 로드뷰에서 오버레이의 지면으로부터의 높이입니다. 단위는 미터입니다.
+  ///
+  /// [KakaoRoadMap] 위에 올릴 때만 사용되며, 지도에서는 무시됩니다.
+  /// null 이면 카카오 SDK 기본값을 사용합니다.
+  final double? altitude;
+
   CustomOverlay({
     required this.customOverlayId,
     required this.latLng,
@@ -102,5 +108,6 @@ class CustomOverlay {
     this.xAnchor = 0.5,
     this.yAnchor = 1,
     this.zIndex = 3,
+    this.altitude,
   });
 }

@@ -1,5 +1,7 @@
 import '../model/lat_lng.dart';
 import '../model/lat_lng_bounds.dart';
+import '../model/viewpoint.dart';
+import '../road/kakao_roadview_controller.dart';
 import 'constants/drag_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
@@ -102,3 +104,44 @@ typedef OnBoundsChangeCallback = void Function(LatLngBounds latLngBounds);
 /// [latLng] 지도 중심의 좌표
 /// [zoomLevel] 현재 지도의 확대/축소 레벨
 typedef OnTilesLoadedCallback = void Function(LatLng latLng, int zoomLevel);
+
+// ===========================================================================
+// 로드뷰 콜백
+// ===========================================================================
+
+/// 로드뷰 생성 완료 콜백입니다.
+///
+/// 로드뷰가 화면에 표시될 준비를 마치면 호출됩니다.
+/// [controller]를 통해 시점 변경, 오버레이 추가 등을 수행할 수 있습니다.
+typedef RoadviewCreateCallback = void Function(
+    KakaoRoadviewController controller);
+
+/// 로드뷰 초기화 완료 콜백입니다.
+///
+/// 파노라마 이미지가 로드되어 화면에 표시된 직후 호출됩니다.
+typedef OnRoadviewInit = void Function();
+
+/// 로드뷰 파노라마 ID 변경 콜백입니다.
+///
+/// 사용자가 도로를 따라 이동하는 등으로 다른 파노라마로 넘어가면 호출됩니다.
+/// [panoId] 새로 표시된 파노라마의 ID
+typedef OnRoadviewPanoIdChange = void Function(String panoId);
+
+/// 로드뷰 시점 변경 콜백입니다.
+///
+/// 사용자가 화면을 돌리거나 확대/축소하면 호출됩니다.
+/// [viewpoint] 변경된 시점(방향과 확대 수준)
+typedef OnRoadviewViewpointChange = void Function(Viewpoint viewpoint);
+
+/// 로드뷰 위치 변경 콜백입니다.
+///
+/// 표시 중인 파노라마의 좌표가 바뀌면 호출됩니다.
+/// [latLng] 변경된 좌표
+typedef OnRoadviewPositionChange = void Function(LatLng latLng);
+
+/// 로드뷰를 찾지 못했을 때 호출되는 콜백입니다.
+///
+/// 요청한 좌표 주변에 로드뷰가 없으면(산간, 해상 등) 호출됩니다.
+/// 이 경우 로드뷰는 비어 있는 상태로 남으므로 안내 UI 를 표시하는 데 사용합니다.
+/// [latLng] 로드뷰를 찾으려 했던 좌표
+typedef OnRoadviewNotFound = void Function(LatLng latLng);

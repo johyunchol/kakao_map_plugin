@@ -28,6 +28,7 @@ export 'src/model/point.dart';
 export 'src/model/road_address.dart';
 export 'src/model/search_address.dart';
 export 'src/model/trans_coord.dart';
+export 'src/model/viewpoint.dart';
 
 // Protocols
 export 'src/protocol/address_search_request.dart';
@@ -73,4 +74,5 @@ export 'src/basic/rectangle.dart';
 
 // Maps
 export 'src/road/kakao_road_map.dart';
+export 'src/road/kakao_roadview_controller.dart';
 export 'src/static/kakao_static_map.dart';

@@ -54,6 +54,8 @@ import 'package:kakao_map_plugin_example/src/overlay_4_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_5_marker_infowindow_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_6_marker_click_screen.dart';
 import 'package:kakao_map_plugin_example/src/roadview_1_default_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_4_overlay1_screen.dart';
+import 'package:kakao_map_plugin_example/src/roadview_7_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_1_default_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_2_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/static_3_marker_text_screen.dart';
@@ -102,6 +104,8 @@ final Map<String, Widget Function()> screens = {
   'Overlay22CustomOverlay2Screen': () => const Overlay22CustomOverlay2Screen(),
   'Overlay27PolygonHoleScreen': () => const Overlay27PolygonHoleScreen(),
   'RoadView1DefaultScreen': () => const RoadView1DefaultScreen(),
+  'RoadView4Overlay1Screen': () => const RoadView4Overlay1Screen(),
+  'RoadView7ImageScreen': () => const RoadView7ImageScreen(),
   'Static1DefaultScreen': () => const Static1DefaultScreen(),
   'Static2MarkerScreen': () => const Static2MarkerScreen(),
   'Static3MarkerTextScreen': () => const Static3MarkerTextScreen(),

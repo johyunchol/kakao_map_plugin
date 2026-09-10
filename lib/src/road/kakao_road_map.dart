@@ -9,28 +9,44 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../basic/callbacks.dart';
+import '../basic/custom_overlay.dart';
 import '../basic/kakao_map_controller.dart';
 import '../basic/marker.dart';
 import '../constants/wrapper.dart';
+import '../js/roadview/js_roadview_event.dart';
+import '../js/roadview/js_roadview_init.dart';
+import '../js/roadview/js_roadview_overlay.dart';
 import '../model/lat_lng.dart';
+import '../model/viewpoint.dart';
 import '../repository/auth_repository.dart';
+import 'kakao_roadview_controller.dart';
 
 /// 카카오 로드뷰를 표시하는 위젯입니다.
 ///
-/// [center] 좌표에서 가장 가까운 로드뷰를 찾아 표시합니다.
-/// 해당 위치에 로드뷰가 없으면 아무것도 표시되지 않습니다.
+/// [center] 좌표에서 가장 가까운 로드뷰를 찾아 표시합니다. [panoId]를 직접
+/// 지정하면 해당 파노라마를 표시합니다.
+///
+/// 주변에 로드뷰가 없으면 [onRoadviewNotFound] 가 호출되며 화면은 비어 있습니다.
 ///
 /// 예시:
 /// ```dart
 /// KakaoRoadMap(
 ///   center: LatLng(33.450701, 126.570667),
-///   markers: [
-///     Marker(
-///       markerId: 'm1',
-///       latLng: LatLng(33.450701, 126.570667),
-///       infoWindowContent: '<div>여기</div>',
-///     ),
-///   ],
+///   viewpoint: const Viewpoint(pan: 90),
+///   onRoadviewCreated: (controller) async {
+///     await controller.addMarker(markers: [
+///       Marker(
+///         markerId: 'm1',
+///         latLng: LatLng(33.450701, 126.570667),
+///         infoWindowContent: '<div style="padding:5px">여기</div>',
+///         altitude: 3,
+///         range: 100,
+///       ),
+///     ]);
+///   },
+///   onRoadviewNotFound: (latLng) {
+///     debugPrint('이 위치에는 로드뷰가 없습니다: $latLng');
+///   },
 /// )
 /// ```
 class KakaoRoadMap extends StatefulWidget {
@@ -38,9 +54,15 @@ class KakaoRoadMap extends StatefulWidget {
   ///
   /// 전달되는 [KakaoMapController]는 이 로드뷰의 WebView 를 감싸고 있으며,
   /// 로드뷰 페이지에는 지도용 JavaScript 함수가 없으므로 지도 전용 메서드
-  /// (`setCenter`, `addPolyline` 등)는 동작하지 않습니다. `relayout()` 처럼
-  /// 로드뷰에도 정의된 메서드만 사용하세요.
+  /// (`setCenter`, `addPolyline` 등)는 동작하지 않습니다.
+  ///
+  /// 로드뷰를 제어하려면 [onRoadviewCreated] 를 사용하세요.
   final MapCreateCallback? onMapCreated;
+
+  /// 로드뷰가 생성된 뒤 [KakaoRoadviewController]를 전달하는 콜백입니다.
+  ///
+  /// 시점 변경, 파노라마 이동, 오버레이 추가는 이 컨트롤러로 수행합니다.
+  final RoadviewCreateCallback? onRoadviewCreated;
 
   /// 사용되지 않습니다.
   ///
@@ -53,11 +75,47 @@ class KakaoRoadMap extends StatefulWidget {
   /// 생략하면 제주 지역의 기본 좌표를 사용합니다.
   final LatLng? center;
 
+  /// 표시할 파노라마 ID 입니다.
+  ///
+  /// 지정하면 [center] 주변 검색 대신 이 파노라마를 직접 표시합니다.
+  final String? panoId;
+
+  /// 로드뷰를 검색할 반경입니다. 단위는 미터이며 기본값은 50 입니다.
+  final int radius;
+
+  /// 로드뷰 초기 시점입니다.
+  ///
+  /// 지정하면 로드뷰가 준비된 직후 이 방향과 확대 수준으로 맞춥니다.
+  final Viewpoint? viewpoint;
+
   /// 로드뷰 위에 표시할 마커 목록입니다.
   ///
-  /// 각 마커의 [Marker.latLng] 위치에 마커가 놓이며,
-  /// [Marker.infoWindowContent] 가 있으면 인포윈도우가 함께 열립니다.
+  /// [Marker.altitude] 와 [Marker.range] 로 높이와 표시 거리를 지정할 수 있습니다.
   final List<Marker>? markers;
+
+  /// 로드뷰 위에 표시할 커스텀 오버레이 목록입니다.
+  final List<CustomOverlay>? customOverlays;
+
+  /// 로드뷰 초기화가 끝났을 때 호출됩니다.
+  final OnRoadviewInit? onRoadviewInit;
+
+  /// 표시 중인 파노라마가 바뀌었을 때 호출됩니다.
+  final OnRoadviewPanoIdChange? onPanoIdChange;
+
+  /// 시점이 바뀌었을 때 호출됩니다.
+  final OnRoadviewViewpointChange? onViewpointChange;
+
+  /// 파노라마 좌표가 바뀌었을 때 호출됩니다.
+  final OnRoadviewPositionChange? onPositionChange;
+
+  /// 주변에 로드뷰가 없어 표시하지 못했을 때 호출됩니다.
+  final OnRoadviewNotFound? onRoadviewNotFound;
+
+  /// 로드뷰 위 마커를 탭했을 때 호출됩니다.
+  final OnCustomOverlayTap? onMarkerTap;
+
+  /// 로드뷰 위 커스텀 오버레이를 탭했을 때 호출됩니다.
+  final OnCustomOverlayTap? onCustomOverlayTap;
 
   /// Specifies which gestures should be consumed by the map.
   ///
@@ -72,17 +130,32 @@ class KakaoRoadMap extends StatefulWidget {
     this.center,
     this.markers,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
+    this.onRoadviewCreated,
+    this.panoId,
+    this.radius = 50,
+    this.viewpoint,
+    this.customOverlays,
+    this.onRoadviewInit,
+    this.onPanoIdChange,
+    this.onViewpointChange,
+    this.onPositionChange,
+    this.onRoadviewNotFound,
+    this.onMarkerTap,
+    this.onCustomOverlayTap,
   });
 
   @override
   State<KakaoRoadMap> createState() => _KakaoRoadMapState();
 }
 
-class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver {
+class _KakaoRoadMapState extends State<KakaoRoadMap>
+    with WidgetsBindingObserver {
   late WebViewController _webViewController;
-  KakaoMapController? _controller;
+  KakaoMapController? _mapController;
+  KakaoRoadviewController? _roadviewController;
   Timer? _relayoutTimer;
   bool _isInitialized = false;
+  bool _isRoadviewReady = false;
 
   @override
   void initState() {
@@ -109,8 +182,8 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
     if (state == AppLifecycleState.resumed && _isInitialized) {
       _relayoutTimer?.cancel();
       _relayoutTimer = Timer(const Duration(milliseconds: 100), () {
-        if (mounted && _isInitialized) {
-          _webViewController.runJavaScript('relayout();').catchError((_) {});
+        if (mounted && _isRoadviewReady) {
+          _roadviewController?.relayout().catchError((_) {});
         }
       });
     }
@@ -132,16 +205,14 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
 
-    _controller = KakaoMapController(controller);
+    // dispose 가 항상 초기화된 컨트롤러를 보도록 HTML 로드보다 먼저 대입합니다.
+    _mapController = KakaoMapController(controller);
+    _roadviewController = KakaoRoadviewController(controller);
 
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel('onRoadviewCreated',
-          onMessageReceived: (JavaScriptMessage message) {
-        if (!mounted) return;
-        widget.onMapCreated?.call(_controller!);
-      })
-      ..loadHtmlString(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    _addJavaScriptChannels(controller);
+    controller.loadHtmlString(_loadRoadview(),
+        baseUrl: AuthRepository.instance.baseUrl);
 
     if (controller.platform is AndroidWebViewController) {
       if (kDebugMode) {
@@ -152,14 +223,119 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
       // Set permission handler for Android (Flutter 3.27+ fix)
       // 주의: 로드뷰 표시에 필요하지 않은 권한 요청까지 무조건 승인합니다.
       // 카메라/마이크 등 민감한 권한이 필요한 페이지를 로드하지 않는 한도 내에서만 사용하세요.
-      androidController
-          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
+      androidController.setOnPlatformPermissionRequest(
+          (PlatformWebViewPermissionRequest request) async {
         await request.grant();
       });
     }
 
     _webViewController = controller;
     _isInitialized = true;
+  }
+
+  /// 채널 메시지를 안전하게 파싱해 콜백으로 전달합니다.
+  void _handleChannel(String raw, void Function(Map<String, dynamic>) emit) {
+    if (!mounted) return;
+    try {
+      emit(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (e, st) {
+      assert(() {
+        debugPrint('KakaoRoadMap 채널 메시지 처리 실패: $e\n$st');
+        return true;
+      }());
+    }
+  }
+
+  void _addJavaScriptChannels(WebViewController controller) {
+    controller
+      ..addJavaScriptChannel('onRoadviewInit',
+          onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        _isRoadviewReady = true;
+        // 위젯 속성으로 넘긴 오버레이를 준비 시점에 그립니다.
+        unawaited(_syncOverlays());
+        widget.onRoadviewInit?.call();
+        widget.onMapCreated?.call(_mapController!);
+        widget.onRoadviewCreated?.call(_roadviewController!);
+      })
+      ..addJavaScriptChannel('onRoadviewNotFound',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onRoadviewNotFound?.call(LatLng(
+            (json['latitude'] as num).toDouble(),
+            (json['longitude'] as num).toDouble(),
+          ));
+        });
+      })
+      ..addJavaScriptChannel('onRoadviewPanoIdChange',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onPanoIdChange?.call(json['panoId'].toString());
+        });
+      })
+      ..addJavaScriptChannel('onRoadviewViewpointChange',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onViewpointChange?.call(Viewpoint.fromJson(json));
+        });
+      })
+      ..addJavaScriptChannel('onRoadviewPositionChange',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onPositionChange?.call(LatLng(
+            (json['latitude'] as num).toDouble(),
+            (json['longitude'] as num).toDouble(),
+          ));
+        });
+      })
+      ..addJavaScriptChannel('onRoadviewMarkerTap',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onMarkerTap?.call(
+            json['markerId'].toString(),
+            LatLng(
+              (json['latitude'] as num).toDouble(),
+              (json['longitude'] as num).toDouble(),
+            ),
+          );
+        });
+      })
+      ..addJavaScriptChannel('onRoadviewCustomOverlayTap',
+          onMessageReceived: (JavaScriptMessage message) {
+        _handleChannel(message.message, (json) {
+          widget.onCustomOverlayTap?.call(
+            json['customOverlayId'].toString(),
+            LatLng(
+              (json['latitude'] as num).toDouble(),
+              (json['longitude'] as num).toDouble(),
+            ),
+          );
+        });
+      });
+  }
+
+  Future<void> _syncOverlays() async {
+    final controller = _roadviewController;
+    if (controller == null || !_isRoadviewReady) return;
+    try {
+      await controller.addMarker(markers: widget.markers);
+      await controller.addCustomOverlay(customOverlays: widget.customOverlays);
+    } catch (e) {
+      assert(() {
+        debugPrint('KakaoRoadMap 오버레이 동기화 실패: $e');
+        return true;
+      }());
+    }
+  }
+
+  @override
+  void didUpdateWidget(KakaoRoadMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isRoadviewReady) return;
+    if (!identical(widget.markers, oldWidget.markers) ||
+        !identical(widget.customOverlays, oldWidget.customOverlays)) {
+      unawaited(_syncOverlays());
+    }
   }
 
   @override
@@ -170,88 +346,26 @@ class _KakaoRoadMapState extends State<KakaoRoadMap> with WidgetsBindingObserver
     );
   }
 
-  /// 마커 목록을 로드뷰 스크립트에 넘길 JSON 으로 직렬화합니다.
-  ///
-  /// 매 build 마다 리스트에 누적되던 문제를 피하기 위해 호출할 때마다
-  /// 새 리스트를 만듭니다.
-  String _markersJson() {
-    final markers = widget.markers;
-    if (markers == null || markers.isEmpty) return '[]';
-
-    return jsonEncode(markers
-        .map((item) => {
-              'markerId': item.markerId,
-              'latitude': item.latLng.latitude,
-              'longitude': item.latLng.longitude,
-              'text': item.infoWindowContent,
-            })
-        .toList(growable: false));
-  }
-
-  String _loadMap() {
-    // 좌표는 숫자 리터럴로, 마커 목록은 JSON 문자열 리터럴로 안전하게 전달합니다.
-    final latitude = widget.center?.latitude ?? 33.450701;
-    final longitude = widget.center?.longitude ?? 126.570667;
-    final markersLiteral = jsonEncode(_markersJson());
+  String _loadRoadview() {
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
 
     return htmlWrapper('''<script>
-  let roadview = null;
-  let roadviewClient = null;
-  let roadviewMarkers = [];
-
-  window.onload = function () {
-    // Kakao Maps SDK가 완전히 로드된 후 로드뷰를 초기화합니다
-    kakao.maps.load(function() {
-      initializeRoadview();
-    });
-  }
-
-  /// 로드뷰 컨테이너 크기가 바뀌었을 때 다시 그립니다.
-  function relayout() {
-    if (roadview) roadview.relayout();
-  }
-
-  function addRoadviewMarkers() {
-    const list = JSON.parse($markersLiteral);
-    for (let i = 0; i < list.length; i++) {
-      const item = list[i];
-      const marker = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(item.latitude, item.longitude),
-        map: roadview
-      });
-      marker['id'] = item.markerId;
-      roadviewMarkers.push(marker);
-
-      if (item.text && item.text !== '') {
-        const infoWindow = new kakao.maps.InfoWindow({ content: item.text });
-        infoWindow.open(roadview, marker);
-      }
-    }
-  }
-
-  function initializeRoadview() {
-    const container = document.getElementById('map'); //로드뷰를 표시할 div
-    roadview = new kakao.maps.Roadview(container); //로드뷰 객체
-    roadviewClient = new kakao.maps.RoadviewClient(); //좌표로부터 로드뷰 파노ID를 가져올 로드뷰 helper객체
-
-    let position = new kakao.maps.LatLng($latitude, $longitude);
-
-    // 로드뷰 초기화가 끝난 뒤에 마커를 올려야 정상적으로 표시됩니다.
-    kakao.maps.event.addListener(roadview, 'init', function () {
-      addRoadviewMarkers();
-      onRoadviewCreated.postMessage(JSON.stringify({ ready: true }));
-    });
-
-    // 특정 위치의 좌표와 가까운 로드뷰의 panoId를 추출하여 로드뷰를 띄운다.
-    roadviewClient.getNearestPanoId(position, 50, function (panoId) {
-      // 로드뷰가 없는 지역이면 panoId 가 null 이므로 호출하지 않는다.
-      if (panoId === null) {
-        onRoadviewCreated.postMessage(JSON.stringify({ ready: false }));
-        return;
-      }
-      roadview.setPanoId(panoId, position); //panoId와 중심좌표를 통해 로드뷰 실행
-    });
-  }
+    ${JsRoadviewInit.getScript(
+      center: widget.center,
+      panoId: widget.panoId,
+      viewpoint: widget.viewpoint,
+      radius: widget.radius,
+      isIOS: isIOS,
+    )}
+    ${JsRoadviewEvent.getScript(
+      hasPanoIdChange: widget.onPanoIdChange != null,
+      hasViewpointChange: widget.onViewpointChange != null,
+      hasPositionChange: widget.onPositionChange != null,
+    )}
+    ${JsRoadviewOverlay.getScript(
+      hasMarkerTapCallback: widget.onMarkerTap != null,
+      hasCustomOverlayTapCallback: widget.onCustomOverlayTap != null,
+    )}
 </script>''');
   }
 }

@@ -15,7 +15,11 @@ class RoadView4Overlay1Screen extends StatefulWidget {
 }
 
 class _RoadView4Overlay1ScreenState extends State<RoadView4Overlay1Screen> {
-  late KakaoMapController mapController;
+  KakaoRoadviewController? roadviewController;
+
+  final LatLng position = LatLng(33.450701, 126.570667);
+
+  String? tappedMarkerId;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,41 @@ class _RoadView4Overlay1ScreenState extends State<RoadView4Overlay1Screen> {
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: const KakaoRoadMap(),
+      body: Stack(
+        children: [
+          KakaoRoadMap(
+            center: position,
+            markers: [
+              Marker(
+                markerId: 'marker1',
+                latLng: position,
+                infoWindowContent:
+                    '<div style="padding:5px;font-size:12px;">여기가 중심입니다</div>',
+                // 로드뷰 전용: 지면으로부터의 높이와 보이는 최대 거리
+                altitude: 3,
+                range: 100,
+              ),
+            ],
+            onRoadviewCreated: (controller) {
+              roadviewController = controller;
+            },
+            onMarkerTap: (markerId, latLng) {
+              setState(() => tappedMarkerId = markerId);
+            },
+          ),
+          if (tappedMarkerId != null)
+            Positioned(
+              left: 12,
+              bottom: 12,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text('탭한 마커: $tappedMarkerId'),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

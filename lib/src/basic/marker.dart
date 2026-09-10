@@ -127,6 +127,19 @@ class Marker {
   /// 기본값은 1.0(아래쪽 끝)입니다.
   double customOverlayYAnchor;
 
+  /// 로드뷰에서 마커의 지면으로부터의 높이입니다. 단위는 미터입니다.
+  ///
+  /// [KakaoRoadMap] 위에 마커를 올릴 때만 사용되며, 지도에서는 무시됩니다.
+  /// null 이면 카카오 SDK 기본값을 사용합니다.
+  double? altitude;
+
+  /// 로드뷰에서 마커가 보이는 최대 거리입니다. 단위는 미터입니다.
+  ///
+  /// 이 거리보다 멀어지면 마커가 표시되지 않습니다.
+  /// [KakaoRoadMap] 위에 마커를 올릴 때만 사용되며, 지도에서는 무시됩니다.
+  /// null 이면 카카오 SDK 기본값을 사용합니다.
+  double? range;
+
   /// 마커 인스턴스를 생성합니다.
   ///
   /// [markerId]와 [latLng]는 필수 파라미터입니다.
@@ -160,6 +173,8 @@ class Marker {
     this.customOverlayContent,
     this.customOverlayXAnchor = 0.5,
     this.customOverlayYAnchor = 1.0,
+    this.altitude,
+    this.range,
   });
 
   /// 마커 정보를 JSON 형식으로 변환합니다.
@@ -191,6 +206,8 @@ class Marker {
       'customOverlayContent': customOverlayContent,
       'customOverlayXAnchor': customOverlayXAnchor,
       'customOverlayYAnchor': customOverlayYAnchor,
+      'altitude': altitude,
+      'range': range,
     };
   }
 
