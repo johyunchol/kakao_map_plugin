@@ -1,7 +1,7 @@
-include: package:lints/core.yaml
+include: package:flutter_lints/flutter.yaml
 
-# pub.dev와 동일한 lint 규칙 사용
-# https://pub.dev/packages/lints
+# pub.dev와 동일한 lint 규칙 사용 (flutter_lints 는 lints 를 포함합니다)
+# https://pub.dev/packages/flutter_lints
 
 linter:
   rules:
