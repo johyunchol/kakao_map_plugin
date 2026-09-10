@@ -1,8 +1,12 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter/rendering.dart';
+import 'dart:ui' show Color, ImageByteFormat;
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
 import 'constants/image_type.dart';
+import 'hex_color.dart';
 
 /// 마커에 사용할 커스텀 아이콘을 나타내는 클래스입니다.
 ///
@@ -136,4 +140,127 @@ class MarkerIcon {
   ///
   /// Returns: URL을 포함하는 [MarkerIcon] 인스턴스
   static Future<MarkerIcon> fromNetwork(String url) => Future.value(network(url));
+
+  /// 색만 바꿔 쓰는 기본 핀 모양 아이콘입니다. 네트워크·에셋 없이 바로 씁니다.
+  ///
+  /// [size] 는 아이콘의 세로 크기(px)이며 가로는 그 0.7배입니다. 핀 끝이 좌표를
+  /// 가리키도록 마커에는 `width: size * 0.7, height: size, offsetX: size * 0.35,
+  /// offsetY: size` 를 함께 지정하세요.
+  ///
+  /// 예시:
+  /// ```dart
+  /// Marker(
+  ///   markerId: 'm1',
+  ///   latLng: latLng,
+  ///   icon: MarkerIcon.pin(color: Colors.red),
+  ///   width: 28, height: 40, offsetX: 14, offsetY: 40,
+  /// )
+  /// ```
+  static MarkerIcon pin({
+    required Color color,
+    Color? borderColor,
+    Color dotColor = const Color(0xFFFFFFFF),
+    double size = 40,
+  }) {
+    final fill = _css(color);
+    final stroke = borderColor == null ? 'none' : _css(borderColor);
+    final width = (size * 0.7).round();
+    final height = size.round();
+    // 24x34 뷰박스의 핀. 끝점 (12,34) 가 좌표에 놓입니다.
+    final svg = '<svg xmlns="http://www.w3.org/2000/svg" width="$width" height="$height" viewBox="0 0 24 34">'
+        '<path d="M12 1C6 1 1.5 5.6 1.5 11.4c0 7.7 9 20.4 9.6 21.2a1.2 1.2 0 0 0 1.8 0c.6-.8 9.6-13.5 9.6-21.2C22.5 5.6 18 1 12 1z" '
+        'fill="$fill" stroke="$stroke" stroke-width="1.2"/>'
+        '<circle cx="12" cy="11.5" r="4.2" fill="${_css(dotColor)}"/></svg>';
+    return MarkerIcon._(
+      'data:image/svg+xml;charset=utf-8,${Uri.encodeComponent(svg)}',
+      imageType: ImageType.url,
+    );
+  }
+
+  /// Flutter 위젯을 그대로 그려 마커 아이콘으로 씁니다.
+  ///
+  /// 위젯을 화면 밖에서 한 번 렌더링해 PNG 로 만들므로 배지, 프로필 사진, 가격표
+  /// 같은 "앱 스타일" 마커를 HTML 없이 만들 수 있습니다. 결과는 정적 이미지라
+  /// 위젯 안의 상호작용은 동작하지 않습니다.
+  ///
+  /// [logicalSize] 는 위젯의 논리 픽셀 크기이고, 마커에는 같은 값을
+  /// `width/height` 로 넘기세요(이미지는 [pixelRatio] 배로 렌더링됩니다).
+  /// 이미지가 포함된 위젯은 로드가 끝나도록 [delay] 를 주거나 미리 캐시하세요.
+  ///
+  /// 예시:
+  /// ```dart
+  /// final icon = await MarkerIcon.fromWidget(
+  ///   Container(
+  ///     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+  ///     decoration: BoxDecoration(color: Colors.indigo, borderRadius: BorderRadius.circular(16)),
+  ///     child: const Text('12,000원', style: TextStyle(color: Colors.white, fontSize: 13)),
+  ///   ),
+  ///   logicalSize: const Size(90, 32),
+  /// );
+  /// ```
+  static Future<MarkerIcon> fromWidget(
+    Widget widget, {
+    required Size logicalSize,
+    double pixelRatio = 3.0,
+    Duration delay = Duration.zero,
+    TextDirection textDirection = TextDirection.ltr,
+  }) async {
+    final binding = WidgetsFlutterBinding.ensureInitialized();
+    final view = binding.platformDispatcher.views.first;
+
+    final repaintBoundary = RenderRepaintBoundary();
+    final renderView = RenderView(
+      view: view,
+      configuration: ViewConfiguration(
+        logicalConstraints: BoxConstraints.tight(logicalSize),
+        physicalConstraints: BoxConstraints.tight(logicalSize * pixelRatio),
+        devicePixelRatio: pixelRatio,
+      ),
+      child: RenderPositionedBox(
+        alignment: Alignment.center,
+        child: repaintBoundary,
+      ),
+    );
+
+    final pipelineOwner = PipelineOwner();
+    final buildOwner = BuildOwner(focusManager: FocusManager());
+    pipelineOwner.rootNode = renderView;
+    renderView.prepareInitialFrame();
+
+    final element = RenderObjectToWidgetAdapter<RenderBox>(
+      container: repaintBoundary,
+      child: Directionality(
+        textDirection: textDirection,
+        child: MediaQuery(
+          data: MediaQueryData(size: logicalSize, devicePixelRatio: pixelRatio),
+          child: SizedBox.fromSize(size: logicalSize, child: widget),
+        ),
+      ),
+    ).attachToRenderTree(buildOwner);
+
+    void flush() {
+      buildOwner.buildScope(element);
+      buildOwner.finalizeTree();
+      pipelineOwner
+        ..flushLayout()
+        ..flushCompositingBits()
+        ..flushPaint();
+    }
+
+    flush();
+    if (delay > Duration.zero) {
+      await Future<void>.delayed(delay);
+      flush();
+    }
+
+    final image = await repaintBoundary.toImage(pixelRatio: pixelRatio);
+    final data = await image.toByteData(format: ImageByteFormat.png);
+    image.dispose();
+    if (data == null) {
+      throw StateError('위젯을 이미지로 변환하지 못했습니다.');
+    }
+    return fromBytes(data.buffer.asUint8List());
+  }
+
+  static String _css(Color color) => color.toCssColor();
 }

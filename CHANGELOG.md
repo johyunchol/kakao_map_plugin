@@ -46,6 +46,14 @@
 * 지도 문서에 시스템 글꼴(`-apple-system`, Roboto, Noto Sans KR …)을 기본 적용하고, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃/컨텍스트 메뉴·페이지 핀치 줌·오버스크롤 글로우/바운스·스크롤바·포커스 링을 껐습니다. 선택 가능해야 하는 요소에는 `kmp-selectable` 클래스를 주세요. iOS 에서는 링크 미리보기도 끕니다.
 * 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라지던 문제를 수정했습니다. 링크 이동은 가로채고 `KakaoMap(onLinkTap:)`(로드뷰 위젯도 동일)으로 알립니다. 콜백이 없으면 무시됩니다.
 
+### 앱 느낌 패키지
+* `InfoWindowStyle` 을 추가했습니다. `Marker.infoWindowStyle` 또는 `KakaoMapTheme.infoWindowStyle` 로 지정하면 SDK 기본 인포윈도우 대신 앱 스타일 말풍선(둥근 모서리, 그림자, 꼬리, 닫기 버튼)을 그립니다. `material()`, `cupertino()`, `dark()` 프리셋이 있고, 지정하지 않으면 기존 모양입니다.
+* `KakaoMapTheme` 을 추가했습니다(`AuthRepository.initialize(theme:)` 전역 / `KakaoMap(theme:)` 개별). 글꼴, 타일 로딩 전 배경색, 기본 인포윈도우 스타일, 추가 CSS 를 지정합니다.
+* `KakaoMapControls`(확대/축소·지도 타입 Flutter 버튼)와 `KakaoDrawingToolbar`(Drawing 도형 선택·되돌리기 칩 바)를 추가했습니다. web 에서도 눌리도록 내부에서 `KakaoMapPointerInterceptor` 를 사용합니다.
+* `MarkerIcon.pin(color:)`(색만 바꾼 SVG 핀)과 `MarkerIcon.fromWidget()`(Flutter 위젯을 그려 마커 이미지로)을 추가했습니다.
+* `ClustererStyle.material(color)` 프리셋과 `fontSize / fontWeight / fontFamily / border / boxShadow / opacity` 필드를 추가했습니다.
+* `KakaoMap(copyrightPosition:, copyrightReversed:)` 와 `KakaoRoadMap / KakaoMapRoadviewView(disableZoomControl:)` 을 추가했습니다.
+
 ### 카메라 / 측정
 * `KakaoMap(minLevel:, maxLevel:)` 을 rebuild 로 바꿔도 반영되지 않던 문제를 수정하고, `setMinLevel()` / `setMaxLevel()` 을 추가했습니다.
 * `jump(center, level, animate:, duration:)`, `panBy(dx, dy)`, `panToBounds(bounds, padding:)`, `fitBounds(points, padding:)` 를 추가했습니다.
@@ -53,6 +61,7 @@
 * 지도 생성 옵션 `mapTypeId`(초기 지도 타입), `disableDoubleClick`, `disableDoubleClickZoom`, `scrollwheel`, `keyboardShortcuts` 와 `onMapTypeChanged` 콜백을 추가했습니다.
 
 ### 버그 수정 (추가)
+* `ClustererStyle.background` 가 Flutter 순서(`#aarrggbb`)의 16진수로 CSS 에 들어가 색이 달라지던 문제를 수정했습니다. 이제 CSS 형식(`#rrggbb` / `rgba()`)으로 전달됩니다.
 * `KeywordSearchRequest.useMapCenter / useMapBounds` 가 항상 무시되던 문제를 수정했습니다(`Places` 를 지도와 연결).
 * `KakaoStaticMap` 초기 HTML 에 마커 텍스트가 이스케이프 없이 들어가 `</script>` 가 포함되면 스크립트가 깨지던 문제를 수정했습니다.
 

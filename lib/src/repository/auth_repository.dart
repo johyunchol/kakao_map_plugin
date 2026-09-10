@@ -1,4 +1,5 @@
 import '../basic/constants/kakao_map_library.dart';
+import '../basic/kakao_map_theme.dart';
 
 /// 카카오 API 인증 정보를 관리하는 저장소입니다.
 ///
@@ -40,6 +41,9 @@ class AuthRepository {
   ///
   /// 기본값은 카카오의 공식 API URL이며, 필요에 따라 커스텀 URL을 설정할 수 있습니다.
   String? baseUrl;
+
+  /// 모든 지도에 적용할 모양 기본값입니다. `KakaoMap(theme:)` 이 우선합니다.
+  KakaoMapTheme? theme;
 
   /// 내부 라이브러리 집합 저장소입니다.
   Set<KakaoMapLibrary>? _libraries;
@@ -98,10 +102,12 @@ class AuthRepository {
     required String appKey,
     String? baseUrl,
     Set<KakaoMapLibrary>? libraries,
+    KakaoMapTheme? theme,
   }) {
     _instance._appKey = appKey;
     _instance.baseUrl = baseUrl;
     _instance._libraries = libraries;
+    _instance.theme = theme;
 
     return _instance;
   }

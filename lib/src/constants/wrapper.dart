@@ -1,4 +1,5 @@
 import '../basic/constants/kakao_map_library.dart';
+import '../basic/kakao_map_theme.dart';
 import '../repository/auth_repository.dart';
 
 /// 두 래퍼가 공유하는 기본 스타일입니다.
@@ -52,8 +53,10 @@ const String _baseScript = '''
 /// [AuthRepository.libraries]에 설정된 값(기본값: 전체)을 사용합니다.
 ///
 /// 라이브러리 내부에서 사용하는 함수입니다. 직접 호출할 필요는 없습니다.
-String htmlWrapper(String script, {Set<KakaoMapLibrary>? libraries}) {
+String htmlWrapper(String script,
+    {Set<KakaoMapLibrary>? libraries, KakaoMapTheme? theme}) {
   final selected = libraries ?? AuthRepository.instance.libraries;
+  final themeCss = (theme ?? AuthRepository.instance.theme)?.toCss() ?? '';
   final librariesValue = KakaoMapLibrary.toQueryValue(selected);
   final librariesParam =
       librariesValue.isEmpty ? '' : '&libraries=$librariesValue';
@@ -78,6 +81,7 @@ $_baseStyles
       user-select: none;
       touch-action: manipulation;
     }
+$themeCss
   </style>
 $_baseScript
 </head>
@@ -105,7 +109,8 @@ $script
 ///
 /// 라이브러리 내부에서 사용하는 함수입니다. 직접 호출할 필요는 없습니다.
 String htmlWrapperWithRoadview(String script,
-    {Set<KakaoMapLibrary>? libraries}) {
+    {Set<KakaoMapLibrary>? libraries, KakaoMapTheme? theme}) {
+  final themeCss = (theme ?? AuthRepository.instance.theme)?.toCss() ?? '';
   final selected = libraries ?? AuthRepository.instance.libraries;
   final librariesValue = KakaoMapLibrary.toQueryValue(selected);
   final librariesParam =
@@ -184,6 +189,7 @@ $_baseStyles
     .MapWalker.m13 .angleBack { background-position: -522px -2px; }
     .MapWalker.m14 .angleBack { background-position: -626px -2px; }
     .MapWalker.m15 .angleBack { background-position: -730px -2px; }
+$themeCss
   </style>
 $_baseScript
 </head>

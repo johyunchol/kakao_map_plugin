@@ -1,4 +1,5 @@
 import '../model/lat_lng.dart';
+import 'info_window_style.dart';
 import 'marker_icon.dart';
 
 /// 지도에 표시할 마커를 나타내는 클래스입니다.
@@ -140,6 +141,9 @@ class Marker {
   /// null 이면 카카오 SDK 기본값을 사용합니다.
   double? range;
 
+  /// 인포윈도우 모양입니다. null 이면 지도 테마의 기본값, 그것도 없으면 SDK 기본 모양입니다.
+  InfoWindowStyle? infoWindowStyle;
+
   /// 마커 인스턴스를 생성합니다.
   ///
   /// [markerId]와 [latLng]는 필수 파라미터입니다.
@@ -175,6 +179,7 @@ class Marker {
     this.customOverlayYAnchor = 1.0,
     this.altitude,
     this.range,
+    this.infoWindowStyle,
   });
 
   /// 마커 정보를 JSON 형식으로 변환합니다.
@@ -208,6 +213,7 @@ class Marker {
       'customOverlayYAnchor': customOverlayYAnchor,
       'altitude': altitude,
       'range': range,
+      'infoWindowStyle': infoWindowStyle?.toJson(),
     };
   }
 

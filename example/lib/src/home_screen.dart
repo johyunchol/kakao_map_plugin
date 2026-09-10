@@ -32,6 +32,9 @@ import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_24_custom_tileset_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_25_get_tile_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_26_flutter_controls_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_28_styled_info_window_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_29_widget_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -148,6 +151,9 @@ class _HomeScreenState extends State<HomeScreen>
             title: '좌표-픽셀 변환하기', newPage: const Map23CoordPixelConvertScreen()),
         MenuItem(title: '커스텀 타일셋1', newPage: const Map24CustomTilesetScreen()),
         MenuItem(title: '커스텀 타일셋2', newPage: const Map25GetTileScreen()),
+        MenuItem(
+            title: 'Flutter 컨트롤 올리기 (플러그인 추가)',
+            newPage: const Map26FlutterControlsScreen()),
       ],
     ),
     MenuGroup(name: '오버레이', items: [
@@ -197,6 +203,12 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(title: '지도 영역 밖의 마커위치 추적하기', newPage: const Overlay26MarkerTrackerScreen()),
       MenuItem(
           title: '구멍난 다각형 만들기', newPage: const Overlay27PolygonHoleScreen()),
+      MenuItem(
+          title: '앱 스타일 인포윈도우 (플러그인 추가)',
+          newPage: const Overlay28StyledInfoWindowScreen()),
+      MenuItem(
+          title: '위젯으로 마커 만들기 (플러그인 추가)',
+          newPage: const Overlay29WidgetMarkerScreen()),
     ]),
     MenuGroup(name: '로드뷰', items: [
       MenuItem(title: '로드뷰 생성하기', newPage: const RoadView1DefaultScreen()),

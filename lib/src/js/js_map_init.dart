@@ -28,6 +28,8 @@ class JsMapInit {
     bool? disableDoubleClickZoom,
     bool? scrollwheel,
     bool? keyboardShortcuts,
+    String copyrightPosition = 'BOTTOMRIGHT',
+    bool copyrightReversed = false,
   }) {
     // 지정한 생성 옵션만 넣어 SDK 기본값을 유지합니다.
     final extraOptions = StringBuffer();
@@ -250,7 +252,7 @@ class JsMapInit {
             });
         }
 
-        map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false)
+        map.setCopyrightPosition(kakao.maps.CopyrightPosition.$copyrightPosition, $copyrightReversed);
 
         onMapCreated.postMessage(JSON.stringify({ ready: true }));
     }

@@ -52,6 +52,17 @@ extension HexColor on Color {
   /// String hex1 = color.toHexColor(); // "#AABBCC"
   /// String hex2 = color.toHexColor(leadingHashSign: false); // "AABBCC"
   /// ```
+  /// CSS 에서 그대로 쓸 수 있는 색 문자열입니다.
+  ///
+  /// 불투명하면 `#rrggbb`, 아니면 `rgba(r, g, b, a)` 를 돌려줍니다.
+  /// ([toHexColorWithAlpha] 는 Flutter 의 `#aarrggbb` 순서라 CSS 에 넣으면 색이 달라집니다.)
+  String toCssColor() {
+    final alpha = a;
+    if (alpha >= 1.0) return toHexColor();
+    return 'rgba(${(r * 255).round()}, ${(g * 255).round()}, ${(b * 255).round()}, '
+        '${(alpha * 1000).round() / 1000})';
+  }
+
   String toHexColor({bool leadingHashSign = true}) =>
       '${leadingHashSign ? '#' : ''}'
       '${(r * 255).round().toRadixString(16).padLeft(2, '0')}'

@@ -14,6 +14,7 @@ class JsRoadviewInit {
     required Viewpoint? viewpoint,
     required int radius,
     required bool isIOS,
+    bool disableZoomControl = false,
   }) {
     final latitude = center?.latitude ?? 33.450701;
     final longitude = center?.longitude ?? 126.570667;
@@ -69,7 +70,7 @@ class JsRoadviewInit {
 
     function initializeRoadview() {
         const container = document.getElementById('map');
-        roadview = new kakao.maps.Roadview(container);
+        roadview = new kakao.maps.Roadview(container, { disableZoomControl: $disableZoomControl });
         roadviewClient = new kakao.maps.RoadviewClient();
 
         registerRoadviewEvents();

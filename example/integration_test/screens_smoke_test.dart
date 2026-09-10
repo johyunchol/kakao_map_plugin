@@ -36,6 +36,9 @@ import 'package:kakao_map_plugin_example/src/map_22_tiles_loaded_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_23_coord_pixel_convert_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_24_custom_tileset_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_25_get_tile_screen.dart';
+import 'package:kakao_map_plugin_example/src/map_26_flutter_controls_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_28_styled_info_window_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_29_widget_marker_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -114,6 +117,9 @@ final Map<String, Widget Function()> screens = {
   'Map23CoordPixelConvertScreen': () => const Map23CoordPixelConvertScreen(),
   'Map24CustomTilesetScreen': () => const Map24CustomTilesetScreen(),
   'Map25GetTileScreen': () => const Map25GetTileScreen(),
+  'Map26FlutterControlsScreen': () => const Map26FlutterControlsScreen(),
+  'Overlay28StyledInfoWindowScreen': () => const Overlay28StyledInfoWindowScreen(),
+  'Overlay29WidgetMarkerScreen': () => const Overlay29WidgetMarkerScreen(),
   'Overlay1MarkerScreen': () => const Overlay1MarkerScreen(),
   'Overlay26MarkerTrackerScreen': () => const Overlay26MarkerTrackerScreen(),
   'Overlay25DragCustomOverlayScreen': () => const Overlay25DragCustomOverlayScreen(),

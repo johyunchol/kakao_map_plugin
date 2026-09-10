@@ -17,6 +17,7 @@ import 'constants/control_position.dart';
 import 'constants/kakao_map_library.dart';
 import 'constants/drag_type.dart';
 import 'constants/drawing_overlay_type.dart';
+import 'constants/copyright_position.dart';
 import 'constants/map_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
@@ -26,6 +27,7 @@ import '../bridge/bridge_factory.dart';
 import '../bridge/kakao_map_bridge.dart';
 import '../bridge/platform_flags.dart';
 import 'kakao_map_controller.dart';
+import 'kakao_map_theme.dart';
 
 // Clusterer imports
 import 'clusterer.dart';
@@ -186,6 +188,15 @@ class KakaoMap extends StatefulWidget {
   /// 키보드 방향키/+/- 조작을 사용할지 여부입니다. web 과 데스크톱에서 의미가 있습니다.
   final bool? keyboardShortcuts;
 
+  /// 이 지도의 모양 기본값입니다. null 이면 `AuthRepository.initialize(theme:)` 값을 씁니다.
+  final KakaoMapTheme? theme;
+
+  /// 저작권·로고 표시 위치입니다.
+  final CopyrightPosition copyrightPosition;
+
+  /// true 면 저작권 표시 순서를 뒤집습니다(로고가 안쪽으로).
+  final bool copyrightReversed;
+
   /// 지도 타입 컨트롤(일반지도/스카이뷰) 표시 여부입니다.
   ///
   /// 기본값은 false입니다.
@@ -337,6 +348,9 @@ class KakaoMap extends StatefulWidget {
     this.disableDoubleClickZoom,
     this.scrollwheel,
     this.keyboardShortcuts,
+    this.theme,
+    this.copyrightPosition = CopyrightPosition.bottomRight,
+    this.copyrightReversed = false,
     this.mapTypeControl = false,
     this.mapTypeControlPosition = ControlPosition.topRight,
     this.zoomControl = false,
@@ -481,6 +495,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     );
   }
 
+  /// 이 지도에 적용되는 테마입니다. 위젯 값이 없으면 전역 값을 씁니다.
+  KakaoMapTheme? get _effectiveTheme =>
+      widget.theme ?? AuthRepository.instance.theme;
+
   /// 이 지도가 실제로 불러올 라이브러리 집합입니다.
   ///
   /// 위젯 지정값이 없으면 [AuthRepository.libraries]를 쓰고,
@@ -495,7 +513,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   }
 
   String _loadMap() {
-    return htmlWrapper(libraries: _effectiveLibraries, '''<script>
+    return htmlWrapper(libraries: _effectiveLibraries, theme: _effectiveTheme, '''<script>
     ${JsGlobalVariables.getScript()}
     ${JsMapInit.getScript(
       center: widget.center,
@@ -520,6 +538,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       disableDoubleClickZoom: widget.disableDoubleClickZoom,
       scrollwheel: widget.scrollwheel,
       keyboardShortcuts: widget.keyboardShortcuts,
+      copyrightPosition: widget.copyrightPosition.sdkName,
+      copyrightReversed: widget.copyrightReversed,
       isIOS: isIOSWebView,
     )}
     ${JsOverlayClear.getScript()}
@@ -529,6 +549,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     ${JsMarker.getScript(
       hasMarkerDragCallback: widget.onMarkerDragChangeCallback != null,
       hasMarkerTapCallback: widget.onMarkerTap != null,
+      defaultInfoWindowStyleJson: _effectiveTheme?.infoWindowStyle == null
+          ? null
+          : jsonEncode(_effectiveTheme!.infoWindowStyle!.toJson()),
     )}
     ${JsClusterer.getScript(
       hasCustomOverlayTapCallback: widget.onCustomOverlayTap != null,

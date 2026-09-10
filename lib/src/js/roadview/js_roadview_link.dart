@@ -12,6 +12,7 @@ class JsRoadviewLink {
     required int radius,
     required bool showRoadviewOverlay,
     required bool useMapWalker,
+    bool disableZoomControl = false,
     required bool isIOS,
   }) {
     final latitude = center?.latitude ?? 33.450701;
@@ -65,7 +66,7 @@ class JsRoadviewLink {
             mapCenter = map.getCenter();
         });
 
-        roadview = new kakao.maps.Roadview(document.getElementById('roadview'));
+        roadview = new kakao.maps.Roadview(document.getElementById('roadview'), { disableZoomControl: $disableZoomControl });
         roadviewClient = new kakao.maps.RoadviewClient();
 
         if ($showRoadviewOverlay) {

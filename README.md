@@ -844,6 +844,45 @@ web 에서 다른 점:
 
     `urlFunction` / `tileFunction` 은 WebView 안에서 그대로 실행되므로 앱이 직접 작성한 문자열만 넘기세요.
 
+* 앱 느낌으로 만들기 - 인포윈도우 스타일, 테마, Flutter 컨트롤, 위젯 마커
+
+    카카오 SDK 가 직접 그리는 UI(인포윈도우, 줌/지도타입 컨트롤, 클러스터, 기본 마커)는 웹페이지 느낌이 납니다. 아래 기능으로 앱 디자인에 맞출 수 있습니다. 지정하지 않으면 기존 모양 그대로입니다.
+
+    ``` dart
+    // 1) 인포윈도우 — 마커별 또는 테마로 지도 전체 기본값
+    Marker(
+      markerId: 'm1',
+      latLng: LatLng(37.5665, 126.9780),
+      infoWindowContent: '<b>서울시청</b><br>02-120',
+      infoWindowStyle: const InfoWindowStyle.material(),   // .cupertino(), .dark(), 또는 직접 지정
+    );
+
+    // 2) 테마 — 전역(AuthRepository.initialize(theme:)) 또는 지도별
+    KakaoMap(
+      theme: const KakaoMapTheme(
+        infoWindowStyle: InfoWindowStyle.material(),
+        backgroundColor: Color(0xFFEFF3F6),   // 타일 로딩 전 배경(SDK 기본 회색 격자 대신)
+        fontFamily: 'Pretendard, sans-serif', // 기본은 시스템 글꼴 스택
+      ),
+      copyrightPosition: CopyrightPosition.bottomLeft, // 오른쪽 아래 버튼과 겹치지 않게
+    );
+
+    // 3) Flutter 컨트롤 — SDK 컨트롤 대신 Stack 으로 올리기 (web 에서도 눌립니다)
+    Stack(children: [
+      KakaoMap(onMapCreated: (c) => setState(() => controller = c)),
+      if (controller != null) KakaoMapControls(controller: controller!, showMapType: true),
+    ]);
+    KakaoDrawingToolbar(controller: controller!, modes: const [DrawingOverlayType.polyline, DrawingOverlayType.polygon]);
+
+    // 4) 마커 — 색만 바꾼 핀, 또는 Flutter 위젯을 그대로 그린 마커
+    Marker(markerId: 'p', latLng: latLng, icon: MarkerIcon.pin(color: Colors.red), width: 28, height: 40, offsetX: 14, offsetY: 40);
+    final tag = await MarkerIcon.fromWidget(PriceTag('12,000원'), logicalSize: const Size(96, 44));
+    Marker(markerId: 't', latLng: latLng, icon: tag, width: 96, height: 44, offsetX: 48, offsetY: 44);
+
+    // 5) 클러스터 — 원형 Material 프리셋
+    Clusterer(markers: markers, styles: [ClustererStyle.material(Colors.indigo, size: 48)]);
+    ```
+
 * 정적 지도 - 움직이지 않는 지도 이미지가 필요할 때 (목록 썸네일, 공유 미리보기 등)
 
     ``` dart

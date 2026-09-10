@@ -57,6 +57,7 @@ class OverlayPayload {
         m.draggable,
         m.infoWindowRemovable,
         m.infoWindowFirstShow,
+        m.infoWindowStyle,
         m.zIndex,
         m.customOverlayContent,
         m.customOverlayXAnchor,
@@ -79,6 +80,7 @@ class OverlayPayload {
       'infoWindowContent': m.infoWindowContent,
       'infoWindowRemovable': m.infoWindowRemovable,
       'infoWindowFirstShow': m.infoWindowFirstShow,
+      'infoWindowStyle': m.infoWindowStyle?.toJson(),
       'zIndex': m.zIndex,
       'hash': markerHash(m),
     };

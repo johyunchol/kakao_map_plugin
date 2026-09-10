@@ -92,6 +92,24 @@ class ClustererStyle {
   /// ```
   int? lineHeight;
 
+  /// 글자 크기(px)입니다.
+  int? fontSize;
+
+  /// 글자 굵기입니다. CSS `font-weight` 값(예: 'bold', '600')입니다.
+  String? fontWeight;
+
+  /// 글꼴입니다. null 이면 지도 문서의 기본 글꼴(시스템 글꼴)을 따릅니다.
+  String? fontFamily;
+
+  /// 테두리입니다. CSS `border` 값(예: '2px solid #fff')입니다.
+  String? border;
+
+  /// 그림자입니다. CSS `box-shadow` 값입니다.
+  String? boxShadow;
+
+  /// 불투명도(0~1)입니다.
+  double? opacity;
+
   /// 클러스터 스타일 인스턴스를 생성합니다.
   ///
   /// 모든 파라미터는 선택 사항입니다.
@@ -128,7 +146,38 @@ class ClustererStyle {
     this.color,
     this.textAlign,
     this.lineHeight,
+    this.fontSize,
+    this.fontWeight,
+    this.fontFamily,
+    this.border,
+    this.boxShadow,
+    this.opacity,
   });
+
+  /// 앱 느낌의 원형 클러스터: 단색 원 + 흰 테두리 + 그림자, 시스템 글꼴.
+  ///
+  /// [size] 는 지름(px)입니다. 여러 구간을 쓰려면 크기를 달리해 여러 개 만드세요.
+  factory ClustererStyle.material(
+    Color color, {
+    double size = 44,
+    Color textColor = const Color(0xFFFFFFFF),
+    int fontSize = 14,
+  }) {
+    final px = size.round();
+    return ClustererStyle(
+      width: px,
+      height: px,
+      background: color,
+      borderRadius: px ~/ 2,
+      color: textColor,
+      textAlign: 'center',
+      lineHeight: px,
+      fontSize: fontSize,
+      fontWeight: '600',
+      border: '2px solid rgba(255,255,255,0.9)',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+    );
+  }
 
   /// 클러스터 스타일 정보를 JSON 형식으로 변환합니다.
   ///
@@ -138,11 +187,17 @@ class ClustererStyle {
     return {
       if (width != null) 'width': '${width}px',
       if (height != null) 'height': '${height}px',
-      if (background != null) 'background': background?.toHexColorWithAlpha(),
+      if (background != null) 'background': background?.toCssColor(),
       if (borderRadius != null) 'borderRadius': '${borderRadius}px',
       if (color != null) 'color': color?.toHexColor(),
       if (textAlign != null) 'textAlign': textAlign,
       if (lineHeight != null) 'lineHeight': '${lineHeight}px',
+      if (fontSize != null) 'fontSize': '${fontSize}px',
+      if (fontWeight != null) 'fontWeight': fontWeight,
+      if (fontFamily != null) 'fontFamily': fontFamily,
+      if (border != null) 'border': border,
+      if (boxShadow != null) 'boxShadow': boxShadow,
+      if (opacity != null) 'opacity': '$opacity',
     };
   }
 }

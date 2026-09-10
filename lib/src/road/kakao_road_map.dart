@@ -116,6 +116,12 @@ class KakaoRoadMap extends StatefulWidget {
   /// 플러그인은 지도가 사라지지 않도록 링크 이동을 항상 가로챕니다.
   final OnLinkTap? onLinkTap;
 
+  /// 로드뷰 기본 줌/방위 컨트롤을 숨깁니다.
+  ///
+  /// 카카오 SDK 가 PC(web) 에서만 지원하는 옵션이라 모바일 WebView 에서는 효과가 없을
+  /// 수 있습니다. Flutter 컨트롤을 직접 그릴 때 사용하세요.
+  final bool disableZoomControl;
+
   /// 로드뷰 위 마커를 탭했을 때 호출됩니다.
   final OnCustomOverlayTap? onMarkerTap;
 
@@ -146,6 +152,7 @@ class KakaoRoadMap extends StatefulWidget {
     this.onPositionChange,
     this.onRoadviewNotFound,
     this.onLinkTap,
+    this.disableZoomControl = false,
     this.onMarkerTap,
     this.onCustomOverlayTap,
   });
@@ -330,6 +337,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
       viewpoint: widget.viewpoint,
       radius: widget.radius,
       isIOS: isIOS,
+      disableZoomControl: widget.disableZoomControl,
     )}
     ${JsRoadviewEvent.getScript(
       hasPanoIdChange: widget.onPanoIdChange != null,

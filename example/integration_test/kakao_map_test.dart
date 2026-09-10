@@ -24,6 +24,7 @@ class MapProps {
   final Clusterer? clusterer;
   final Set<KakaoMapLibrary>? libraries;
   final OnLinkTap? onLinkTap;
+  final KakaoMapTheme? theme;
 
   const MapProps({
     this.center,
@@ -36,6 +37,7 @@ class MapProps {
     this.clusterer,
     this.libraries,
     this.onLinkTap,
+    this.theme,
   });
 }
 
@@ -77,6 +79,7 @@ class MapHost extends StatelessWidget {
               clusterer: p.clusterer,
               libraries: p.libraries,
               onLinkTap: p.onLinkTap,
+              theme: p.theme,
             ),
           ),
         ),
@@ -769,6 +772,50 @@ void main() {
     expect(await js(c, 'location.href'), before);
     expect(await js(c, 'typeof map === "object" && map !== null'), isTrue);
     await expectNoJsErrors(c);
+    await unmount(tester);
+  });
+  testWidgets('InfoWindowStyle 을 지정하면 SDK 인포윈도우 대신 앱 스타일 말풍선이 그려진다',
+      (tester) async {
+    final c = await mount(
+      tester,
+      MapProps(markers: [
+        Marker(
+          markerId: 'styled',
+          latLng: LatLng(37.5665, 126.9780),
+          infoWindowContent: '<b>스타일</b>',
+          infoWindowFirstShow: true,
+          infoWindowStyle: const InfoWindowStyle.material(),
+        ),
+      ]),
+    );
+    await waitUntil(tester, c, "document.querySelectorAll('.kmp-iw').length === 1");
+    expect(await js(c, "document.querySelector('.kmp-iw-body').innerHTML"), contains('스타일'));
+    expect(await js(c, "document.querySelector('.kmp-iw').style.borderRadius"), '12px');
+    // 닫기 버튼이 있고, 누르면 사라진다.
+    await c.runJavaScript("document.querySelector('.kmp-iw-close').click();");
+    await waitUntil(tester, c, "document.querySelectorAll('.kmp-iw').length === 0");
+    await expectNoJsErrors(c);
+    await unmount(tester);
+
+    // 테마 기본값: 마커에 스타일이 없어도 테마 스타일로 그려진다.
+    final c2 = await mount(
+      tester,
+      MapProps(
+        theme: const KakaoMapTheme(infoWindowStyle: InfoWindowStyle.dark()),
+        markers: [
+          Marker(
+            markerId: 'themed',
+            latLng: LatLng(37.5665, 126.9780),
+            infoWindowContent: '테마',
+            infoWindowFirstShow: true,
+          ),
+        ],
+      ),
+    );
+    await waitUntil(tester, c2, "document.querySelectorAll('.kmp-iw').length === 1");
+    expect(await js(c2, "document.querySelector('.kmp-iw').style.backgroundColor"),
+        anyOf('rgb(28, 28, 30)', 'rgba(28, 28, 30, 1)', '#1c1c1eff'));
+    await expectNoJsErrors(c2);
     await unmount(tester);
   });
 }
