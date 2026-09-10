@@ -136,13 +136,13 @@ class ClustererStyle {
   /// CSS 형식의 스타일 문자열로 변환됩니다.
   Map<String, dynamic> toJson() {
     return {
-      'width': '${width}px',
-      'height': '${height}px',
-      'background': background?.toHexColorWithAlpha(),
-      'borderRadius': '${borderRadius}px',
-      'color': color?.toHexColor(),
-      'textAlign': textAlign,
-      'lineHeight': '${lineHeight}px',
+      if (width != null) 'width': '${width}px',
+      if (height != null) 'height': '${height}px',
+      if (background != null) 'background': background?.toHexColorWithAlpha(),
+      if (borderRadius != null) 'borderRadius': '${borderRadius}px',
+      if (color != null) 'color': color?.toHexColor(),
+      if (textAlign != null) 'textAlign': textAlign,
+      if (lineHeight != null) 'lineHeight': '${lineHeight}px',
     };
   }
 }

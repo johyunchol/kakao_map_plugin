@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -19,6 +20,7 @@ import '../protocol/keyword_search_response.dart';
 import '../protocol/trans_coord_request.dart';
 import '../protocol/trans_coord_response.dart';
 import '../service/address_search_service.dart';
+import '../service/base_service.dart';
 import '../service/category_search_service.dart';
 import '../service/coord_2_address_service.dart';
 import '../service/coord_2_region_code_service.dart';
@@ -28,8 +30,8 @@ import 'circle.dart';
 import 'clusterer.dart';
 import 'constants/map_type.dart';
 import 'custom_overlay.dart';
-import 'hex_color.dart';
 import 'marker.dart';
+import 'overlay_payload.dart';
 import 'polygon.dart';
 import 'polyline.dart';
 import 'rectangle.dart';
@@ -74,17 +76,118 @@ class KakaoMapController {
   /// [_webViewController]: 지도를 표시하는 WebView 컨트롤러
   KakaoMapController(this._webViewController);
 
-  /// JavaScript 문자열에 안전하게 사용하기 위해 특수 문자를 이스케이프합니다.
+  /// 배치 전송 시 한 번의 JS 호출에 담을 최대 항목 수입니다.
+  static const int _batchMaxItems = 200;
+
+  /// 배치 전송 시 한 번의 JS 호출에 담을 payload 의 대략적인 최대 길이(문자 수)입니다.
+  static const int _batchMaxChars = 512 * 1024;
+
+  /// Dart 문자열을 JS 문자열 리터럴(큰따옴표 포함)로 안전하게 변환합니다.
   ///
-  /// 따옴표, 백슬래시, 줄바꿈 등 JavaScript 구문을 깨뜨릴 수 있는 문자를 처리합니다.
-  String _escapeForJs(String input) {
-    return input
-        .replaceAll(r'\', r'\\')    // Escape backslashes first
-        .replaceAll("'", r"\'")     // Escape single quotes
-        .replaceAll('"', r'\"')     // Escape double quotes
-        .replaceAll('\n', r'\n')    // Escape newlines
-        .replaceAll('\r', r'\r')    // Escape carriage returns
-        .replaceAll('\t', r'\t');   // Escape tabs
+  /// `jsonEncode` 가 따옴표, 백슬래시, 제어 문자를 모두 이스케이프하므로
+  /// 임의의 사용자 입력(검색어, HTML 콘텐츠 등)이 JS 구문을 깨뜨리지 않습니다.
+  /// JS 문자열 리터럴에서 줄바꿈으로 취급되는 U+2028/U+2029 도 추가로 이스케이프합니다.
+  String _jsStr(String value) {
+    return jsonEncode(value)
+        .replaceAll('\u2028', r'\u2028')
+        .replaceAll('\u2029', r'\u2029');
+  }
+
+  /// 임의의 값을 JSON 으로 직렬화한 뒤 JS 문자열 리터럴로 감쌉니다.
+  ///
+  /// JS 쪽에서 `JSON.parse` 또는 `parseIfString` 으로 되돌려 사용합니다.
+  String _jsJson(Object? value) => _jsStr(jsonEncode(value));
+
+  /// 숫자/불리언 등 원시값을 JS 리터럴로 변환합니다. null 은 `undefined` 가 되어
+  /// JS 기본 파라미터가 적용됩니다.
+  String _jsPrimitive(Object? value) {
+    if (value == null) return 'undefined';
+    if (value is num || value is bool) return value.toString();
+    assert(false, '_jsPrimitive 는 숫자/불리언만 허용합니다. 문자열은 _jsStr 를 사용하세요.');
+    return _jsStr(value.toString());
+  }
+
+  /// 이 컨트롤러의 WebView 에 이미 등록한 base64 이미지 키 집합입니다.
+  final Set<String> _registeredImageKeys = {};
+
+  /// WebView 페이지가 다시 로드되어 JS 측 상태가 초기화됐을 때 호출합니다.
+  ///
+  /// WebView 안에 등록해 둔 이미지 캐시 키 등 "JS 쪽에도 사본이 있다고 가정한" 상태를
+  /// 비웁니다. 라이브러리 내부에서 사용하며, 일반적으로 직접 호출할 필요는 없습니다.
+  void resetWebViewSideCaches() {
+    _registeredImageKeys.clear();
+  }
+
+  /// base64(file 타입) 이미지에 대한 짧은 참조 키를 만듭니다.
+  static String _imageKey(String base64) =>
+      '${base64.length}:${base64.hashCode.toRadixString(36)}';
+
+  /// payload 목록에서 file 타입 base64 이미지를 찾아 WebView 에 1회만 등록하고,
+  /// payload 의 imageSrc 를 `@key` 참조로 치환합니다.
+  ///
+  /// 같은 아이콘을 쓰는 마커 N개가 base64 를 N번 전송하던 것을 1번으로 줄입니다.
+  Future<void> _registerImagesAndRewrite(
+      List<Map<String, dynamic>> payloads, {
+      required String Function(Map<String, dynamic>) srcOf,
+      required String? Function(Map<String, dynamic>) typeOf,
+      required void Function(Map<String, dynamic>, String) rewrite,
+  }) async {
+    final pending = <String, String>{};
+    for (final p in payloads) {
+      if (typeOf(p) != 'file') continue;
+      final src = srcOf(p);
+      if (src.isEmpty || src.startsWith('@')) continue;
+      final key = _imageKey(src);
+      if (!_registeredImageKeys.contains(key)) pending[key] = src;
+      rewrite(p, '@$key');
+    }
+    if (pending.isEmpty) return;
+
+    // 이미지 1개가 매우 클 수 있으므로 크기 기준으로 나누어 전송합니다.
+    var chunk = <String, String>{};
+    var chars = 0;
+    Future<void> flush() async {
+      if (chunk.isEmpty) return;
+      await _webViewController
+          .runJavaScript('registerImages(${_jsJson(chunk)});');
+      _registeredImageKeys.addAll(chunk.keys);
+      chunk = <String, String>{};
+      chars = 0;
+    }
+
+    for (final entry in pending.entries) {
+      if (chunk.isNotEmpty && chars + entry.value.length > _batchMaxChars) {
+        await flush();
+      }
+      chunk[entry.key] = entry.value;
+      chars += entry.value.length;
+    }
+    await flush();
+  }
+
+  /// payload 목록을 크기 기준으로 나누어 `jsFunction(payload)` 를 호출합니다.
+  ///
+  /// 마커 N개를 N번 호출하던 방식 대신 한 번(또는 소수의) 브릿지 왕복으로 전송합니다.
+  Future<void> _runBatched(
+      String jsFunction, Iterable<Map<String, dynamic>> items) async {
+    final encoded = items.map(jsonEncode).toList(growable: false);
+    if (encoded.isEmpty) return;
+
+    var start = 0;
+    while (start < encoded.length) {
+      var chars = 0;
+      var end = start;
+      while (end < encoded.length &&
+          end - start < _batchMaxItems &&
+          (end == start || chars + encoded[end].length <= _batchMaxChars)) {
+        chars += encoded[end].length;
+        end++;
+      }
+      end = math.max(end, start + 1);
+      final chunk = '[${encoded.sublist(start, end).join(',')}]';
+      await _webViewController.runJavaScript('$jsFunction(${_jsStr(chunk)});');
+      start = end;
+    }
   }
 
   /// 지도에 폴리라인(선)을 추가합니다.
@@ -114,15 +217,10 @@ class KakaoMapController {
 
     final safePolylines = List<Polyline>.from(polylines);
 
-    clearPolyline(
+    await clearPolyline(
       polylineIds: safePolylines.map((e) => e.polylineId).toList(),
     );
-
-    for (var polyline in safePolylines) {
-      await _webViewController.runJavaScript(
-          "addPolyline('${polyline.polylineId}', '${jsonEncode(polyline.points)}', '${polyline.strokeColor?.toHexColor()}', '${polyline.strokeOpacity}', '${polyline.strokeWidth}', '${polyline.strokeStyle?.name}', '${polyline.endArrow}', ${polyline.zIndex});"
-      );
-    }
+    await _runBatched('addPolylines', safePolylines.map(OverlayPayload.polyline));
   }
 
   /// 지도에 원을 추가합니다.
@@ -150,16 +248,10 @@ class KakaoMapController {
 
     final safeCircles = List<Circle>.from(circles);
 
-    clearCircle(
+    await clearCircle(
       circleIds: safeCircles.map((e) => e.circleId).toList(),
     );
-
-    for (var circle in safeCircles) {
-      final circleString =
-          "addCircle('${circle.circleId}', '${jsonEncode(circle.center)}', '${circle.radius}', '${circle.strokeWidth}', '${circle.strokeColor?.toHexColor()}', '${circle.strokeOpacity}', '${circle.strokeStyle?.name}', '${circle.fillColor?.toHexColor()}', '${circle.fillOpacity}', ${circle.zIndex});";
-
-      await _webViewController.runJavaScript(circleString);
-    }
+    await _runBatched('addCircles', safeCircles.map(OverlayPayload.circle));
   }
 
   /// 지도에 사각형을 추가합니다.
@@ -172,16 +264,11 @@ class KakaoMapController {
 
     final safeRectangles = List<Rectangle>.from(rectangles);
 
-    clearRectangle(
+    await clearRectangle(
       rectangleIds: safeRectangles.map((e) => e.rectangleId).toList(),
     );
-
-    for (var rectangle in safeRectangles) {
-      final rectangleString =
-          "addRectangle('${rectangle.rectangleId}', '${jsonEncode(rectangle.rectangleBounds)}', '${rectangle.strokeWidth}', '${rectangle.strokeColor?.toHexColor()}', '${rectangle.strokeOpacity}', '${rectangle.strokeStyle?.name}', '${rectangle.fillColor?.toHexColor()}', '${rectangle.fillOpacity}', ${rectangle.zIndex});";
-
-      await _webViewController.runJavaScript(rectangleString);
-    }
+    await _runBatched(
+        'addRectangles', safeRectangles.map(OverlayPayload.rectangle));
   }
 
   /// 지도에 다각형을 추가합니다.
@@ -195,15 +282,10 @@ class KakaoMapController {
 
     final safePolygons = List<Polygon>.from(polygons);
 
-    clearPolygon(
+    await clearPolygon(
       polygonIds: safePolygons.map((e) => e.polygonId).toList(),
     );
-
-    for (var polygon in safePolygons) {
-      await _webViewController.runJavaScript(
-          "addPolygon('${polygon.polygonId}', '${jsonEncode(polygon.points)}', '${jsonEncode(polygon.holes)}', '${polygon.strokeWidth}', '${polygon.strokeColor?.toHexColor()}', '${polygon.strokeOpacity}', '${polygon.strokeStyle?.name}', '${polygon.fillColor?.toHexColor()}', '${polygon.fillOpacity}', ${polygon.zIndex});"
-      );
-    }
+    await _runBatched('addPolygons', safePolygons.map(OverlayPayload.polygon));
   }
 
   /// 지도에 마커를 추가합니다.
@@ -228,20 +310,22 @@ class KakaoMapController {
   /// );
   /// ```
   Future<void> addMarker({List<Marker>? markers}) async {
-    if (markers == null || markers.isEmpty) {
+    if (markers == null) {
       return;
     }
 
     final safeMarkers = List<Marker>.from(markers);
 
-    clearMarker(markerIds: safeMarkers.map((e) => e.markerId).toList());
-    for (var marker in safeMarkers) {
-      final imageSrc = marker.icon?.imageSrc ?? marker.markerImageSrc;
-      final escapedInfoWindowContent = _escapeForJs(marker.infoWindowContent);
-      final markerString =
-          "addMarker('${marker.markerId}', '${jsonEncode(marker.latLng)}', ${marker.draggable}, '${marker.width}', '${marker.height}', '${marker.offsetX}', '${marker.offsetY}', '$imageSrc', '$escapedInfoWindowContent', ${marker.infoWindowRemovable}, ${marker.infoWindowFirstShow}, ${marker.zIndex}, '${marker.icon?.imageType?.name}')";
-      await _webViewController.runJavaScript(markerString);
-    }
+    await clearMarker(markerIds: safeMarkers.map((e) => e.markerId).toList());
+
+    final payloads = safeMarkers.map(OverlayPayload.marker).toList();
+    await _registerImagesAndRewrite(
+      payloads,
+      srcOf: (p) => (p['imageSrc'] as String?) ?? '',
+      typeOf: (p) => p['imageType'] as String?,
+      rewrite: (p, ref) => p['imageSrc'] = ref,
+    );
+    await _runBatched('addMarkers', payloads);
   }
 
   /// 지도에 마커 클러스터러를 추가합니다.
@@ -255,9 +339,26 @@ class KakaoMapController {
       return;
     }
 
-    clearMarkerClusterer();
-    final clustererString =
-        "addMarkerClusterer('${jsonEncode(clusterer.markers)}', ${clusterer.gridSize}, ${clusterer.averageCenter}, ${clusterer.disableClickZoom}, ${clusterer.minLevel}, ${clusterer.minClusterSize}, '${jsonEncode(clusterer.texts)}', '${jsonEncode(clusterer.calculator)}', '${jsonEncode(clusterer.styles)}')";
+    final markerPayloads =
+        clusterer.markers.map((m) => m.toJson()).toList();
+    await _registerImagesAndRewrite(
+      markerPayloads,
+      srcOf: (p) => ((p['icon'] as Map?)?['imageSrc'] as String?) ?? '',
+      typeOf: (p) => (p['icon'] as Map?)?['imageType'] as String?,
+      rewrite: (p, ref) => (p['icon'] as Map)['imageSrc'] = ref,
+    );
+
+    // JS 쪽 addMarkerClusterer 가 이전 클러스터러를 정리한 뒤 새로 생성합니다.
+    final clustererString = 'addMarkerClusterer('
+        '${_jsJson(markerPayloads)}, '
+        '${_jsPrimitive(clusterer.gridSize)}, '
+        '${_jsPrimitive(clusterer.averageCenter)}, '
+        '${_jsPrimitive(clusterer.disableClickZoom)}, '
+        '${_jsPrimitive(clusterer.minLevel)}, '
+        '${_jsPrimitive(clusterer.minClusterSize)}, '
+        '${_jsJson(clusterer.texts)}, '
+        '${_jsJson(clusterer.calculator)}, '
+        '${_jsJson(clusterer.styles)});';
     await _webViewController.runJavaScript(clustererString);
   }
 
@@ -274,13 +375,10 @@ class KakaoMapController {
 
     final overlays = List<CustomOverlay>.from(customOverlays);
 
-    clearCustomOverlay(
+    await clearCustomOverlay(
         overlayIds: overlays.map((e) => e.customOverlayId).toList());
-    for (var customOverlay in overlays) {
-      final escapedContent = _escapeForJs(customOverlay.content);
-      await _webViewController.runJavaScript(
-          "addCustomOverlay('${customOverlay.customOverlayId}', '${jsonEncode(customOverlay.latLng)}', '$escapedContent', '${customOverlay.xAnchor}', '${customOverlay.yAnchor}', '${customOverlay.zIndex}')");
-    }
+    await _runBatched(
+        'addCustomOverlays', overlays.map(OverlayPayload.customOverlay));
   }
 
   /// 컨트롤러를 정리하고 리소스를 해제합니다.
@@ -299,62 +397,47 @@ class KakaoMapController {
 
   /// 지도에 표시된 폴리라인을 제거합니다.
   ///
-  /// [polylineIds]: 제거할 폴리라인 ID 목록입니다. null이면 모든 폴리라인을 제거합니다.
+  /// [polylineIds]: **남길** 폴리라인 ID 목록입니다. 목록에 포함되지 않은 폴리라인이(가) 제거되며,
+  /// null이거나 비어 있으면 모든 폴리라인을(를) 제거합니다.
   Future<void> clearPolyline({List<String>? polylineIds}) async {
-    String newPolylineIds = '';
-    if (polylineIds != null) {
-      newPolylineIds = jsonEncode(polylineIds);
-    }
-
-    await _webViewController.runJavaScript('clearPolyline($newPolylineIds);');
+    await _webViewController.runJavaScript(
+        'clearPolyline(${_jsJson(polylineIds ?? const <String>[])});');
   }
 
   /// 지도에 표시된 원을 제거합니다.
   ///
-  /// [circleIds]: 제거할 원 ID 목록입니다. null이면 모든 원을 제거합니다.
+  /// [circleIds]: **남길** 원 ID 목록입니다. 목록에 포함되지 않은 원이(가) 제거되며,
+  /// null이거나 비어 있으면 모든 원을(를) 제거합니다.
   Future<void> clearCircle({List<String>? circleIds}) async {
-    String newCircleIds = '';
-    if (circleIds != null) {
-      newCircleIds = jsonEncode(circleIds);
-    }
-
-    await _webViewController.runJavaScript('clearCircle($newCircleIds);');
+    await _webViewController.runJavaScript(
+        'clearCircle(${_jsJson(circleIds ?? const <String>[])});');
   }
 
   /// 지도에 표시된 사각형을 제거합니다.
   ///
-  /// [rectangleIds]: 제거할 사각형 ID 목록입니다. null이면 모든 사각형을 제거합니다.
+  /// [rectangleIds]: **남길** 사각형 ID 목록입니다. 목록에 포함되지 않은 사각형이(가) 제거되며,
+  /// null이거나 비어 있으면 모든 사각형을(를) 제거합니다.
   Future<void> clearRectangle({List<String>? rectangleIds}) async {
-    String newRectangleIds = '';
-    if (rectangleIds != null) {
-      newRectangleIds = jsonEncode(rectangleIds);
-    }
-
-    await _webViewController.runJavaScript('clearRectangle($newRectangleIds);');
+    await _webViewController.runJavaScript(
+        'clearRectangle(${_jsJson(rectangleIds ?? const <String>[])});');
   }
 
   /// 지도에 표시된 다각형을 제거합니다.
   ///
-  /// [polygonIds]: 제거할 다각형 ID 목록입니다. null이면 모든 다각형을 제거합니다.
+  /// [polygonIds]: **남길** 다각형 ID 목록입니다. 목록에 포함되지 않은 다각형이(가) 제거되며,
+  /// null이거나 비어 있으면 모든 다각형을(를) 제거합니다.
   Future<void> clearPolygon({List<String>? polygonIds}) async {
-    String newPolygonIds = '';
-    if (polygonIds != null) {
-      newPolygonIds = jsonEncode(polygonIds);
-    }
-
-    await _webViewController.runJavaScript('clearPolygon($newPolygonIds);');
+    await _webViewController.runJavaScript(
+        'clearPolygon(${_jsJson(polygonIds ?? const <String>[])});');
   }
 
   /// 지도에 표시된 마커를 제거합니다.
   ///
-  /// [markerIds]: 제거할 마커 ID 목록입니다. null이면 모든 마커를 제거합니다.
+  /// [markerIds]: **남길** 마커 ID 목록입니다. 목록에 포함되지 않은 마커이(가) 제거되며,
+  /// null이거나 비어 있으면 모든 마커을(를) 제거합니다.
   Future<void> clearMarker({List<String>? markerIds}) async {
-    String newMarkerIds = '';
-    if (markerIds != null) {
-      newMarkerIds = jsonEncode(markerIds);
-    }
-
-    await _webViewController.runJavaScript('clearMarker($newMarkerIds);');
+    await _webViewController.runJavaScript(
+        'clearMarker(${_jsJson(markerIds ?? const <String>[])});');
   }
 
   /// 지도에 표시된 마커 클러스터러를 제거합니다.
@@ -366,13 +449,11 @@ class KakaoMapController {
 
   /// 지도에 표시된 커스텀 오버레이를 제거합니다.
   ///
-  /// [overlayIds]: 제거할 오버레이 ID 목록입니다. null이면 모든 커스텀 오버레이를 제거합니다.
+  /// [overlayIds]: **남길** 커스텀 오버레이 ID 목록입니다. 목록에 포함되지 않은 오버레이가 제거되며,
+  /// null이거나 비어 있으면 모든 커스텀 오버레이를 제거합니다.
   Future<void> clearCustomOverlay({List<String>? overlayIds}) async {
-    String newOverlayIds = '';
-    if (overlayIds != null) {
-      newOverlayIds = jsonEncode(overlayIds);
-    }
-    await _webViewController.runJavaScript('clearCustomOverlay($newOverlayIds);');
+    await _webViewController.runJavaScript(
+        'clearCustomOverlay(${_jsJson(overlayIds ?? const <String>[])});');
   }
 
   /// 지도 중심을 지정한 좌표로 부드럽게 이동합니다.
@@ -381,8 +462,8 @@ class KakaoMapController {
   ///
   /// 이동 거리가 화면 크기보다 크면 애니메이션 없이 즉시 이동합니다.
   Future<void> panTo(LatLng latLng) async {
-    await _webViewController
-        .runJavaScript("panTo('${latLng.latitude}', '${latLng.longitude}');");
+    await _webViewController.runJavaScript(
+        "panTo(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
   }
 
   /// 주어진 좌표들이 모두 보이도록 지도 영역을 조정합니다.
@@ -392,7 +473,7 @@ class KakaoMapController {
   /// 모든 좌표가 화면에 보이도록 줌 레벨과 중심 좌표를 자동으로 조정합니다.
   Future<void> fitBounds(List<LatLng> points) async {
     await _webViewController
-        .runJavaScript("fitBounds('${jsonEncode(points)}');");
+        .runJavaScript("fitBounds(${_jsJson(points)});");
   }
 
   /// 특정 마커의 드래그 가능 여부를 변경합니다.
@@ -401,7 +482,7 @@ class KakaoMapController {
   /// [draggable]: true이면 드래그 가능, false이면 불가능합니다.
   Future<void> setMarkerDraggable(String markerId, bool draggable) async {
     await _webViewController
-        .runJavaScript("setMarkerDraggable('$markerId', $draggable);");
+        .runJavaScript("setMarkerDraggable(${_jsStr(markerId)}, $draggable);");
   }
 
   /// 지도의 중심 좌표를 설정합니다.
@@ -411,7 +492,7 @@ class KakaoMapController {
   /// 애니메이션 없이 즉시 중심이 이동합니다.
   Future<void> setCenter(LatLng latLng) async {
     await _webViewController.runJavaScript(
-        "setCenter('${latLng.latitude}', '${latLng.longitude}');");
+        "setCenter(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
   }
 
   /// 현재 지도의 중심 좌표를 반환합니다.
@@ -436,7 +517,7 @@ class KakaoMapController {
       await _webViewController.runJavaScript("setLevel('$level');");
     } else {
       await _webViewController
-          .runJavaScript("setLevel('$level', '${jsonEncode(options)}');");
+          .runJavaScript("setLevel('$level', ${_jsJson(options)});");
     }
   }
 
@@ -446,7 +527,7 @@ class KakaoMapController {
   Future<int> getLevel() async {
     final result = await _webViewController
         .runJavaScriptReturningResult("getLevel();") as String;
-    final level = jsonDecode(result)['level'] as int;
+    final level = (jsonDecode(result)['level'] as num).toInt();
 
     return level;
   }
@@ -470,21 +551,44 @@ class KakaoMapController {
     final result = await _webViewController
         .runJavaScriptReturningResult("getMapTypeId();") as String;
 
-    final mapTypeId = jsonDecode(result)['mapTypeId'] as int;
+    final mapTypeId = (jsonDecode(result)['mapTypeId'] as num).toInt();
 
     return MapType.getById(mapTypeId);
   }
 
-  /// 지도 영역을 설정합니다.
-  Future<void> setBounds() async {
-    await _webViewController.runJavaScript("setBounds();");
+  /// 지도가 표시할 영역을 설정합니다.
+  ///
+  /// [bounds]: 지도에 표시할 영역입니다. null이면 아무 작업도 수행하지 않고
+  /// 조용히 반환합니다(하위호환: 기존에는 인자 없이 호출했습니다).
+  /// [paddingTop], [paddingRight], [paddingBottom], [paddingLeft]: 영역 기준
+  /// 상하좌우로 추가 확보할 픽셀 여백입니다.
+  Future<void> setBounds([
+    LatLngBounds? bounds,
+    int paddingTop = 0,
+    int paddingRight = 0,
+    int paddingBottom = 0,
+    int paddingLeft = 0,
+  ]) async {
+    if (bounds == null) {
+      await _webViewController.runJavaScript("setBounds();");
+      return;
+    }
+
+    await _webViewController.runJavaScript(
+        "setBounds(${_jsJson(bounds)}, ${_jsPrimitive(paddingTop)}, "
+        "${_jsPrimitive(paddingRight)}, ${_jsPrimitive(paddingBottom)}, "
+        "${_jsPrimitive(paddingLeft)});");
   }
 
   /// 지도 스타일을 설정합니다.
   ///
   /// [width]: 지도 너비
   /// [height]: 지도 높이
-  Future<void> setStyle(int width, int height) async {}
+  @Deprecated('컨테이너 크기는 Flutter 위젯으로 제어하세요. 지도 재계산은 relayout() 을 사용합니다.')
+  Future<void> setStyle(int width, int height) async {
+    await _webViewController.runJavaScript(
+        "setMapStyle(${_jsPrimitive(width)}, ${_jsPrimitive(height)});");
+  }
 
   /// 지도를 다시 그립니다.
   ///
@@ -500,12 +604,7 @@ class KakaoMapController {
   Future<LatLngBounds> getBounds() async {
     final bounds = await _webViewController
         .runJavaScriptReturningResult("getBounds()") as String;
-    final latLngBounds = jsonDecode(bounds);
-
-    final sw = latLngBounds['sw'];
-    final ne = latLngBounds['ne'];
-    return LatLngBounds(LatLng(sw['latitude'], sw['longitude']),
-        LatLng(ne['latitude'], ne['longitude']));
+    return LatLngBounds.fromJson(jsonDecode(bounds));
   }
 
   /// 지도에 오버레이 타입의 타일 레이어를 추가합니다.
@@ -539,11 +638,24 @@ class KakaoMapController {
   /// 현재 지도의 드래그 가능 여부를 반환합니다.
   ///
   /// Returns: 드래그 가능 여부
+  @Deprecated('플랫폼별 반환 타입이 달라 신뢰할 수 없습니다. isDraggable() 을 사용하세요.')
   Future<Object?> getDraggable() async {
     final draggable =
         await _webViewController.runJavaScriptReturningResult("getDraggable();");
 
     return draggable;
+  }
+
+  /// 현재 지도의 드래그 가능 여부를 반환합니다.
+  ///
+  /// Android 는 문자열(`"true"`), iOS 는 bool(`true`)을 반환하는 플랫폼 차이를
+  /// 내부에서 정규화하여 항상 [bool] 로 반환합니다.
+  ///
+  /// Returns: 드래그 가능 여부
+  Future<bool> isDraggable() async {
+    final draggable =
+        await _webViewController.runJavaScriptReturningResult("getDraggable();");
+    return draggable == true || draggable == 'true' || draggable == 1;
   }
 
   /// 지도 줌 가능 여부를 설정합니다.
@@ -556,10 +668,46 @@ class KakaoMapController {
   /// 현재 지도의 줌 가능 여부를 반환합니다.
   ///
   /// Returns: 줌 가능 여부
+  @Deprecated('플랫폼별 반환 타입이 달라 신뢰할 수 없습니다. isZoomable() 을 사용하세요.')
   Future<Object?> getZoomable() async {
     final zoomable =
         await _webViewController.runJavaScriptReturningResult("getZoomable();");
     return zoomable;
+  }
+
+  /// 현재 지도의 줌 가능 여부를 반환합니다.
+  ///
+  /// Android 는 문자열(`"true"`), iOS 는 bool(`true`)을 반환하는 플랫폼 차이를
+  /// 내부에서 정규화하여 항상 [bool] 로 반환합니다.
+  ///
+  /// Returns: 줌 가능 여부
+  Future<bool> isZoomable() async {
+    final zoomable =
+        await _webViewController.runJavaScriptReturningResult("getZoomable();");
+    return zoomable == true || zoomable == 'true' || zoomable == 1;
+  }
+
+  /// 검색/변환 계열 서비스(keywordSearch, categorySearch, addressSearch,
+  /// coord2Address, coord2RegionCode, transCoord)가 공유하는 요청 처리 로직입니다.
+  ///
+  /// [service]: 요청 상태를 관리하는 [BaseService] 인스턴스입니다.
+  /// [jsFunction]: 호출할 WebView 측 JS 함수 이름입니다.
+  /// [request]: JSON 으로 직렬화되어 JS 함수에 전달될 요청 객체입니다.
+  Future<R> _runSearch<R>(
+      BaseService<R> service, String jsFunction, Object request) async {
+    // 레거시 정적 결과 경로(xxxResult())도 계속 동작하도록 이전과 동일하게 초기화합니다.
+    service.resetCompleter();
+    final requestId = service.createRequest();
+    final result = service.requestFuture(requestId);
+
+    try {
+      await _webViewController
+          .runJavaScript("$jsFunction(${_jsJson(request)}, $requestId);");
+    } catch (e, st) {
+      service.failRequest(requestId, e, st);
+    }
+
+    return result;
   }
 
   /// 키워드로 장소를 검색합니다.
@@ -580,14 +728,8 @@ class KakaoMapController {
   /// );
   /// ```
   Future<KeywordSearchResponse> keywordSearch(
-      KeywordSearchRequest request) async {
-    KeywordSearchService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("keywordSearch('${jsonEncode(request)}');");
-
-    return await KeywordSearchService.keywordSearchResult();
-  }
+          KeywordSearchRequest request) =>
+      _runSearch(KeywordSearchService(), 'keywordSearch', request);
 
   /// 카테고리로 장소를 검색합니다.
   ///
@@ -595,14 +737,8 @@ class KakaoMapController {
   ///
   /// Returns: 검색 결과 [CategorySearchResponse]
   Future<CategorySearchResponse> categorySearch(
-      CategorySearchRequest request) async {
-    CategorySearchService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("categorySearch('${jsonEncode(request)}');");
-
-    return await CategorySearchService.categorySearchResult();
-  }
+          CategorySearchRequest request) =>
+      _runSearch(CategorySearchService(), 'categorySearch', request);
 
   /// 주소로 좌표를 검색합니다.
   ///
@@ -610,14 +746,8 @@ class KakaoMapController {
   ///
   /// Returns: 검색 결과 [AddressSearchResponse]
   Future<AddressSearchResponse> addressSearch(
-      AddressSearchRequest request) async {
-    AddressSearchService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("addressSearch('${jsonEncode(request)}')");
-
-    return await AddressSearchService.addressSearchResult();
-  }
+          AddressSearchRequest request) =>
+      _runSearch(AddressSearchService(), 'addressSearch', request);
 
   /// 좌표를 주소로 변환합니다.
   ///
@@ -625,14 +755,8 @@ class KakaoMapController {
   ///
   /// Returns: 변환 결과 [Coord2AddressResponse]
   Future<Coord2AddressResponse> coord2Address(
-      Coord2AddressRequest request) async {
-    Coord2AddressService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("coord2Address('${jsonEncode(request)}')");
-
-    return await Coord2AddressService.coord2AddressResult();
-  }
+          Coord2AddressRequest request) =>
+      _runSearch(Coord2AddressService(), 'coord2Address', request);
 
   /// 좌표를 행정구역 코드로 변환합니다.
   ///
@@ -640,28 +764,16 @@ class KakaoMapController {
   ///
   /// Returns: 변환 결과 [Coord2RegionCodeResponse]
   Future<Coord2RegionCodeResponse> coord2RegionCode(
-      Coord2RegionCodeRequest request) async {
-    Coord2RegionCodeService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("coord2RegionCode('${jsonEncode(request)}')");
-
-    return await Coord2RegionCodeService.coord2RegionCodeResult();
-  }
+          Coord2RegionCodeRequest request) =>
+      _runSearch(Coord2RegionCodeService(), 'coord2RegionCode', request);
 
   /// 좌표계를 변환합니다.
   ///
   /// [request]: 변환 요청 정보입니다.
   ///
   /// Returns: 변환 결과 [TransCoordResponse]
-  Future<TransCoordResponse> transCoord(TransCoordRequest request) async {
-    TransCoordService().resetCompleter();
-
-    await _webViewController
-        .runJavaScript("transCoord('${jsonEncode(request)}')");
-
-    return await TransCoordService.transCodeResult();
-  }
+  Future<TransCoordResponse> transCoord(TransCoordRequest request) =>
+      _runSearch(TransCoordService(), 'transCoord', request);
 
   /// 지도 좌표(LatLng)를 화면 픽셀 좌표로 변환합니다.
   ///
@@ -670,7 +782,8 @@ class KakaoMapController {
   /// Returns: 화면 픽셀 좌표 [Point]
   Future<Point> coordToPixel(LatLng latLng) async {
     final result = await _webViewController.runJavaScriptReturningResult(
-        "coordToPixel('${latLng.latitude}', '${latLng.longitude}');") as String;
+            "coordToPixel(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});")
+        as String;
     return Point.fromJson(jsonDecode(result));
   }
 
@@ -681,7 +794,8 @@ class KakaoMapController {
   /// Returns: 지도 좌표 [LatLng]
   Future<LatLng> pixelToCoord(Point point) async {
     final result = await _webViewController.runJavaScriptReturningResult(
-        "pixelToCoord('${point.x}', '${point.y}');") as String;
+            "pixelToCoord(${_jsPrimitive(point.x)}, ${_jsPrimitive(point.y)});")
+        as String;
     return LatLng.fromJson(jsonDecode(result));
   }
 }

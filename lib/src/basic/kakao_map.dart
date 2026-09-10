@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -18,6 +17,7 @@ import 'callbacks.dart';
 
 // Constants and enums imports
 import 'constants/control_position.dart';
+import 'constants/kakao_map_library.dart';
 import 'constants/drag_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
@@ -30,6 +30,7 @@ import 'clusterer.dart';
 
 // Marker and overlay imports
 import 'marker.dart';
+import 'overlay_payload.dart';
 import 'custom_overlay.dart';
 import 'polyline.dart';
 import 'circle.dart';
@@ -227,6 +228,20 @@ class KakaoMap extends StatefulWidget {
   /// 많은 마커를 그룹화하여 표시할 때 사용합니다.
   final Clusterer? clusterer;
 
+  /// 지도와 함께 불러올 카카오 SDK 확장 라이브러리입니다.
+  ///
+  /// 생략하면 [AuthRepository.libraries](기본값: 전체)를 사용하므로 기존과 동일하게
+  /// 동작합니다. 사용하지 않는 라이브러리를 제외하면 지도 생성 시 다운로드/파싱
+  /// 비용이 줄어듭니다.
+  ///
+  /// [clusterer]를 지정하면 [KakaoMapLibrary.clusterer]가 자동으로 포함됩니다.
+  ///
+  /// 예시:
+  /// ```dart
+  /// KakaoMap(libraries: {KakaoMapLibrary.services})
+  /// ```
+  final Set<KakaoMapLibrary>? libraries;
+
   /// Specifies which gestures should be consumed by the map.
   ///
   /// It is possible for other gesture recognizers to be competing with the map
@@ -271,6 +286,7 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
+    this.libraries,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
 
@@ -278,21 +294,59 @@ class KakaoMap extends StatefulWidget {
   State<KakaoMap> createState() => _KakaoMapState();
 }
 
+/// `_syncOverlays()` 가 큐잉하는 오버레이 전송 작업 단위입니다.
+///
+/// [run] 은 실제 전송을 수행하고, [onFailure] 는 전송 실패 시 미리 갱신해 둔
+/// 시그니처를 되돌려 다음 rebuild 에서 재시도되도록 합니다.
+typedef _OverlaySyncTask = ({
+  Future<void> Function() run,
+  void Function() onFailure,
+});
+
 class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late final KakaoMapController _mapController;
   bool _isMapReady = false;
+  Timer? _relayoutTimer;
+
+  // didUpdateWidget 경로의 relayout 요청을 트레일링 디바운스로 묶기 위한 타이머입니다.
+  Timer? _relayoutDebounceTimer;
+
+  // 마지막으로 측정된 레이아웃 제약 크기. 값이 바뀌면 즉시 relayout 합니다.
+  Size? _lastLayoutSize;
+
+  // 마지막으로 JS 에 적용된 카메라 상태. 지도 준비 전 변경도 준비 시점에 반영합니다.
+  LatLng? _appliedCenter;
+  late int _appliedLevel;
+
+  // 오버레이 동기화를 직렬화하는 체인. 호출 순서를 보장하고 unhandled error 를 막습니다.
+  Future<void> _syncChain = Future<void>.value();
+
+  // 마지막으로 JS 에 전송한 오버레이 시그니처. 같은 내용이면 재전송하지 않습니다.
+  int? _polylinesSig;
+  int? _circlesSig;
+  int? _rectanglesSig;
+  int? _polygonsSig;
+  int? _markersSig;
+  int? _clustererSig;
+  int? _customOverlaysSig;
 
   @override
   void initState() {
     super.initState();
     // Add observer to handle app lifecycle changes (for iOS WebView touch event issues)
     WidgetsBinding.instance.addObserver(this);
+    _appliedCenter = widget.center;
+    _appliedLevel = widget.currentLevel;
     _initializeWebView();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _relayoutTimer?.cancel();
+    _relayoutDebounceTimer?.cancel();
+    // WebView 가 먼저 파괴된 경우 JS 실행이 실패할 수 있으므로 오류를 무시합니다.
+    unawaited(_mapController.dispose().catchError((_) {}));
     super.dispose();
   }
 
@@ -303,8 +357,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     // when returning from background (Flutter 3.27+ issue)
     if (state == AppLifecycleState.resumed && _isMapReady) {
       // Trigger relayout to fix potential rendering issues
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) {
+      _relayoutTimer?.cancel();
+      _relayoutTimer = Timer(const Duration(milliseconds: 100), () {
+        if (mounted && _isMapReady) {
           _mapController.relayout();
         }
       });
@@ -327,6 +382,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     final WebViewController controller =
         WebViewController.fromPlatformCreationParams(params);
 
+    // dispose() 가 항상 초기화된 컨트롤러를 보도록 HTML 로드보다 먼저 대입합니다.
+    _mapController = KakaoMapController(controller);
+
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000));
@@ -335,7 +393,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         baseUrl: AuthRepository.instance.baseUrl);
 
     if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
+      if (kDebugMode) {
+        AndroidWebViewController.enableDebugging(true);
+      }
       final androidController = controller.platform as AndroidWebViewController;
       androidController.setMediaPlaybackRequiresUserGesture(false);
       // Set display mode to ensure proper rendering on Android (Flutter 3.27+ fix)
@@ -344,20 +404,49 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         await request.grant();
       });
     }
-
-    _mapController = KakaoMapController(controller);
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(
-      controller: _mapController.webViewController,
-      gestureRecognizers: widget.gestureRecognizers,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final size = constraints.biggest;
+        if (_isMapReady &&
+            _lastLayoutSize != null &&
+            _lastLayoutSize != size) {
+          // 제약이 실제로 바뀐 경우(회전, 부모 위젯 리사이즈 등)에는 디바운스 없이
+          // 다음 프레임에 즉시 relayout 합니다.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _isMapReady) {
+              _mapController.relayout();
+            }
+          });
+        }
+        _lastLayoutSize = size;
+
+        return WebViewWidget(
+          controller: _mapController.webViewController,
+          gestureRecognizers: widget.gestureRecognizers,
+        );
+      },
     );
   }
 
+  /// 이 지도가 실제로 불러올 라이브러리 집합입니다.
+  ///
+  /// 위젯 지정값이 없으면 [AuthRepository.libraries]를 쓰고,
+  /// [KakaoMap.clusterer]가 있으면 클러스터러를 자동으로 포함합니다.
+  Set<KakaoMapLibrary> get _effectiveLibraries {
+    final base = widget.libraries ?? AuthRepository.instance.libraries;
+    if (widget.clusterer != null &&
+        !base.contains(KakaoMapLibrary.clusterer)) {
+      return {...base, KakaoMapLibrary.clusterer};
+    }
+    return base;
+  }
+
   String _loadMap() {
-    return htmlWrapper('''<script>
+    return htmlWrapper(libraries: _effectiveLibraries, '''<script>
     ${JsGlobalVariables.getScript()}
     ${JsMapInit.getScript(
       center: widget.center,
@@ -375,7 +464,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       hasOnDragChangeCallback: widget.onDragChangeCallback != null,
       hasOnCameraIdle: widget.onCameraIdle != null,
       hasOnTilesLoadedCallback: widget.onTilesLoadedCallback != null,
-      isIOS: Platform.isIOS,
+      hasOnMapDoubleTap: widget.onMapDoubleTap != null,
+      isIOS: defaultTargetPlatform == TargetPlatform.iOS,
     )}
     ${JsOverlayClear.getScript()}
     ${JsOverlayDraw.getScript()}
@@ -390,8 +480,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     ${JsCustomOverlay.getScript(
       hasCustomOverlayTapCallback: widget.onCustomOverlayTap != null,
     )}
-    ${JsMapControl.getScript(isIOS: Platform.isIOS)}
-    ${JsUtils.getScript(isIOS: Platform.isIOS)}
+    ${JsMapControl.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
+    ${JsUtils.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
     ${JsSearch.getScript()}
 </script>
     ''');
@@ -401,224 +491,546 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   void didUpdateWidget(KakaoMap oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // 중심 좌표 변경 감지 및 적용
-    if (widget.center != oldWidget.center && widget.center != null) {
-      _mapController.setCenter(widget.center!);
+    if (!_isMapReady) {
+      // 지도 준비 전에는 JS 함수가 없으므로 보류합니다. onMapCreated 시점에 동기화됩니다.
+      return;
     }
 
-    // 줌 레벨 변경 감지 및 적용
-    if (widget.currentLevel != oldWidget.currentLevel) {
+    _syncCamera();
+
+    // 가시성 복구 시 지도 크기 재계산 (IndexedStack 등에서 필요).
+    // 제약이 실제로 바뀐 경우는 build() 에서 즉시 처리되므로, 여기서는 매
+    // rebuild 마다 발생하는 relayout 비용을 줄이기 위해 150ms 트레일링
+    // 디바운스로 코얼레싱합니다. (생략이 아니라 지연 후 1회 실행)
+    _scheduleDebouncedRelayout();
+
+    // 오버레이 업데이트 (내용이 바뀐 종류만 전송)
+    _syncOverlays();
+  }
+
+  /// `didUpdateWidget` 에서의 relayout 요청을 150ms 트레일링 디바운스로 묶습니다.
+  ///
+  /// IndexedStack 탭 복귀처럼 레이아웃 제약이 바뀌지 않는 rebuild 에서도
+  /// relayout 이 최소 한 번은 실행되어야 하므로, 요청을 "생략"하지 않고
+  /// 마지막 요청으로부터 150ms 뒤에 한 번만 실행되도록 합니다.
+  void _scheduleDebouncedRelayout() {
+    _relayoutDebounceTimer?.cancel();
+    _relayoutDebounceTimer = Timer(const Duration(milliseconds: 150), () {
+      if (mounted && _isMapReady) {
+        _mapController.relayout();
+      }
+    });
+  }
+
+  /// center / currentLevel 속성을 마지막 적용값과 비교해 바뀐 경우에만 JS 에 반영합니다.
+  void _syncCamera() {
+    if (!_isMapReady) return;
+
+    final center = widget.center;
+    if (center != null && !_sameLatLng(center, _appliedCenter)) {
+      _appliedCenter = center;
+      _mapController.setCenter(center);
+    }
+
+    if (widget.currentLevel != _appliedLevel) {
+      _appliedLevel = widget.currentLevel;
       _mapController.setLevel(widget.currentLevel);
     }
+  }
 
-    // 가시성 복구 시 지도 크기 재계산 (IndexedStack 등에서 필요)
-    _mapController.relayout();
+  static bool _sameLatLng(LatLng? a, LatLng? b) {
+    if (identical(a, b)) return true;
+    if (a == null || b == null) return false;
+    return a.latitude == b.latitude && a.longitude == b.longitude;
+  }
 
-    // 오버레이 업데이트
-    _mapController.addPolyline(polylines: widget.polylines);
-    _mapController.addCircle(circles: widget.circles);
-    _mapController.addRectangle(rectangles: widget.rectangles);
-    _mapController.addPolygon(polygons: widget.polygons);
-    _mapController.addMarker(markers: widget.markers);
-    _mapController.addMarkerClusterer(clusterer: widget.clusterer);
-    _mapController.addCustomOverlay(customOverlays: widget.customOverlays);
+  /// 위젯 속성의 오버레이들을 JS 와 동기화합니다.
+  ///
+  /// 각 오버레이 종류별로 내용 시그니처를 계산해 마지막 전송값과 다를 때만
+  /// 컨트롤러 메서드를 호출합니다. 부모 위젯의 무관한 rebuild 로 인한
+  /// 전량 재전송을 방지합니다.
+  void _syncOverlays() {
+    if (!_isMapReady) return;
+
+    // 시그니처 비교와 "전송 중" 표시는 동기적으로 수행하고, 실제 전송만 체인에
+    // 직렬로 붙입니다. 시그니처는 전송 성공 여부와 무관하게 먼저 갱신해 같은
+    // 내용이 중복 전송되는 것을 막고, 전송이 실패하면 onFailure 에서 되돌려
+    // 다음 rebuild 때 재시도되도록 합니다.
+    final tasks = <_OverlaySyncTask>[];
+
+    final polylinesSig = OverlayPayload.polylinesSignature(widget.polylines);
+    if (polylinesSig != _polylinesSig) {
+      final previousSig = _polylinesSig;
+      _polylinesSig = polylinesSig;
+      if (previousSig != null && polylinesSig == null) {
+        // 리스트가 null 로 바뀐 전이: addPolyline(null) 은 무시되므로 직접 비웁니다.
+        tasks.add((
+          run: () => _mapController.clearPolyline(polylineIds: const []),
+          onFailure: () {
+            if (_polylinesSig == polylinesSig) _polylinesSig = null;
+          },
+        ));
+      } else {
+        final polylines = widget.polylines;
+        tasks.add((
+          run: () => _mapController.addPolyline(polylines: polylines),
+          onFailure: () {
+            if (_polylinesSig == polylinesSig) _polylinesSig = null;
+          },
+        ));
+      }
+    }
+
+    final circlesSig = OverlayPayload.circlesSignature(widget.circles);
+    if (circlesSig != _circlesSig) {
+      final previousSig = _circlesSig;
+      _circlesSig = circlesSig;
+      if (previousSig != null && circlesSig == null) {
+        tasks.add((
+          run: () => _mapController.clearCircle(circleIds: const []),
+          onFailure: () {
+            if (_circlesSig == circlesSig) _circlesSig = null;
+          },
+        ));
+      } else {
+        final circles = widget.circles;
+        tasks.add((
+          run: () => _mapController.addCircle(circles: circles),
+          onFailure: () {
+            if (_circlesSig == circlesSig) _circlesSig = null;
+          },
+        ));
+      }
+    }
+
+    final rectanglesSig =
+        OverlayPayload.rectanglesSignature(widget.rectangles);
+    if (rectanglesSig != _rectanglesSig) {
+      final previousSig = _rectanglesSig;
+      _rectanglesSig = rectanglesSig;
+      if (previousSig != null && rectanglesSig == null) {
+        tasks.add((
+          run: () => _mapController.clearRectangle(rectangleIds: const []),
+          onFailure: () {
+            if (_rectanglesSig == rectanglesSig) _rectanglesSig = null;
+          },
+        ));
+      } else {
+        final rectangles = widget.rectangles;
+        tasks.add((
+          run: () => _mapController.addRectangle(rectangles: rectangles),
+          onFailure: () {
+            if (_rectanglesSig == rectanglesSig) _rectanglesSig = null;
+          },
+        ));
+      }
+    }
+
+    final polygonsSig = OverlayPayload.polygonsSignature(widget.polygons);
+    if (polygonsSig != _polygonsSig) {
+      final previousSig = _polygonsSig;
+      _polygonsSig = polygonsSig;
+      if (previousSig != null && polygonsSig == null) {
+        tasks.add((
+          run: () => _mapController.clearPolygon(polygonIds: const []),
+          onFailure: () {
+            if (_polygonsSig == polygonsSig) _polygonsSig = null;
+          },
+        ));
+      } else {
+        final polygons = widget.polygons;
+        tasks.add((
+          run: () => _mapController.addPolygon(polygons: polygons),
+          onFailure: () {
+            if (_polygonsSig == polygonsSig) _polygonsSig = null;
+          },
+        ));
+      }
+    }
+
+    final markersSig = OverlayPayload.markersSignature(widget.markers);
+    if (markersSig != _markersSig) {
+      final previousSig = _markersSig;
+      _markersSig = markersSig;
+      if (previousSig != null && markersSig == null) {
+        tasks.add((
+          run: () => _mapController.clearMarker(markerIds: const []),
+          onFailure: () {
+            if (_markersSig == markersSig) _markersSig = null;
+          },
+        ));
+      } else {
+        final markers = widget.markers;
+        tasks.add((
+          run: () => _mapController.addMarker(markers: markers),
+          onFailure: () {
+            if (_markersSig == markersSig) _markersSig = null;
+          },
+        ));
+      }
+    }
+
+    final clustererSig = OverlayPayload.clustererSignature(widget.clusterer);
+    if (clustererSig != _clustererSig) {
+      final previousSig = _clustererSig;
+      _clustererSig = clustererSig;
+      if (previousSig != null && clustererSig == null) {
+        tasks.add((
+          run: () => _mapController.clearMarkerClusterer(),
+          onFailure: () {
+            if (_clustererSig == clustererSig) _clustererSig = null;
+          },
+        ));
+      } else {
+        final clusterer = widget.clusterer;
+        tasks.add((
+          run: () => _mapController.addMarkerClusterer(clusterer: clusterer),
+          onFailure: () {
+            if (_clustererSig == clustererSig) _clustererSig = null;
+          },
+        ));
+      }
+    }
+
+    final customOverlaysSig =
+        OverlayPayload.customOverlaysSignature(widget.customOverlays);
+    if (customOverlaysSig != _customOverlaysSig) {
+      final previousSig = _customOverlaysSig;
+      _customOverlaysSig = customOverlaysSig;
+      if (previousSig != null && customOverlaysSig == null) {
+        tasks.add((
+          run: () => _mapController.clearCustomOverlay(overlayIds: const []),
+          onFailure: () {
+            if (_customOverlaysSig == customOverlaysSig) {
+              _customOverlaysSig = null;
+            }
+          },
+        ));
+      } else {
+        final customOverlays = widget.customOverlays;
+        tasks.add((
+          run: () =>
+              _mapController.addCustomOverlay(customOverlays: customOverlays),
+          onFailure: () {
+            if (_customOverlaysSig == customOverlaysSig) {
+              _customOverlaysSig = null;
+            }
+          },
+        ));
+      }
+    }
+
+    if (tasks.isEmpty) return;
+
+    _syncChain = _syncChain.then((_) async {
+      for (final task in tasks) {
+        if (!mounted) return;
+        try {
+          await task.run();
+        } catch (e, st) {
+          // WebView 가 파괴된 뒤 도착한 호출 등은 무시하고 나머지 동기화를 계속합니다.
+          task.onFailure();
+          assert(() {
+            debugPrint('KakaoMap overlay sync failed: $e\n$st');
+            return true;
+          }());
+        }
+      }
+    });
+  }
+
+  /// JavaScriptChannel 콜백 처리 공통 헬퍼입니다.
+  ///
+  /// WebView 콜백 컨텍스트에서 발생한 JSON 파싱/콜백 실행 예외가 앱 크래시로
+  /// 이어지지 않도록 방어하고, 위젯이 이미 dispose 된 경우 무시합니다.
+  void _handleChannel<T>(
+    String raw,
+    T Function(Map<String, dynamic>) parse,
+    void Function(T data) emit,
+  ) {
+    if (!mounted) return;
+    try {
+      emit(parse(jsonDecode(raw) as Map<String, dynamic>));
+    } catch (e, st) {
+      assert(() {
+        debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+        return true;
+      }());
+    }
   }
 
   void addJavaScriptChannels(WebViewController controller) {
     controller
       ..addJavaScriptChannel('onMapCreated',
           onMessageReceived: (JavaScriptMessage result) {
+        // 이 채널은 아래 두 시나리오에서 발화합니다.
+        // 1) 최초 지도 생성 완료
+        // 2) WebView 재로드(사용자의 reload() 호출, Android 렌더러 프로세스
+        //    복구 등)로 window.onload 가 다시 실행된 경우
+        // 구조가 다른 채널들과 달라 _handleChannel 로 감싸지 않고 별도로
+        // 처리하되, mounted 확인은 동일하게 유지합니다.
+        if (!mounted) return;
+        final wasAlreadyReady = _isMapReady;
         _isMapReady = true;
-        if (widget.onMapCreated != null) {
-          widget.onMapCreated!(_mapController);
+        if (wasAlreadyReady) {
+          // 재로드로 JS 쪽 상태는 초기화됐지만 Dart 쪽 오버레이 시그니처
+          // 캐시는 남아있어 _syncOverlays() 가 "변경 없음"으로 판단하고
+          // 아무것도 다시 그리지 않을 수 있으므로 캐시를 모두 무효화합니다.
+          _polylinesSig = null;
+          _circlesSig = null;
+          _rectanglesSig = null;
+          _polygonsSig = null;
+          _markersSig = null;
+          _clustererSig = null;
+          _customOverlaysSig = null;
+          _appliedCenter = null;
+          // WebView 안에 등록해 둔 이미지 키 등 JS 쪽 캐시도 함께 비웁니다.
+          _mapController.resetWebViewSideCaches();
         }
+        // WebView 가 실제 크기를 갖기 전에 지도가 만들어졌을 수 있으므로
+        // 준비 직후 한 번은 반드시 크기를 재계산합니다. (이후 rebuild 는 코얼레싱)
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _isMapReady) {
+            _mapController.relayout();
+          }
+        });
+        // 지도 준비 전(혹은 재로드 전)에 바뀐 카메라/오버레이 속성을 반영합니다.
+        _syncCamera();
+        _syncOverlays();
+        // 사용자 onMapCreated 콜백은 위젯 속성 기반 동기화(오버레이 전송)가
+        // 끝난 뒤 실행되도록 체인 뒤에 붙입니다. 콜백 안에서
+        // controller.addMarker() 등을 호출해도 위젯 동기화와 순서가 섞이지
+        // 않습니다.
+        _syncChain = _syncChain.then((_) {
+          if (!mounted) return;
+          if (widget.onMapCreated != null) {
+            widget.onMapCreated!(_mapController);
+          }
+        });
       })
       ..addJavaScriptChannel('onMapTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapTap != null) {
-          final data = _MapTapEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onMapTap!(data.toLatLng());
-        }
+        _handleChannel<_MapTapEventData>(
+          result.message,
+          _MapTapEventData.fromJson,
+          (data) => widget.onMapTap?.call(data.toLatLng()),
+        );
       })
       ..addJavaScriptChannel('onMapDoubleTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMapDoubleTap != null) {
-          final data = _MapTapEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onMapDoubleTap!(data.toLatLng());
-        }
+        _handleChannel<_MapTapEventData>(
+          result.message,
+          _MapTapEventData.fromJson,
+          (data) => widget.onMapDoubleTap?.call(data.toLatLng()),
+        );
       })
       ..addJavaScriptChannel('onMarkerTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMarkerTap != null) {
-          final data = _MarkerTapEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onMarkerTap!(
+        _handleChannel<_MarkerTapEventData>(
+          result.message,
+          _MarkerTapEventData.fromJson,
+          (data) => widget.onMarkerTap?.call(
             data.markerId,
             data.toLatLng(),
             data.zoomLevel,
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('onMarkerClustererTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMarkerClustererTap != null) {
-          final data = _ClusterTapEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onMarkerClustererTap!(
+        _handleChannel<_ClusterTapEventData>(
+          result.message,
+          _ClusterTapEventData.fromJson,
+          (data) => widget.onMarkerClustererTap?.call(
             data.toLatLng(),
             data.zoomLevel,
             widget.clusterer?.getMarkersByIds(data.markerIds) ?? [],
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('onCustomOverlayTap',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onCustomOverlayTap != null) {
-          final data = _CustomOverlayTapEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onCustomOverlayTap!(
+        _handleChannel<_CustomOverlayTapEventData>(
+          result.message,
+          _CustomOverlayTapEventData.fromJson,
+          (data) => widget.onCustomOverlayTap?.call(
             data.customOverlayId,
             data.toLatLng(),
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('onMarkerDragChangeCallback',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onMarkerDragChangeCallback != null) {
-          final data = _MarkerDragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onMarkerDragChangeCallback!(
+        _handleChannel<_MarkerDragEventData>(
+          result.message,
+          _MarkerDragEventData.fromJson,
+          (data) => widget.onMarkerDragChangeCallback?.call(
             data.markerId,
             data.toLatLng(),
             data.zoomLevel,
             data.dragType,
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('zoomStart',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onZoomChangeCallback != null) {
-          final data = _ZoomEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onZoomChangeCallback!(data.zoomLevel, ZoomType.start);
-        }
+        _handleChannel<_ZoomEventData>(
+          result.message,
+          _ZoomEventData.fromJson,
+          (data) =>
+              widget.onZoomChangeCallback?.call(data.zoomLevel, ZoomType.start),
+        );
       })
       ..addJavaScriptChannel('zoomChanged',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onZoomChangeCallback != null) {
-          final data = _ZoomEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onZoomChangeCallback!(data.zoomLevel, ZoomType.end);
-        }
+        _handleChannel<_ZoomEventData>(
+          result.message,
+          _ZoomEventData.fromJson,
+          (data) =>
+              widget.onZoomChangeCallback?.call(data.zoomLevel, ZoomType.end),
+        );
       })
       ..addJavaScriptChannel('centerChanged',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onCenterChangeCallback != null) {
-          final data = _CenterChangeEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onCenterChangeCallback!(data.toLatLng(), data.zoomLevel);
-        }
+        _handleChannel<_CenterChangeEventData>(
+          result.message,
+          _CenterChangeEventData.fromJson,
+          (data) => widget.onCenterChangeCallback
+              ?.call(data.toLatLng(), data.zoomLevel),
+        );
       })
       ..addJavaScriptChannel('boundsChanged',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onBoundsChangeCallback != null) {
-          final data = _BoundsChangeEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onBoundsChangeCallback!(data.toLatLngBounds());
-        }
+        _handleChannel<_BoundsChangeEventData>(
+          result.message,
+          _BoundsChangeEventData.fromJson,
+          (data) => widget.onBoundsChangeCallback?.call(data.toLatLngBounds()),
+        );
       })
       ..addJavaScriptChannel('dragStart',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onDragChangeCallback != null) {
-          final data = _DragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onDragChangeCallback!(
+        _handleChannel<_DragEventData>(
+          result.message,
+          _DragEventData.fromJson,
+          (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
             data.zoomLevel,
             DragType.start,
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('drag',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onDragChangeCallback != null) {
-          final data = _DragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onDragChangeCallback!(
+        _handleChannel<_DragEventData>(
+          result.message,
+          _DragEventData.fromJson,
+          (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
             data.zoomLevel,
             DragType.move,
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('dragEnd',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onDragChangeCallback != null) {
-          final data = _DragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onDragChangeCallback!(
+        _handleChannel<_DragEventData>(
+          result.message,
+          _DragEventData.fromJson,
+          (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
             data.zoomLevel,
             DragType.end,
-          );
-        }
+          ),
+        );
       })
       ..addJavaScriptChannel('cameraIdle',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onCameraIdle != null) {
-          final data = _DragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onCameraIdle!(data.toLatLng(), data.zoomLevel);
-        }
+        _handleChannel<_DragEventData>(
+          result.message,
+          _DragEventData.fromJson,
+          (data) => widget.onCameraIdle?.call(data.toLatLng(), data.zoomLevel),
+        );
       })
       ..addJavaScriptChannel('tilesLoaded',
           onMessageReceived: (JavaScriptMessage result) {
-        if (widget.onTilesLoadedCallback != null) {
-          final data = _DragEventData.fromJson(
-            jsonDecode(result.message) as Map<String, dynamic>,
-          );
-          widget.onTilesLoadedCallback!(data.toLatLng(), data.zoomLevel);
-        }
+        _handleChannel<_DragEventData>(
+          result.message,
+          _DragEventData.fromJson,
+          (data) =>
+              widget.onTilesLoadedCallback?.call(data.toLatLng(), data.zoomLevel),
+        );
       })
       ..addJavaScriptChannel("keywordSearchCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        KeywordSearchService.keywordSearchCallback(result.message);
+        if (!mounted) return;
+        try {
+          KeywordSearchService.keywordSearchCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       })
       ..addJavaScriptChannel("categorySearchCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        CategorySearchService.categorySearchCallback(result.message);
+        if (!mounted) return;
+        try {
+          CategorySearchService.categorySearchCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       })
       ..addJavaScriptChannel("addressSearchCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        AddressSearchService.addressSearchCallback(result.message);
+        if (!mounted) return;
+        try {
+          AddressSearchService.addressSearchCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       })
       ..addJavaScriptChannel("coord2AddressCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        Coord2AddressService.coord2AddressCallback(result.message);
+        if (!mounted) return;
+        try {
+          Coord2AddressService.coord2AddressCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       })
       ..addJavaScriptChannel("coord2RegionCodeCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        Coord2RegionCodeService.coord2RegionCodeCallback(result.message);
+        if (!mounted) return;
+        try {
+          Coord2RegionCodeService.coord2RegionCodeCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       })
       ..addJavaScriptChannel("transCoordCallback",
           onMessageReceived: (JavaScriptMessage result) {
-        TransCoordService.transCodeCallback(result.message);
+        if (!mounted) return;
+        try {
+          TransCoordService.transCodeCallback(result.message);
+        } catch (e, st) {
+          assert(() {
+            debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
+            return true;
+          }());
+        }
       });
   }
 }
