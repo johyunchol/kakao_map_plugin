@@ -32,43 +32,50 @@ class _Library3CategoryScreenState extends State<Library3CategoryScreen> {
         currentLevel: 3,
         onMapCreated: (controller) async {
           mapController = controller;
+          // 화면이 먼저 닫히면 요청이 타임아웃으로 끝날 수 있으므로 오류를 잡아 둔다.
+          try {
+            final center = await mapController.getCenter();
 
-          final center = await mapController.getCenter();
+            final request = CategorySearchRequest(
+              categoryGroupCode: CategoryType.bk9,
+              y: center.latitude,
+              x: center.longitude,
+              radius: 1000,
+              sort: SortBy.distance,
+              page: 1,
+              size: 5,
+              useMapCenter: true,
+              useMapBounds: true,
+            );
 
-          final request = CategorySearchRequest(
-            categoryGroupCode: CategoryType.bk9,
-            y: center.latitude,
-            x: center.longitude,
-            radius: 1000,
-            sort: SortBy.distance,
-            page: 1,
-            size: 5,
-            useMapCenter: true,
-            useMapBounds: true,
-          );
+            final result = await mapController.categorySearch(request);
 
-          final result = await mapController.categorySearch(request);
+            List<LatLng> bounds = [];
+            for (var item in result.list) {
+              LatLng latLng = LatLng(
+                  double.parse(item.y ?? ''), double.parse(item.x ?? ''));
 
-          List<LatLng> bounds = [];
-          for (var item in result.list) {
-            LatLng latLng =
-                LatLng(double.parse(item.y ?? ''), double.parse(item.x ?? ''));
+              bounds.add(latLng);
 
-            bounds.add(latLng);
+              Marker marker = Marker(
+                  markerId: item.id ?? UniqueKey().toString(), latLng: latLng);
 
-            Marker marker = Marker(
-                markerId: item.id ?? UniqueKey().toString(), latLng: latLng);
+              markers.add(marker);
+            }
 
-            markers.add(marker);
+            mapController.fitBounds(bounds);
+
+            // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+            if (!mounted) return;
+            setState(() {
+              list.addAll(result.list);
+            });
+
+            debugPrint('***** [JHC_DEBUG] ${result.toString()}');
+          } catch (e) {
+            if (!mounted) return;
+            debugPrint('요청 실패: $e');
           }
-
-          mapController.fitBounds(bounds);
-
-          setState(() {
-            list.addAll(result.list);
-          });
-
-          debugPrint('***** [JHC_DEBUG] ${result.toString()}');
         },
         markers: markers.toList(),
       ),

@@ -50,6 +50,8 @@ class _Overlay16LineDistanceScreenState
                 'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
           ));
 
+          // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+          if (!mounted) return;
           setState(() {});
         }),
         onMapTap: (latLng) {

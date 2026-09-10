@@ -32,18 +32,27 @@ class _Library7transCoordsScreenState extends State<Library7transCoordsScreen> {
         children: [
           KakaoMap(
             onMapCreated: (controller) async {
-              final request = TransCoordRequest(
-                x: 160082.538257218,
-                y: -4680.975749087054,
-                inputCoord: Coords.wtm,
-                outputCoord: Coords.wgs84,
-              );
-              final response = await controller.transCoord(request);
-              final result = response.list.first;
+              // 화면이 먼저 닫히면 요청이 타임아웃으로 끝날 수 있으므로 오류를 잡아 둔다.
+              try {
+                final request = TransCoordRequest(
+                  x: 160082.538257218,
+                  y: -4680.975749087054,
+                  inputCoord: Coords.wtm,
+                  outputCoord: Coords.wgs84,
+                );
+                final response = await controller.transCoord(request);
+                final result = response.list.first;
 
-              setState(() {
-                resultText = 'latitude = ${result.y}, longitude = ${result.x}';
-              });
+                // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+                if (!mounted) return;
+                setState(() {
+                  resultText =
+                      'latitude = ${result.y}, longitude = ${result.x}';
+                });
+              } catch (e) {
+                if (!mounted) return;
+                debugPrint('요청 실패: $e');
+              }
             },
           ),
           Positioned(

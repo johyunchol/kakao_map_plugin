@@ -34,6 +34,8 @@ class _Map6CustomControllerScreenState
               mapController = controller;
 
               currentLevel = await mapController.getLevel();
+              // 지도 생성이 늦어 화면이 먼저 닫힌 경우를 대비합니다.
+              if (!mounted) return;
               setState(() {});
             }),
           ),
