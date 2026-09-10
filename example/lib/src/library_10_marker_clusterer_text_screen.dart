@@ -425,7 +425,7 @@ class _Library10MarkerClustererTextScreenState
               ClustererStyle(
                 width: 50,
                 height: 50,
-                background: Colors.blue.withOpacity(0.8),
+                background: Colors.blue.withValues(alpha: 0.8),
                 borderRadius: 25,
                 color: Colors.white,
                 textAlign: 'center',
@@ -434,7 +434,7 @@ class _Library10MarkerClustererTextScreenState
               ClustererStyle(
                 width: 50,
                 height: 50,
-                background: Colors.red.withOpacity(0.8),
+                background: Colors.red.withValues(alpha: 0.8),
                 borderRadius: 25,
                 color: Colors.yellow,
                 textAlign: 'center',
@@ -443,7 +443,7 @@ class _Library10MarkerClustererTextScreenState
               ClustererStyle(
                 width: 50,
                 height: 50,
-                background: Colors.purple.withOpacity(0.8),
+                background: Colors.purple.withValues(alpha: 0.8),
                 borderRadius: 25,
                 color: Colors.white,
                 textAlign: 'center',

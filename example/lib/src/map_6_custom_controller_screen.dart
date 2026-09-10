@@ -51,7 +51,7 @@ class _Map6CustomControllerScreenState
                           isDefaultMap = true;
                         });
 
-                        mapController.setMapTypeId(MapType.roadMap);
+                        mapController.setMapTypeId(MapType.normal);
                       },
                       color: isDefaultMap ? Colors.blue : Colors.grey,
                       child: const Text('지도'),

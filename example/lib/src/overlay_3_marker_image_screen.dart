@@ -69,7 +69,7 @@ class _Overlay3MarkerImageScreenState extends State<Overlay3MarkerImageScreen> {
             height: 44,
             offsetX: 15,
             offsetY: 44,
-            icon: await MarkerIcon.fromNetwork(
+            icon: MarkerIcon.network(
               'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
             ),
           ));

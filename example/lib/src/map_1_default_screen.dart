@@ -35,9 +35,4 @@ class _Map1DefaultScreenState extends State<Map1DefaultScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    mapController.dispose();
-    super.dispose();
-  }
 }

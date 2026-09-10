@@ -164,7 +164,7 @@ class _Library11ClustererCustomOverlayScreenState
         ClustererStyle(
           width: 50,
           height: 50,
-          background: Colors.blue.withOpacity(0.8),
+          background: Colors.blue.withValues(alpha: 0.8),
           borderRadius: 25,
           color: Colors.white,
           textAlign: 'center',
@@ -173,7 +173,7 @@ class _Library11ClustererCustomOverlayScreenState
         ClustererStyle(
           width: 60,
           height: 60,
-          background: Colors.orange.withOpacity(0.8),
+          background: Colors.orange.withValues(alpha: 0.8),
           borderRadius: 30,
           color: Colors.white,
           textAlign: 'center',
@@ -182,7 +182,7 @@ class _Library11ClustererCustomOverlayScreenState
         ClustererStyle(
           width: 70,
           height: 70,
-          background: Colors.red.withOpacity(0.8),
+          background: Colors.red.withValues(alpha: 0.8),
           borderRadius: 35,
           color: Colors.white,
           textAlign: 'center',

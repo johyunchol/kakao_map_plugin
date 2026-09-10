@@ -42,7 +42,7 @@ class _Library11MarkerClustererCustomImageScreenState
           );
 
           // 네트워크 이미지로 마커 아이콘 생성
-          final networkIcon = await MarkerIcon.fromNetwork(customMarkerUrl);
+          final networkIcon = MarkerIcon.network(customMarkerUrl);
 
           Set<Marker> markers = {};
 
@@ -62,7 +62,7 @@ class _Library11MarkerClustererCustomImageScreenState
             markerImageSrc: customMarkerUrl,
           ));
 
-          // 2. MarkerIcon.fromNetwork 사용 (새로운 방식 - URL)
+          // 2. MarkerIcon.network 사용 (새로운 방식 - URL)
           markers.add(Marker(
             markerId: '${markers.length + 1}',
             latLng: LatLng(37.55915668706214, 126.92536526611102),
