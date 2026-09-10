@@ -245,4 +245,47 @@ void main() {
       expect(() => controller.getPolygonLength('none'), throwsStateError);
     });
   });
+  group('마커 옵션 / 인포윈도우 제어 (3차)', () {
+    test('setMarkerPosition / setMarkerVisible / showInfoWindow / hideInfoWindow', () async {
+      await controller.setMarkerPosition('m1', LatLng(37.5, 127.0));
+      await controller.setMarkerVisible('m1', false);
+      await controller.showInfoWindow("m'1");
+      await controller.hideInfoWindow('m1');
+      expect(fake.scripts, [
+        'setMarkerPosition("m1", 37.5, 127.0);',
+        'setMarkerVisible("m1", false);',
+        'showInfoWindow("m\'1");',
+        'hideInfoWindow("m1");',
+      ]);
+    });
+
+    test('마커 추가 옵션은 extra 객체로 묶여 전달되고 hash 에 반영된다', () async {
+      final base = Marker(markerId: 'm', latLng: LatLng(37.5, 127.0));
+      final styled = Marker(
+        markerId: 'm',
+        latLng: LatLng(37.5, 127.0),
+        opacity: 0.5,
+        visible: false,
+        clickable: false,
+        title: '툴팁',
+        spriteOrigin: Point(10, 20),
+        spriteWidth: 100,
+        spriteHeight: 200,
+      );
+      await controller.addMarker(markers: [base, styled]);
+      final script = fake.scripts.firstWhere((s) => s.startsWith('addMarkers('));
+      final payload = jsonDecode(jsonDecode(
+          RegExp(r'^addMarkers\((".*")\);$').firstMatch(script)!.group(1)!) as String) as List;
+      expect(payload[0]['extra'], isEmpty);
+      expect(payload[1]['extra'], {
+        'opacity': 0.5,
+        'visible': false,
+        'clickable': false,
+        'title': '툴팁',
+        'spriteOrigin': {'x': 10, 'y': 20},
+        'spriteSize': {'width': 100, 'height': 200},
+      });
+      expect(payload[0]['hash'], isNot(payload[1]['hash']));
+    });
+  });
 }

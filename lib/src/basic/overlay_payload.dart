@@ -43,7 +43,7 @@ class OverlayPayload {
   // ---------------------------------------------------------------------------
 
   /// 마커 1개의 내용 해시입니다.
-  static int markerHash(Marker m) => Object.hash(
+  static int markerHash(Marker m) => Object.hashAll([
         m.markerId,
         _latLngHash(m.latLng),
         m.width,
@@ -58,11 +58,19 @@ class OverlayPayload {
         m.infoWindowRemovable,
         m.infoWindowFirstShow,
         m.infoWindowStyle,
+        m.opacity,
+        m.visible,
+        m.clickable,
+        m.title,
+        m.spriteOrigin?.x,
+        m.spriteOrigin?.y,
+        m.spriteWidth,
+        m.spriteHeight,
         m.zIndex,
         m.customOverlayContent,
         m.customOverlayXAnchor,
         m.customOverlayYAnchor,
-      );
+      ]);
 
   /// JS `addMarkers()` 용 payload 입니다.
   static Map<String, dynamic> marker(Marker m) {
@@ -83,6 +91,17 @@ class OverlayPayload {
       'infoWindowStyle': m.infoWindowStyle?.toJson(),
       'zIndex': m.zIndex,
       'hash': markerHash(m),
+      // 추가 옵션은 하나의 객체로 묶어 JS addMarker 의 마지막 인자로 넘깁니다.
+      'extra': {
+        if (m.opacity != null) 'opacity': m.opacity,
+        if (!m.visible) 'visible': false,
+        if (m.clickable != null) 'clickable': m.clickable,
+        if (m.title != null) 'title': m.title,
+        if (m.spriteOrigin != null)
+          'spriteOrigin': {'x': m.spriteOrigin!.x, 'y': m.spriteOrigin!.y},
+        if (m.spriteWidth != null && m.spriteHeight != null)
+          'spriteSize': {'width': m.spriteWidth, 'height': m.spriteHeight},
+      },
     };
   }
 

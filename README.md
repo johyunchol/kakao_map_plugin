@@ -128,6 +128,8 @@ web 에서 다른 점:
 | 지도 위에 겹친 Flutter 위젯 탭 | ✅ | ✅ | `KakaoMapPointerInterceptor` 로 감싸야 함 |
 | `reload()` 후 HTML 재실행 | ✅ | ❌ (WKWebView 제약, 위젯 재생성 권장) | ✅ |
 | `scrollwheel`, `keyboardShortcuts` | 해당 없음 | 해당 없음 | ✅ |
+| hover 콜백 (`onMarkerMouseOver` 등) | ❌ | ❌ | ✅ 마우스가 있을 때 (`supportsHover()`) |
+| `onMapLongPress` | ✅ | ✅ | ✅ (우클릭 포함) |
 
 ### 카카오 지도 API 로 지원되지 않는 것
 
@@ -881,6 +883,84 @@ web 에서 다른 점:
 
     // 5) 클러스터 — 원형 Material 프리셋
     Clusterer(markers: markers, styles: [ClustererStyle.material(Colors.indigo, size: 48)]);
+    ```
+
+* Flutter 위젯 오버레이 - 진짜 Flutter 위젯을 지도 좌표에 붙이기
+
+    ``` dart
+    KakaoMap(
+      widgetOverlays: [
+        KakaoMapWidgetOverlay(
+          id: 'cafe',
+          position: LatLng(37.5665, 126.9780),
+          anchor: Alignment.bottomCenter,           // 위젯의 아래 가운데를 좌표에 맞춤
+          child: GestureDetector(
+            onTap: () => showModalBottomSheet(...), // 탭하면 앱 UI 로 이어지는 패턴
+            child: Card(child: Padding(padding: EdgeInsets.all(8), child: Text('카페 · 4,500원'))),
+          ),
+        ),
+      ],
+    )
+    ```
+
+    지도를 움직이면 JS 가 픽셀 좌표를 보내 위젯이 따라옵니다(프레임당 1회). web 에서도 눌립니다. 수백 개 이상이면 `CustomOverlay` 를 쓰세요.
+
+* 오버레이 이벤트와 길게 누르기
+
+    ``` dart
+    KakaoMap(
+      onPolylineTap: (id, latLng, level) {},   // 선 / 원 / 사각형 탭 (다각형은 onPolygonTap)
+      onCircleTap: (id, latLng, level) {},
+      onRectangleTap: (id, latLng, level) {},
+      onMapLongPress: (latLng) {},             // 0.5초 이상 누르기 (마우스 환경은 우클릭도)
+    )
+    ```
+
+* 마우스 hover - **마우스 포인터가 있는 환경(데스크톱 브라우저) 전용**
+
+    터치 기기에서는 호출되지 않으므로 탭 콜백을 함께 처리하세요. 실행 환경은 `await controller.supportsHover()` 로 확인할 수 있습니다.
+
+    ``` dart
+    KakaoMap(
+      onMarkerMouseOver: (id, latLng, level) {},   // onMarkerMouseOut
+      onPolygonMouseOver: (id, latLng, level) {},  // onPolygonMouseMove(프레임당 1회) / onPolygonMouseOut
+      onMarkerTap: (id, latLng, level) {},         // 터치 대체
+    )
+    ```
+
+* 마커 옵션과 부분 갱신
+
+    ``` dart
+    Marker(
+      markerId: 'bus', latLng: latLng,
+      opacity: 0.6, clickable: false, title: '툴팁(web)', visible: true,
+      // 스프라이트 시트에서 잘라 쓰기
+      markerImageSrc: 'https://…/sprite.png', width: 36, height: 37,
+      spriteOrigin: Point(0, 46), spriteWidth: 36, spriteHeight: 691,
+    );
+    await controller.setMarkerPosition('bus', newLatLng); // 재생성 없이 이동 (실시간 위치)
+    await controller.setMarkerVisible('bus', false);
+    await controller.showInfoWindow('bus');                 // 목록 탭 → 지도 인포윈도우 열기
+    await controller.hideInfoWindow('bus');
+    ```
+
+* 검색 페이지 정보
+
+    ``` dart
+    final r = await controller.keywordSearch(KeywordSearchRequest(keyword: '카페', size: 15, page: 1));
+    if (r.pagination?.hasNextPage == true) {
+      final next = await controller.keywordSearch(KeywordSearchRequest(keyword: '카페', size: 15, page: 2));
+    }
+    ```
+
+* 카카오맵 앱으로 연결하기 (길찾기·장소·로드뷰) - URL 만 만들고 실행은 `url_launcher` 로
+
+    ``` dart
+    // 웹 링크: 앱이 있으면 앱으로, 없으면 모바일 웹으로 열립니다 (권장)
+    final uri = KakaoMapLinks.web.route(to: LatLng(37.5665, 126.9780), toName: '서울시청', mode: KakaoMapRouteMode.transit);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    // 앱 스킴: kakaomap:// (iOS 는 LSApplicationQueriesSchemes 에 kakaomap 추가, 없으면 KakaoMapLinks.storeUrl())
+    KakaoMapLinks.app.route(to: LatLng(37.5665, 126.9780), mode: KakaoMapRouteMode.car);
     ```
 
 * 정적 지도 - 움직이지 않는 지도 이미지가 필요할 때 (목록 썸네일, 공유 미리보기 등)

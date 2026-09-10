@@ -601,6 +601,46 @@ class KakaoMapController {
     return value.toDouble();
   }
 
+  /// 현재 실행 환경에 마우스 포인터(hover)가 있는지 확인합니다.
+  ///
+  /// 데스크톱 브라우저에서는 true, 터치 기기(Android/iOS, 모바일 브라우저)에서는
+  /// false 입니다. `onMarkerMouseOver` 같은 hover 콜백을 쓸지, 탭으로 대체할지
+  /// 판단할 때 사용하세요. CSS `(hover: hover)` 미디어 쿼리 결과입니다.
+  Future<bool> supportsHover() async {
+    final raw = await _bridge.runJavaScriptReturningResult(
+        "!!(window.matchMedia && window.matchMedia('(hover: hover)').matches);");
+    if (raw is bool) return raw;
+    final text = raw.toString().trim().replaceAll('"', '');
+    return text == 'true' || text == '1';
+  }
+
+  /// 마커의 위치만 옮깁니다. 마커를 다시 만들지 않으므로 실시간 위치 갱신에 적합합니다.
+  ///
+  /// 열려 있는 인포윈도우도 함께 따라갑니다. 위젯 속성(`markers:`)으로 관리하는
+  /// 마커라면 다음 rebuild 때 속성 값이 우선합니다.
+  Future<void> setMarkerPosition(String markerId, LatLng latLng) async {
+    await _bridge.runJavaScript('setMarkerPosition(${_jsStr(markerId)}, '
+        '${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});');
+  }
+
+  /// 마커를 지도에서 보이거나 숨깁니다. 마커 객체는 유지됩니다.
+  Future<void> setMarkerVisible(String markerId, bool visible) async {
+    await _bridge.runJavaScript(
+        'setMarkerVisible(${_jsStr(markerId)}, ${_jsPrimitive(visible)});');
+  }
+
+  /// 마커의 인포윈도우를 엽니다. `infoWindowContent` 가 없는 마커면 아무 일도 하지 않습니다.
+  ///
+  /// 목록에서 항목을 탭했을 때 지도 위 인포윈도우를 여는 식으로 씁니다.
+  Future<void> showInfoWindow(String markerId) async {
+    await _bridge.runJavaScript('showInfoWindow(${_jsStr(markerId)});');
+  }
+
+  /// 마커의 인포윈도우를 닫습니다.
+  Future<void> hideInfoWindow(String markerId) async {
+    await _bridge.runJavaScript('hideInfoWindow(${_jsStr(markerId)});');
+  }
+
   /// 특정 마커의 드래그 가능 여부를 변경합니다.
   ///
   /// [markerId]: 대상 마커의 ID입니다.

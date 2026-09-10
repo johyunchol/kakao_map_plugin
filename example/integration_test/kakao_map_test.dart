@@ -25,6 +25,14 @@ class MapProps {
   final Set<KakaoMapLibrary>? libraries;
   final OnLinkTap? onLinkTap;
   final KakaoMapTheme? theme;
+  final OnPolylineTap? onPolylineTap;
+  final OnCircleTap? onCircleTap;
+  final OnRectangleTap? onRectangleTap;
+  final OnMapLongPress? onMapLongPress;
+  final OnMarkerMouseOver? onMarkerMouseOver;
+  final OnMarkerMouseOut? onMarkerMouseOut;
+  final OnPolygonMouseOver? onPolygonMouseOver;
+  final List<KakaoMapWidgetOverlay>? widgetOverlays;
 
   const MapProps({
     this.center,
@@ -38,6 +46,14 @@ class MapProps {
     this.libraries,
     this.onLinkTap,
     this.theme,
+    this.onPolylineTap,
+    this.onCircleTap,
+    this.onRectangleTap,
+    this.onMapLongPress,
+    this.onMarkerMouseOver,
+    this.onMarkerMouseOut,
+    this.onPolygonMouseOver,
+    this.widgetOverlays,
   });
 }
 
@@ -80,6 +96,14 @@ class MapHost extends StatelessWidget {
               libraries: p.libraries,
               onLinkTap: p.onLinkTap,
               theme: p.theme,
+              onPolylineTap: p.onPolylineTap,
+              onCircleTap: p.onCircleTap,
+              onRectangleTap: p.onRectangleTap,
+              onMapLongPress: p.onMapLongPress,
+              onMarkerMouseOver: p.onMarkerMouseOver,
+              onMarkerMouseOut: p.onMarkerMouseOut,
+              onPolygonMouseOver: p.onPolygonMouseOver,
+              widgetOverlays: p.widgetOverlays,
             ),
           ),
         ),
@@ -184,8 +208,8 @@ MapProps sampleProps({List<Marker>? markers}) => MapProps(
       rectangles: [
         Rectangle(
           rectangleId: 'r1',
-          rectangleBounds:
-              LatLngBounds(LatLng(37.5660, 126.9770), LatLng(37.5670, 126.9790)),
+          rectangleBounds: LatLngBounds(
+              LatLng(37.5660, 126.9770), LatLng(37.5670, 126.9790)),
         ),
       ],
       polygons: [
@@ -218,7 +242,8 @@ MapProps sampleProps({List<Marker>? markers}) => MapProps(
         CustomOverlay(
           customOverlayId: 'o1',
           latLng: LatLng(37.5665, 126.9780),
-          content: '<div style="padding:4px;background:#fff">`tick` "q" \'s\'</div>',
+          content:
+              '<div style="padding:4px;background:#fff">`tick` "q" \'s\'</div>',
         ),
       ],
     );
@@ -238,11 +263,13 @@ void main() {
   late ValueNotifier<int> tick;
   late Completer<KakaoMapController> ready;
 
-  Future<KakaoMapController> mount(WidgetTester tester, MapProps initial) async {
+  Future<KakaoMapController> mount(
+      WidgetTester tester, MapProps initial) async {
     props = ValueNotifier(initial);
     tick = ValueNotifier(0);
     ready = Completer();
-    await tester.pumpWidget(MapHost(props: props, rebuildTick: tick, ready: ready));
+    await tester
+        .pumpWidget(MapHost(props: props, rebuildTick: tick, ready: ready));
     // web 에서는 프레임이 그려져야 HtmlElementView(iframe)가 문서에 붙으므로,
     // 준비될 때까지 프레임을 계속 펌프하면서 기다린다.
     final deadline = DateTime.now().add(const Duration(seconds: 40));
@@ -267,7 +294,8 @@ void main() {
     final c = await mount(tester, sampleProps());
 
     // 첫 WebView 로드 직후에는 JS 스레드가 바쁠 수 있으므로 반영될 때까지 기다린다.
-    await waitUntil(tester, c, 'markerIndex.size === 3 && customOverlayIndex.size === 1');
+    await waitUntil(
+        tester, c, 'markerIndex.size === 3 && customOverlayIndex.size === 1');
     expect(await jsInt(c, 'markerIndex.size'), 3);
     expect(await jsInt(c, 'markers.length'), 3);
     expect(await jsInt(c, 'polylineIndex.size'), 1);
@@ -329,13 +357,15 @@ void main() {
     ''');
 
     final moved = sampleMarkers();
-    moved[0] = Marker(markerId: 'm1', latLng: LatLng(37.5700, 126.9800), zIndex: 1);
+    moved[0] =
+        Marker(markerId: 'm1', latLng: LatLng(37.5700, 126.9800), zIndex: 1);
     props.value = sampleProps(markers: moved);
     await pumpFor(tester, const Duration(milliseconds: 800));
 
     expect(await js(c, "markerIndex.get('m1').__tag"), isNull); // 재생성됨
     expect(await js(c, "markerIndex.get('m2').__tag"), 1); // 유지됨
-    final lat = (await js(c, "markerIndex.get('m1').getPosition().getLat()")) as num;
+    final lat =
+        (await js(c, "markerIndex.get('m1').getPosition().getLat()")) as num;
     expect(lat, closeTo(37.5700, 1e-6));
     expect(await jsInt(c, 'markerIndex.size'), 3);
 
@@ -343,7 +373,8 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('addPolyline 은 목록에 없는 기존 폴리라인을 제거한다 (id 기반 retain)', (tester) async {
+  testWidgets('addPolyline 은 목록에 없는 기존 폴리라인을 제거한다 (id 기반 retain)',
+      (tester) async {
     final c = await mount(tester, sampleProps());
     expect(await js(c, 'polylines.map(p => p.id)'), ['p1']);
 
@@ -379,7 +410,9 @@ void main() {
           gridSize: 60,
           minLevel: 1,
           disableClickZoom: false,
-          styles: [ClustererStyle(width: 40, height: 40, background: Colors.orange)],
+          styles: [
+            ClustererStyle(width: 40, height: 40, background: Colors.orange)
+          ],
         ),
       ),
     );
@@ -388,7 +421,10 @@ void main() {
     expect(await jsInt(c, 'clustererMarkerIds.size'), 20);
     expect(await js(c, 'clusterer !== null'), true);
     // disableClickZoom 파라미터가 실제로 반영된다 (이전에는 true 하드코딩)
-    expect(await js(c, 'clusterer.getDisableClickZoom ? clusterer.getDisableClickZoom() : false'), false);
+    expect(
+        await js(c,
+            'clusterer.getDisableClickZoom ? clusterer.getDisableClickZoom() : false'),
+        false);
 
     // 일반 마커 clear 는 클러스터러 마커를 건드리지 않는다
     await c.clearMarker();
@@ -451,7 +487,8 @@ void main() {
   testWidgets('동시에 보낸 검색 요청이 각자의 결과를 받는다', (tester) async {
     final c = await mount(tester, const MapProps());
 
-    final f1 = c.keywordSearch(KeywordSearchRequest(keyword: '카카오프렌즈', size: 1));
+    final f1 =
+        c.keywordSearch(KeywordSearchRequest(keyword: '카카오프렌즈', size: 1));
     final f2 = c.keywordSearch(KeywordSearchRequest(keyword: '스타벅스', size: 3));
     final f3 = c.addressSearch(AddressSearchRequest(addr: '전북 삼성동 100'));
 
@@ -473,8 +510,7 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('JS 상태가 초기화되고 onMapCreated 가 다시 발화해도 오버레이가 복구된다',
-      (tester) async {
+  testWidgets('JS 상태가 초기화되고 onMapCreated 가 다시 발화해도 오버레이가 복구된다', (tester) async {
     final c = await mount(tester, sampleProps());
     await waitUntil(tester, c, 'markerIndex.size === 3');
 
@@ -524,7 +560,8 @@ void main() {
 
   testWidgets('오버레이 목록을 null 로 바꾸면 지도에서 제거된다', (tester) async {
     final c = await mount(tester, sampleProps());
-    await waitUntil(tester, c, 'markerIndex.size === 3 && polylineIndex.size === 1');
+    await waitUntil(
+        tester, c, 'markerIndex.size === 3 && polylineIndex.size === 1');
 
     props.value = const MapProps();
     await pumpFor(tester, const Duration(milliseconds: 1200));
@@ -604,8 +641,7 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('clusterer 를 쓰면 libraries 에 없어도 클러스터러가 자동 포함된다',
-      (tester) async {
+  testWidgets('clusterer 를 쓰면 libraries 에 없어도 클러스터러가 자동 포함된다', (tester) async {
     final c = await mount(
       tester,
       MapProps(
@@ -636,8 +672,7 @@ void main() {
     final c = await mount(tester, const MapProps());
 
     final keyword = await c
-        .keywordSearch(KeywordSearchRequest(
-            keyword: 'ZZZQQQ존재하지않는장소XYZ123'))
+        .keywordSearch(KeywordSearchRequest(keyword: 'ZZZQQQ존재하지않는장소XYZ123'))
         .timeout(const Duration(seconds: 20));
     expect(keyword.list, isEmpty);
 
@@ -655,7 +690,8 @@ void main() {
     await expectNoJsErrors(c);
     await unmount(tester);
   });
-  testWidgets('setCenter/getCenter, setLevel/getLevel, getBounds 왕복', (tester) async {
+  testWidgets('setCenter/getCenter, setLevel/getLevel, getBounds 왕복',
+      (tester) async {
     final c = await mount(tester, MapProps(center: LatLng(37.5, 127.0)));
     // 초기 center 는 WebView 레이아웃 시점에 따라 뷰포트 절반만큼 어긋날 수 있으므로
     // 명시적으로 설정한 뒤 왕복을 검증한다.
@@ -691,7 +727,8 @@ void main() {
 
     await c.addTileset(const Tileset(
       id: 'TEST_URL',
-      urlTemplate: 'https://i1.daumcdn.net/dmaps/apis/white.png?z={z}&y={y}&x={x}',
+      urlTemplate:
+          'https://i1.daumcdn.net/dmaps/apis/white.png?z={z}&y={y}&x={x}',
       copyright: [TilesetCopyright('test')],
     ));
     await c.addTileset(const Tileset(
@@ -718,7 +755,8 @@ void main() {
     // (호출 횟수는 재등록 시 0 으로 초기화되므로 다시 늘어나야 새 타일 함수가 쓰인 것)
     await c.addTileset(const Tileset(
       id: 'TEST_URL',
-      urlTemplate: 'https://i1.daumcdn.net/dmaps/apis/white.png?v2&z={z}&y={y}&x={x}',
+      urlTemplate:
+          'https://i1.daumcdn.net/dmaps/apis/white.png?v2&z={z}&y={y}&x={x}',
     ));
     expect(await c.getActiveTilesetId(), 'TEST_URL');
     await waitUntil(tester, c, "(__tilesetStats['TEST_URL'] || 0) > 0");
@@ -734,7 +772,8 @@ void main() {
     // SDK 기본 지도 타입 ID 는 등록이 거부되고 오류만 기록된다.
     await c.addTileset(const Tileset(id: 'ROADMAP', urlTemplate: 'x'));
     final errs = await js(c, 'window.__kakaoMapErrors') as List;
-    expect(errs.where((e) => '$e'.contains('TILESET_ID_RESERVED')), hasLength(1));
+    expect(
+        errs.where((e) => '$e'.contains('TILESET_ID_RESERVED')), hasLength(1));
     expect(await js(c, "__tilesets['ROADMAP'] === undefined"), isTrue);
     await js(c, 'window.__kakaoMapErrors.length = 0');
 
@@ -755,7 +794,8 @@ void main() {
           CustomOverlay(
             customOverlayId: 'link',
             latLng: LatLng(37.5665, 126.9780),
-            content: '<div><a id="probe-link" href="https://place.map.kakao.com/123">장소</a></div>',
+            content:
+                '<div><a id="probe-link" href="https://place.map.kakao.com/123">장소</a></div>',
           ),
         ],
         onLinkTap: tapped.add,
@@ -788,12 +828,16 @@ void main() {
         ),
       ]),
     );
-    await waitUntil(tester, c, "document.querySelectorAll('.kmp-iw').length === 1");
-    expect(await js(c, "document.querySelector('.kmp-iw-body').innerHTML"), contains('스타일'));
-    expect(await js(c, "document.querySelector('.kmp-iw').style.borderRadius"), '12px');
+    await waitUntil(
+        tester, c, "document.querySelectorAll('.kmp-iw').length === 1");
+    expect(await js(c, "document.querySelector('.kmp-iw-body').innerHTML"),
+        contains('스타일'));
+    expect(await js(c, "document.querySelector('.kmp-iw').style.borderRadius"),
+        '12px');
     // 닫기 버튼이 있고, 누르면 사라진다.
     await c.runJavaScript("document.querySelector('.kmp-iw-close').click();");
-    await waitUntil(tester, c, "document.querySelectorAll('.kmp-iw').length === 0");
+    await waitUntil(
+        tester, c, "document.querySelectorAll('.kmp-iw').length === 0");
     await expectNoJsErrors(c);
     await unmount(tester);
 
@@ -812,10 +856,134 @@ void main() {
         ],
       ),
     );
-    await waitUntil(tester, c2, "document.querySelectorAll('.kmp-iw').length === 1");
-    expect(await js(c2, "document.querySelector('.kmp-iw').style.backgroundColor"),
+    await waitUntil(
+        tester, c2, "document.querySelectorAll('.kmp-iw').length === 1");
+    expect(
+        await js(c2, "document.querySelector('.kmp-iw').style.backgroundColor"),
         anyOf('rgb(28, 28, 30)', 'rgba(28, 28, 30, 1)', '#1c1c1eff'));
     await expectNoJsErrors(c2);
+    await unmount(tester);
+  });
+  testWidgets('선/원/사각형 탭과 마커·다각형 hover 가 콜백으로 전달된다 (SDK 이벤트 trigger)',
+      (tester) async {
+    final events = <String>[];
+    final props = sampleProps();
+    final c = await mount(
+      tester,
+      MapProps(
+        markers: props.markers,
+        polylines: props.polylines,
+        circles: props.circles,
+        rectangles: props.rectangles,
+        polygons: props.polygons,
+        onPolylineTap: (id, ll, z) => events.add('polyline:$id'),
+        onCircleTap: (id, ll, z) => events.add('circle:$id'),
+        onRectangleTap: (id, ll, z) => events.add('rect:$id'),
+        onMarkerMouseOver: (id, ll, z) => events.add('over:$id'),
+        onMarkerMouseOut: (id, ll, z) => events.add('out:$id'),
+        onPolygonMouseOver: (id, ll, z) =>
+            events.add('gover:$id@${ll.latitude.toStringAsFixed(3)}'),
+      ),
+    );
+    await waitUntil(tester, c,
+        "polylineIndex.has('p1') && circleIndex.has('c1') && rectangleIndex.has('r1') && markerIndex.has('m1') && polygonIndex.has('g1')");
+    await c.runJavaScript('''
+      (function () {
+        const ev = { latLng: new kakao.maps.LatLng(37.5, 127.0) };
+        kakao.maps.event.trigger(polylineIndex.get('p1'), 'click', ev);
+        kakao.maps.event.trigger(circleIndex.get('c1'), 'click', ev);
+        kakao.maps.event.trigger(rectangleIndex.get('r1'), 'click', ev);
+        kakao.maps.event.trigger(markerIndex.get('m1'), 'mouseover');
+        kakao.maps.event.trigger(markerIndex.get('m1'), 'mouseout');
+        kakao.maps.event.trigger(polygonIndex.get('g1'), 'mouseover', ev);
+      })();
+    ''');
+    await pumpFor(tester, const Duration(milliseconds: 800));
+    expect(events, [
+      'polyline:p1',
+      'circle:c1',
+      'rect:r1',
+      'over:m1',
+      'out:m1',
+      'gover:g1@37.500'
+    ]);
+    await expectNoJsErrors(c);
+    await unmount(tester);
+  });
+
+  testWidgets('지도를 길게 누르면 onMapLongPress 가 그 지점 좌표로 호출된다', (tester) async {
+    LatLng? pressed;
+    final c = await mount(
+        tester,
+        MapProps(
+            center: LatLng(37.5, 127.0), onMapLongPress: (ll) => pressed = ll));
+    await c.runJavaScript('''
+      (function () {
+        const el = document.getElementById('map');
+        const r = el.getBoundingClientRect();
+        const opts = { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerType: 'touch',
+                       button: 0, bubbles: true, isPrimary: true, pointerId: 1 };
+        el.dispatchEvent(new PointerEvent('pointerdown', opts));
+        setTimeout(function () { el.dispatchEvent(new PointerEvent('pointerup', opts)); }, 900);
+      })();
+    ''');
+    await pumpFor(tester, const Duration(milliseconds: 1500));
+    expect(pressed, isNotNull);
+    // 화면 중앙을 눌렀으므로 지도 중심과 거의 같다.
+    final center = await c.getCenter();
+    expect(pressed!.latitude, closeTo(center.latitude, 0.002));
+    expect(pressed!.longitude, closeTo(center.longitude, 0.002));
+    await expectNoJsErrors(c);
+    await unmount(tester);
+  });
+
+  testWidgets('검색 응답에 페이지 정보가 담기고 page 를 올리면 current 가 바뀐다', (tester) async {
+    final c = await mount(tester, const MapProps());
+    final first = await c
+        .keywordSearch(KeywordSearchRequest(keyword: '카페', size: 5, page: 1))
+        .timeout(const Duration(seconds: 20));
+    expect(first.list, hasLength(5));
+    expect(first.pagination, isNotNull);
+    expect(first.pagination!.totalCount, greaterThan(5));
+    expect(first.pagination!.current, 1);
+    expect(first.pagination!.hasNextPage, isTrue);
+
+    final second = await c
+        .keywordSearch(KeywordSearchRequest(keyword: '카페', size: 5, page: 2))
+        .timeout(const Duration(seconds: 20));
+    expect(second.pagination!.current, 2);
+    expect(second.pagination!.hasPrevPage, isTrue);
+    await expectNoJsErrors(c);
+    await unmount(tester);
+  });
+
+  testWidgets('위젯 오버레이가 JS 픽셀 좌표를 받아 그려지고 지도를 옮기면 따라간다', (tester) async {
+    final c = await mount(
+      tester,
+      MapProps(
+        center: LatLng(37.5, 127.0),
+        widgetOverlays: [
+          KakaoMapWidgetOverlay(
+            id: 'w1',
+            position: LatLng(37.5, 127.0),
+            child: const SizedBox(key: Key('wo-w1'), width: 30, height: 30),
+          ),
+        ],
+      ),
+    );
+    final deadline = DateTime.now().add(const Duration(seconds: 10));
+    while (find.byKey(const Key('wo-w1')).evaluate().isEmpty &&
+        DateTime.now().isBefore(deadline)) {
+      await pumpFor(tester, const Duration(milliseconds: 200));
+    }
+    expect(find.byKey(const Key('wo-w1')), findsOneWidget);
+    final before = tester.getCenter(find.byKey(const Key('wo-w1')));
+
+    await c.setCenter(LatLng(37.502, 127.003));
+    await pumpFor(tester, const Duration(milliseconds: 800));
+    final after = tester.getCenter(find.byKey(const Key('wo-w1')));
+    expect((after - before).distance, greaterThan(20));
+    await expectNoJsErrors(c);
     await unmount(tester);
   });
 }

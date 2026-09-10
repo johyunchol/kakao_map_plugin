@@ -4,8 +4,46 @@ class JsOverlayDraw {
   ///
   /// [hasPolygonTapCallback] 이 false 면 다각형 탭 리스너를 등록하지 않아
   /// 불필요한 브릿지 메시지가 발생하지 않습니다.
-  static String getScript({bool hasPolygonTapCallback = false}) {
+  static String getScript({
+    bool hasPolygonTapCallback = false,
+    bool hasPolylineTapCallback = false,
+    bool hasCircleTapCallback = false,
+    bool hasRectangleTapCallback = false,
+    bool hasPolygonHoverCallback = false,
+  }) {
     return '''
+    /** 다각형 hover(mouseover / mousemove / mouseout)를 채널로 보냅니다. mousemove 는 프레임당 1회로 제한합니다. */
+    function __attachPolygonHover(polygon) {
+        const post = function (channel, mouseEvent) {
+            const latLng = mouseEvent.latLng;
+            channel.postMessage(JSON.stringify({
+                polygonId: polygon.id, latitude: latLng.getLat(), longitude: latLng.getLng(), zoomLevel: map.getLevel()
+            }));
+        };
+        kakao.maps.event.addListener(polygon, 'mouseover', function (e) { post(onPolygonMouseOver, e); });
+        kakao.maps.event.addListener(polygon, 'mouseout', function (e) { post(onPolygonMouseOut, e); });
+        let pending = null;
+        kakao.maps.event.addListener(polygon, 'mousemove', function (e) {
+            pending = e;
+            if (pending.__scheduled) return;
+            pending.__scheduled = true;
+            requestAnimationFrame(function () {
+                const ev = pending; pending = null;
+                if (ev) post(onPolygonMouseMove, ev);
+            });
+        });
+    }
+
+    /** 도형 탭 이벤트를 채널로 보냅니다. idKey 는 payload 의 ID 필드 이름입니다. */
+    function __attachShapeTap(shape, channel, idKey) {
+        kakao.maps.event.addListener(shape, 'click', function (mouseEvent) {
+            const latLng = mouseEvent.latLng;
+            const payload = { latitude: latLng.getLat(), longitude: latLng.getLng(), zoomLevel: map.getLevel() };
+            payload[idKey] = shape.id;
+            channel.postMessage(JSON.stringify(payload));
+        });
+    }
+
     /**
      * 동일 ID 오버레이가 있을 때 재사용 여부를 결정합니다.
      * hash 가 같으면 true(건너뜀), 다르거나 없으면 기존 것을 제거하고 false 를 반환합니다.
@@ -49,6 +87,7 @@ class JsOverlayDraw {
         });
 
         polyline['id'] = polylineId;
+        if ($hasPolylineTapCallback) __attachShapeTap(polyline, onPolylineTap, 'polylineId');
         polyline.__hash = hash;
         polylineIndex.set(polylineId, polyline);
         syncOverlayArrays();
@@ -83,6 +122,7 @@ class JsOverlayDraw {
         });
 
         circle['id'] = circleId;
+        if ($hasCircleTapCallback) __attachShapeTap(circle, onCircleTap, 'circleId');
         circle.__hash = hash;
         circleIndex.set(circleId, circle);
         syncOverlayArrays();
@@ -119,6 +159,7 @@ class JsOverlayDraw {
         });
 
         rectangle['id'] = rectangleId;
+        if ($hasRectangleTapCallback) __attachShapeTap(rectangle, onRectangleTap, 'rectangleId');
         rectangle.__hash = hash;
         rectangleIndex.set(rectangleId, rectangle);
         syncOverlayArrays();
@@ -161,6 +202,8 @@ class JsOverlayDraw {
         polygon.__hash = hash;
         polygonIndex.set(polygonId, polygon);
         syncOverlayArrays();
+
+        if ($hasPolygonHoverCallback) __attachPolygonHover(polygon);
 
         if ($hasPolygonTapCallback) {
             kakao.maps.event.addListener(polygon, 'click', function (mouseEvent) {

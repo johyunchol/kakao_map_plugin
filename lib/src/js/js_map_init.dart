@@ -23,6 +23,7 @@ class JsMapInit {
     required bool isIOS,
     required bool hasOnMapDoubleTap,
     bool hasOnMapTypeChanged = false,
+    bool hasOnMapLongPress = false,
     int? initialMapTypeId,
     bool? disableDoubleClick,
     bool? disableDoubleClickZoom,
@@ -242,6 +243,42 @@ class JsMapInit {
                 }
 
                 tilesLoaded.postMessage(JSON.stringify(result));
+            });
+        }
+
+        if ($hasOnMapLongPress) {
+            // 길게 누르기: 포인터를 0.5초 이상 거의 움직이지 않고 누르고 있으면 발생합니다.
+            // (SDK 에는 터치용 롱프레스 이벤트가 없어 컨테이너의 pointer 이벤트로 판정합니다)
+            const LONG_PRESS_MS = 500, MOVE_TOLERANCE = 10;
+            let lpTimer = null, lpStart = null;
+            const cancelLongPress = function () { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } lpStart = null; };
+            const postLongPress = function (clientX, clientY) {
+                const rect = container.getBoundingClientRect();
+                const point = new kakao.maps.Point(clientX - rect.left, clientY - rect.top);
+                const latLng = map.getProjection().coordsFromContainerPoint(point);
+                onMapLongPress.postMessage(JSON.stringify({ latitude: latLng.getLat(), longitude: latLng.getLng() }));
+            };
+            container.addEventListener('pointerdown', function (e) {
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                cancelLongPress();
+                lpStart = { x: e.clientX, y: e.clientY };
+                lpTimer = setTimeout(function () {
+                    lpTimer = null;
+                    if (lpStart) postLongPress(lpStart.x, lpStart.y);
+                    lpStart = null;
+                }, LONG_PRESS_MS);
+            }, true);
+            container.addEventListener('pointermove', function (e) {
+                if (lpStart && (Math.abs(e.clientX - lpStart.x) > MOVE_TOLERANCE || Math.abs(e.clientY - lpStart.y) > MOVE_TOLERANCE)) cancelLongPress();
+            }, true);
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (type) {
+                container.addEventListener(type, cancelLongPress, true);
+            });
+            // 마우스 환경의 우클릭도 같은 콜백으로 보냅니다.
+            kakao.maps.event.addListener(map, 'rightclick', function (mouseEvent) {
+                cancelLongPress();
+                const latLng = mouseEvent.latLng;
+                onMapLongPress.postMessage(JSON.stringify({ latitude: latLng.getLat(), longitude: latLng.getLng() }));
             });
         }
 

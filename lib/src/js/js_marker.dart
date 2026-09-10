@@ -4,6 +4,7 @@ class JsMarker {
   static String getScript({
     required bool hasMarkerDragCallback,
     required bool hasMarkerTapCallback,
+    bool hasMarkerHoverCallback = false,
     String? defaultInfoWindowStyleJson,
   }) {
     final defaultStyle = defaultInfoWindowStyleJson ?? 'null';
@@ -105,7 +106,7 @@ class JsMarker {
      * hash 가 다르거나(또는 hash 가 없으면) 기존 마커를 제거하고 새로 만듭니다.
      * latLng 는 JSON 문자열 또는 {latitude, longitude} 객체 모두 허용합니다.
      */
-    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType, hash, infoWindowStyle) {
+    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType, hash, infoWindowStyle, extra) {
         const existing = markerIndex.get(markerId);
         if (existing) {
             if (hash !== undefined && hash !== null && existing.__hash === hash) {
@@ -132,15 +133,22 @@ class JsMarker {
 
         marker.setDraggable(draggable === true || draggable === 'true');
 
+        // 추가 옵션: opacity / visible / clickable / title
+        const opts = parseIfString(extra) || {};
+        if (opts.opacity !== undefined && opts.opacity !== null) marker.setOpacity(Number(opts.opacity));
+        if (opts.clickable !== undefined && opts.clickable !== null) marker.setClickable(!!opts.clickable);
+        if (opts.title) marker.setTitle(String(opts.title));
+
         if (zIndex) {
             marker.setZIndex(zIndex);
         }
 
-        // 마커가 지도 위에 표시되도록 설정합니다
+        // 마커가 지도 위에 표시되도록 설정합니다 (visible: false 면 만들어만 둡니다)
         marker.setMap(map);
+        if (opts.visible === false) marker.setVisible(false);
 
         if (!empty(imageSrc)) {
-            const markerImage = getMarkerImage(imageSrc, imageType, width, height, offsetX, offsetY);
+            const markerImage = getMarkerImage(imageSrc, imageType, width, height, offsetX, offsetY, opts.spriteOrigin, opts.spriteSize);
             if (markerImage) {
                 marker.setImage(markerImage);
             }
@@ -206,6 +214,16 @@ class JsMarker {
             })
         }
 
+        if ($hasMarkerHoverCallback) {
+            // 마우스 환경 전용. 터치 기기에서는 발생하지 않습니다.
+            const hoverPayload = function () {
+                const pos = marker.getPosition();
+                return JSON.stringify({ markerId: marker.id, latitude: pos.getLat(), longitude: pos.getLng(), zoomLevel: map.getLevel() });
+            };
+            kakao.maps.event.addListener(marker, 'mouseover', function () { onMarkerMouseOver.postMessage(hoverPayload()); });
+            kakao.maps.event.addListener(marker, 'mouseout', function () { onMarkerMouseOut.postMessage(hoverPayload()); });
+        }
+
         if ($hasMarkerTapCallback) {
             kakao.maps.event.addListener(marker, 'click', function () {
                 if (infoWindow != null) {
@@ -251,8 +269,38 @@ class JsMarker {
                 nv(m.imageType),
                 nv(m.hash),
                 nv(m.infoWindowStyle),
+                m.extra,
             );
         });
+    }
+
+    /** 마커 위치만 옮깁니다. 열려 있는 인포윈도우도 함께 따라갑니다. */
+    function setMarkerPosition(markerId, latitude, longitude) {
+        const marker = markerIndex.get(markerId);
+        if (!marker) return;
+        const position = new kakao.maps.LatLng(latitude, longitude);
+        marker.setPosition(position);
+        const iw = marker.__infoWindow;
+        if (iw && iw.getMap && iw.getMap()) {
+            if (typeof iw.setPosition === 'function') iw.setPosition(position);
+            else iw.open(map, marker);
+        }
+    }
+
+    function setMarkerVisible(markerId, visible) {
+        const marker = markerIndex.get(markerId);
+        if (marker) marker.setVisible(!!visible);
+    }
+
+    /** 마커의 인포윈도우를 엽니다. 인포윈도우 내용이 없는 마커면 아무 일도 하지 않습니다. */
+    function showInfoWindow(markerId) {
+        const marker = markerIndex.get(markerId);
+        if (marker && marker.__infoWindow) marker.__infoWindow.open(map, marker);
+    }
+
+    function hideInfoWindow(markerId) {
+        const marker = markerIndex.get(markerId);
+        if (marker && marker.__infoWindow) marker.__infoWindow.close();
     }
 
     function setMarkerDraggable(markerId, draggable) {

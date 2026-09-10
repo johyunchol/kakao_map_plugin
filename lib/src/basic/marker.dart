@@ -1,4 +1,5 @@
 import '../model/lat_lng.dart';
+import '../model/point.dart';
 import 'info_window_style.dart';
 import 'marker_icon.dart';
 
@@ -144,6 +145,27 @@ class Marker {
   /// 인포윈도우 모양입니다. null 이면 지도 테마의 기본값, 그것도 없으면 SDK 기본 모양입니다.
   InfoWindowStyle? infoWindowStyle;
 
+  /// 마커 불투명도(0~1)입니다. null 이면 SDK 기본값(1)입니다.
+  double? opacity;
+
+  /// false 면 마커를 만들어 두되 지도에 보이지 않게 합니다. `setMarkerVisible` 로 바꿀 수 있습니다.
+  bool visible;
+
+  /// false 면 마커가 탭 이벤트를 받지 않고 지도로 통과시킵니다. null 이면 SDK 기본값(true)입니다.
+  bool? clickable;
+
+  /// 마커에 마우스를 올렸을 때(web) 표시되는 툴팁 문구입니다.
+  String? title;
+
+  /// 스프라이트 시트에서 이 마커 이미지가 시작하는 좌표(px)입니다. [spriteWidth]/[spriteHeight]와 함께 씁니다.
+  Point? spriteOrigin;
+
+  /// 스프라이트 시트 전체의 가로 크기(px)입니다.
+  int? spriteWidth;
+
+  /// 스프라이트 시트 전체의 세로 크기(px)입니다.
+  int? spriteHeight;
+
   /// 마커 인스턴스를 생성합니다.
   ///
   /// [markerId]와 [latLng]는 필수 파라미터입니다.
@@ -180,6 +202,13 @@ class Marker {
     this.altitude,
     this.range,
     this.infoWindowStyle,
+    this.opacity,
+    this.visible = true,
+    this.clickable,
+    this.title,
+    this.spriteOrigin,
+    this.spriteWidth,
+    this.spriteHeight,
   });
 
   /// 마커 정보를 JSON 형식으로 변환합니다.
@@ -214,6 +243,13 @@ class Marker {
       'altitude': altitude,
       'range': range,
       'infoWindowStyle': infoWindowStyle?.toJson(),
+      'opacity': opacity,
+      'visible': visible,
+      'clickable': clickable,
+      'title': title,
+      'spriteOrigin': spriteOrigin == null ? null : {'x': spriteOrigin!.x, 'y': spriteOrigin!.y},
+      'spriteWidth': spriteWidth,
+      'spriteHeight': spriteHeight,
     };
   }
 

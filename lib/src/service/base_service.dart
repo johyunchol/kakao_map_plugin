@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../model/search_pagination.dart';
 import 'dart:convert';
 
 /// 모든 서비스 클래스의 기본이 되는 추상 클래스입니다.
@@ -155,6 +156,16 @@ abstract class BaseService<T> {
     }
   }
 
+  /// 메시지에 페이지 정보가 있으면 응답 객체에 붙입니다.
+  T _attachPagination(T result, Map decoded) {
+    final pagination = decoded['pagination'];
+    if (result is SearchPaginationHolder && pagination is Map) {
+      result.pagination =
+          SearchPagination.fromJson(Map<String, dynamic>.from(pagination));
+    }
+    return result;
+  }
+
   /// JS 채널을 통해 전달된 메시지를 처리합니다.
   ///
   /// 요청 ID가 포함된 신규 형태의 메시지는 해당 요청의 completer로 라우팅되고,
@@ -190,7 +201,7 @@ abstract class BaseService<T> {
           _mirrorErrorToLegacy(StateError(decoded['error'].toString()));
         } else {
           try {
-            _mirrorResultToLegacy(fromJson(decoded['result']));
+            _mirrorResultToLegacy(_attachPagination(fromJson(decoded['result']), decoded));
           } catch (e, stackTrace) {
             _mirrorErrorToLegacy(e, stackTrace);
           }
@@ -206,7 +217,7 @@ abstract class BaseService<T> {
         return;
       }
       try {
-        final result = fromJson(decoded['result']);
+        final result = _attachPagination(fromJson(decoded['result']), decoded);
         if (!completer.isCompleted) {
           completer.complete(result);
         }

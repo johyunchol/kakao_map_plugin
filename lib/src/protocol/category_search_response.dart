@@ -1,4 +1,5 @@
 import '../model/keyword_address.dart';
+import '../model/search_pagination.dart';
 
 /// 카테고리 검색 응답 클래스입니다.
 ///
@@ -14,7 +15,7 @@ import '../model/keyword_address.dart';
 ///   print('거리: ${place.distance}m');
 /// }
 /// ```
-class CategorySearchResponse {
+class CategorySearchResponse with SearchPaginationHolder {
   /// 검색된 장소 정보 목록입니다.
   ///
   /// 각 항목은 [KeywordAddress] 타입으로, 장소명, 카테고리, 주소, 좌표 등의

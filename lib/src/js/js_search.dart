@@ -23,7 +23,7 @@ class JsSearch {
      * typeof null === 'object' 이므로 result 의 타입만으로 성공 여부를 판정하면
      * SDK 가 실패 시 돌려주는 result=null 을 성공으로 오판하게 됩니다.
      */
-    function __postSearchResult(channel, requestId, result, status) {
+    function __postSearchResult(channel, requestId, result, status, pagination) {
         const S = (typeof kakao !== 'undefined' && kakao.maps && kakao.maps.services)
             ? kakao.maps.services.Status : null;
         const okStatus = S ? S.OK : 'OK';
@@ -47,7 +47,14 @@ class JsSearch {
         }
 
         if (ok) {
-            channel.postMessage(JSON.stringify({ requestId: requestId, result: payload }));
+            const message = { requestId: requestId, result: payload };
+            if (pagination) {
+                message.pagination = {
+                    totalCount: pagination.totalCount, current: pagination.current,
+                    hasNextPage: !!pagination.hasNextPage, hasPrevPage: !!pagination.hasPrevPage
+                };
+            }
+            channel.postMessage(JSON.stringify(message));
         } else {
             channel.postMessage(JSON.stringify({ requestId: requestId, error: String(status) }));
         }
@@ -81,8 +88,8 @@ class JsSearch {
             useMapBounds: request.useMapBounds,
         };
 
-        places.keywordSearch(request.keyword, function (result, status) {
-            __postSearchResult(keywordSearchCallback, requestId, result, status);
+        places.keywordSearch(request.keyword, function (result, status, pagination) {
+            __postSearchResult(keywordSearchCallback, requestId, result, status, pagination);
         }, options);
     }
 
@@ -102,8 +109,8 @@ class JsSearch {
             useMapBounds: request.useMapBounds,
         };
 
-        places.categorySearch(request.categoryGroupCode, function (result, status) {
-            __postSearchResult(categorySearchCallback, requestId, result, status);
+        places.categorySearch(request.categoryGroupCode, function (result, status, pagination) {
+            __postSearchResult(categorySearchCallback, requestId, result, status, pagination);
         }, options);
     }
 
@@ -119,8 +126,8 @@ class JsSearch {
             analyze_type: request.analyze_type ?? request.analyzeType,
         };
 
-        geocoder.addressSearch(request.addr, function (result, status) {
-            __postSearchResult(addressSearchCallback, requestId, result, status);
+        geocoder.addressSearch(request.addr, function (result, status, pagination) {
+            __postSearchResult(addressSearchCallback, requestId, result, status, pagination);
         }, options);
     }
 

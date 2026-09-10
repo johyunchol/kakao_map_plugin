@@ -26,8 +26,11 @@ import 'constants/zoom_type.dart';
 import '../bridge/bridge_factory.dart';
 import '../bridge/kakao_map_bridge.dart';
 import '../bridge/platform_flags.dart';
+import 'js_literal.dart';
 import 'kakao_map_controller.dart';
+import 'kakao_map_pointer_interceptor.dart';
 import 'kakao_map_theme.dart';
+import 'kakao_map_widget_overlay.dart';
 
 // Clusterer imports
 import 'clusterer.dart';
@@ -67,6 +70,7 @@ import '../js/js_custom_overlay.dart';
 import '../js/js_map_control.dart';
 import '../js/js_search.dart';
 import '../js/js_tileset.dart';
+import '../js/js_widget_overlay.dart';
 import '../js/js_utils.dart';
 
 /// 카카오 지도 위젯입니다.
@@ -159,6 +163,36 @@ class KakaoMap extends StatefulWidget {
   /// 지도 이동이나 줌 레벨 변경 후 타일 이미지 로드가 완료되면 호출됩니다.
   final OnTilesLoadedCallback? onTilesLoadedCallback;
 
+  /// 폴리라인을 탭했을 때 호출되는 콜백입니다.
+  final OnPolylineTap? onPolylineTap;
+
+  /// 원을 탭했을 때 호출되는 콜백입니다.
+  final OnCircleTap? onCircleTap;
+
+  /// 사각형을 탭했을 때 호출되는 콜백입니다.
+  final OnRectangleTap? onRectangleTap;
+
+  /// 지도를 길게 눌렀을 때(마우스 환경은 우클릭) 호출되는 콜백입니다.
+  final OnMapLongPress? onMapLongPress;
+
+  /// 마커 위에 마우스 포인터가 올라갔을 때 호출됩니다.
+  ///
+  /// **지원 환경: 마우스 포인터가 있는 환경 전용.** 터치 기기에서는 호출되지 않습니다.
+  /// [KakaoMapController.supportsHover] 로 확인하고, 터치에서는 [onMarkerTap] 을 함께 쓰세요.
+  final OnMarkerMouseOver? onMarkerMouseOver;
+
+  /// 마커에서 마우스 포인터가 벗어났을 때 호출됩니다. (마우스 포인터 환경 전용)
+  final OnMarkerMouseOut? onMarkerMouseOut;
+
+  /// 다각형 위에 마우스 포인터가 올라갔을 때 호출됩니다. (마우스 포인터 환경 전용)
+  final OnPolygonMouseOver? onPolygonMouseOver;
+
+  /// 다각형 위에서 마우스 포인터가 움직일 때 호출됩니다. (마우스 포인터 환경 전용, 프레임당 최대 1회)
+  final OnPolygonMouseMove? onPolygonMouseMove;
+
+  /// 다각형에서 마우스 포인터가 벗어났을 때 호출됩니다. (마우스 포인터 환경 전용)
+  final OnPolygonMouseOut? onPolygonMouseOut;
+
   /// 지도 타입이 바뀌었을 때 호출되는 콜백입니다.
   ///
   /// 지도타입 컨트롤을 눌렀을 때와 `setMapTypeId` 를 호출했을 때 모두 발생합니다.
@@ -187,6 +221,12 @@ class KakaoMap extends StatefulWidget {
 
   /// 키보드 방향키/+/- 조작을 사용할지 여부입니다. web 과 데스크톱에서 의미가 있습니다.
   final bool? keyboardShortcuts;
+
+  /// 지도 좌표에 붙어 함께 움직이는 Flutter 위젯 목록입니다.
+  ///
+  /// 지도(WebView/iframe) 위 Flutter 레이어에 그려지므로 앱 테마와 제스처를 그대로
+  /// 씁니다. web 에서도 눌리도록 각 위젯을 [KakaoMapPointerInterceptor] 로 감쌉니다.
+  final List<KakaoMapWidgetOverlay>? widgetOverlays;
 
   /// 이 지도의 모양 기본값입니다. null 이면 `AuthRepository.initialize(theme:)` 값을 씁니다.
   final KakaoMapTheme? theme;
@@ -341,6 +381,15 @@ class KakaoMap extends StatefulWidget {
     this.onCenterChangeCallback,
     this.onBoundsChangeCallback,
     this.onTilesLoadedCallback,
+    this.onPolylineTap,
+    this.onCircleTap,
+    this.onRectangleTap,
+    this.onMapLongPress,
+    this.onMarkerMouseOver,
+    this.onMarkerMouseOut,
+    this.onPolygonMouseOver,
+    this.onPolygonMouseMove,
+    this.onPolygonMouseOut,
     this.onMapTypeChanged,
     this.onLinkTap,
     this.mapTypeId,
@@ -348,6 +397,7 @@ class KakaoMap extends StatefulWidget {
     this.disableDoubleClickZoom,
     this.scrollwheel,
     this.keyboardShortcuts,
+    this.widgetOverlays,
     this.theme,
     this.copyrightPosition = CopyrightPosition.bottomRight,
     this.copyrightReversed = false,
@@ -407,6 +457,11 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   late int _appliedMinLevel;
   late int _appliedMaxLevel;
 
+  // 위젯 오버레이의 최신 픽셀 좌표(JS 가 보내 줌)와 마지막으로 JS 에 보낸 좌표 목록 시그니처
+  final ValueNotifier<Map<String, Offset>> _widgetOverlayPixels =
+      ValueNotifier<Map<String, Offset>>(const {});
+  int? _widgetOverlaysSig;
+
   // 오버레이 동기화를 직렬화하는 체인. 호출 순서를 보장하고 unhandled error 를 막습니다.
   Future<void> _syncChain = Future<void>.value();
 
@@ -436,6 +491,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _relayoutTimer?.cancel();
     _relayoutDebounceTimer?.cancel();
+    _widgetOverlayPixels.dispose();
     // WebView 가 먼저 파괴된 경우 JS 실행이 실패할 수 있으므로 오류를 무시합니다.
     unawaited(_mapController.dispose().catchError((_) {}).whenComplete(
       () => _bridge.dispose().catchError((_) {}),
@@ -488,8 +544,41 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         }
         _lastLayoutSize = size;
 
-        return _bridge.buildView(
+        final view = _bridge.buildView(
           gestureRecognizers: widget.gestureRecognizers,
+        );
+        final overlays = widget.widgetOverlays;
+        if (overlays == null || overlays.isEmpty) return view;
+
+        // 위젯 오버레이 레이어: JS 가 보내 준 픽셀 좌표에 위젯을 놓습니다.
+        return ClipRect(
+          child: Stack(
+            children: [
+              view,
+              ValueListenableBuilder<Map<String, Offset>>(
+                valueListenable: _widgetOverlayPixels,
+                builder: (context, pixels, _) => Stack(
+                  children: [
+                    for (final overlay in overlays)
+                      if (pixels[overlay.id] != null)
+                        Positioned(
+                          left: pixels[overlay.id]!.dx + overlay.offset.dx,
+                          top: pixels[overlay.id]!.dy + overlay.offset.dy,
+                          child: FractionalTranslation(
+                            translation: Offset(
+                              -(overlay.anchor.x + 1) / 2,
+                              -(overlay.anchor.y + 1) / 2,
+                            ),
+                            child: KakaoMapPointerInterceptor(
+                              child: overlay.child,
+                            ),
+                          ),
+                        ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -533,6 +622,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       hasOnTilesLoadedCallback: widget.onTilesLoadedCallback != null,
       hasOnMapDoubleTap: widget.onMapDoubleTap != null,
       hasOnMapTypeChanged: widget.onMapTypeChanged != null,
+      hasOnMapLongPress: widget.onMapLongPress != null,
       initialMapTypeId: widget.mapTypeId?.id,
       disableDoubleClick: widget.disableDoubleClick,
       disableDoubleClickZoom: widget.disableDoubleClickZoom,
@@ -545,10 +635,18 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     ${JsOverlayClear.getScript()}
     ${JsOverlayDraw.getScript(
       hasPolygonTapCallback: widget.onPolygonTap != null,
+      hasPolylineTapCallback: widget.onPolylineTap != null,
+      hasCircleTapCallback: widget.onCircleTap != null,
+      hasRectangleTapCallback: widget.onRectangleTap != null,
+      hasPolygonHoverCallback: widget.onPolygonMouseOver != null ||
+          widget.onPolygonMouseMove != null ||
+          widget.onPolygonMouseOut != null,
     )}
     ${JsMarker.getScript(
       hasMarkerDragCallback: widget.onMarkerDragChangeCallback != null,
       hasMarkerTapCallback: widget.onMarkerTap != null,
+      hasMarkerHoverCallback:
+          widget.onMarkerMouseOver != null || widget.onMarkerMouseOut != null,
       defaultInfoWindowStyleJson: _effectiveTheme?.infoWindowStyle == null
           ? null
           : jsonEncode(_effectiveTheme!.infoWindowStyle!.toJson()),
@@ -565,6 +663,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     ${JsMapControl.getScript(isIOS: isIOSWebView)}
     ${JsUtils.getScript(isIOS: isIOSWebView)}
     ${JsTileset.getScript(isIOS: isIOSWebView)}
+    ${JsWidgetOverlay.getScript()}
     ${JsDrawing.getScript(
       hasDrawEndCallback: widget.onDrawingEnd != null,
       hasDrawRemoveCallback: widget.onDrawingRemove != null,
@@ -626,6 +725,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       _mapController.setLevel(widget.currentLevel);
     }
 
+    _syncWidgetOverlays();
+
     // minLevel / maxLevel 도 currentLevel 과 같이 rebuild 시 반영합니다.
     if (widget.minLevel != _appliedMinLevel) {
       _appliedMinLevel = widget.minLevel;
@@ -635,6 +736,24 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       _appliedMaxLevel = widget.maxLevel;
       _mapController.setMaxLevel(widget.maxLevel);
     }
+  }
+
+  /// 위젯 오버레이 좌표 목록이 바뀌었을 때만 JS 에 추적 목록을 다시 보냅니다.
+  void _syncWidgetOverlays() {
+    final overlays = widget.widgetOverlays;
+    final sig = overlays == null
+        ? null
+        : Object.hashAll(overlays.map(
+            (o) => Object.hash(o.id, o.position.latitude, o.position.longitude)));
+    if (sig == _widgetOverlaysSig) return;
+    _widgetOverlaysSig = sig;
+    if (overlays == null || overlays.isEmpty) {
+      _widgetOverlayPixels.value = const {};
+      _mapController.runJavaScript('trackWidgetOverlays([]);');
+      return;
+    }
+    _mapController.runJavaScript(
+        'trackWidgetOverlays(${jsJsonLiteral(overlays.map((o) => o.toPositionJson()).toList())});');
   }
 
   static bool _sameLatLng(LatLng? a, LatLng? b) {
@@ -988,6 +1107,89 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
             data.customOverlayId,
             data.toLatLng(),
           ),
+        );
+      })
+      ..addJavaScriptChannel('widgetOverlayPositions', (String result) {
+        _handleChannel<Map<String, Offset>>(
+          result,
+          (json) {
+            final raw = json['positions'];
+            final out = <String, Offset>{};
+            if (raw is Map) {
+              raw.forEach((key, value) {
+                if (value is List && value.length >= 2) {
+                  out[key.toString()] = Offset(
+                      (value[0] as num).toDouble(), (value[1] as num).toDouble());
+                }
+              });
+            }
+            return out;
+          },
+          (positions) => _widgetOverlayPixels.value = positions,
+        );
+      })
+      ..addJavaScriptChannel('onMarkerMouseOver', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'markerId'),
+          (d) => widget.onMarkerMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onMarkerMouseOut', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'markerId'),
+          (d) => widget.onMarkerMouseOut?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onPolygonMouseOver', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
+          (d) => widget.onPolygonMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onPolygonMouseMove', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
+          (d) => widget.onPolygonMouseMove?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onPolygonMouseOut', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
+          (d) => widget.onPolygonMouseOut?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onPolylineTap', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'polylineId'),
+          (d) => widget.onPolylineTap?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onCircleTap', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'circleId'),
+          (d) => widget.onCircleTap?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onRectangleTap', (String result) {
+        _handleChannel<_ShapeTapEventData>(
+          result,
+          (json) => _ShapeTapEventData.fromJson(json, 'rectangleId'),
+          (d) => widget.onRectangleTap?.call(d.id, d.toLatLng(), d.zoomLevel),
+        );
+      })
+      ..addJavaScriptChannel('onMapLongPress', (String result) {
+        _handleChannel<LatLng>(
+          result,
+          (json) => LatLng((json['latitude'] as num).toDouble(),
+              (json['longitude'] as num).toDouble()),
+          (latLng) => widget.onMapLongPress?.call(latLng),
         );
       })
       ..addJavaScriptChannel('onPolygonTap', (String result) {
@@ -1404,6 +1606,26 @@ class _BoundsChangeEventData {
 }
 
 /// 다각형 탭 이벤트 내부 데이터 클래스입니다.
+/// 선/원/사각형 탭 이벤트 payload. ID 필드 이름만 도형마다 다릅니다.
+class _ShapeTapEventData {
+  final String id;
+  final double latitude;
+  final double longitude;
+  final int zoomLevel;
+
+  const _ShapeTapEventData(this.id, this.latitude, this.longitude, this.zoomLevel);
+
+  factory _ShapeTapEventData.fromJson(Map<String, dynamic> json, String idKey) =>
+      _ShapeTapEventData(
+        json[idKey] as String,
+        (json['latitude'] as num).toDouble(),
+        (json['longitude'] as num).toDouble(),
+        (json['zoomLevel'] as num).toInt(),
+      );
+
+  LatLng toLatLng() => LatLng(latitude, longitude);
+}
+
 class _PolygonTapEventData {
   final String polygonId;
   final double latitude;

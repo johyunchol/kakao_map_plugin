@@ -1,4 +1,5 @@
 import '../model/keyword_address.dart';
+import '../model/search_pagination.dart';
 
 /// 키워드 검색 응답 클래스입니다.
 ///
@@ -13,7 +14,7 @@ import '../model/keyword_address.dart';
 ///   print('주소: ${place.addressName}');
 /// }
 /// ```
-class KeywordSearchResponse {
+class KeywordSearchResponse with SearchPaginationHolder {
   /// 검색된 장소 정보 목록입니다.
   ///
   /// 각 항목은 [KeywordAddress] 타입으로, 장소명, 주소, 좌표 등의

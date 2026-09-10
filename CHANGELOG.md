@@ -46,6 +46,14 @@
 * 지도 문서에 시스템 글꼴(`-apple-system`, Roboto, Noto Sans KR …)을 기본 적용하고, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃/컨텍스트 메뉴·페이지 핀치 줌·오버스크롤 글로우/바운스·스크롤바·포커스 링을 껐습니다. 선택 가능해야 하는 요소에는 `kmp-selectable` 클래스를 주세요. iOS 에서는 링크 미리보기도 끕니다.
 * 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라지던 문제를 수정했습니다. 링크 이동은 가로채고 `KakaoMap(onLinkTap:)`(로드뷰 위젯도 동일)으로 알립니다. 콜백이 없으면 무시됩니다.
 
+### 3차 — 오버레이 이벤트 · 마커 · 위젯 오버레이 · 검색 · 링크
+* `KakaoMapWidgetOverlay` 와 `KakaoMap(widgetOverlays:)` 를 추가했습니다. 진짜 Flutter 위젯을 지도 좌표에 붙이고, 지도가 움직이면 JS 가 보내는 픽셀 좌표를 따라 이동합니다(프레임당 1회). web 에서도 눌립니다.
+* 선/원/사각형 탭 콜백 `onPolylineTap`, `onCircleTap`, `onRectangleTap` 과 길게 누르기 `onMapLongPress`(마우스 환경은 우클릭 포함)를 추가했습니다.
+* 마우스 hover 콜백 `onMarkerMouseOver / onMarkerMouseOut / onPolygonMouseOver / onPolygonMouseMove / onPolygonMouseOut` 과 `supportsHover()` 를 추가했습니다. **마우스 포인터 환경 전용**이며 터치 기기에서는 호출되지 않습니다. 예제 "마커에 마우스 이벤트 등록하기", "다각형에 이벤트 등록하기 1·2" 를 공식 샘플대로 복원하고 터치 대체 동작을 함께 넣었습니다.
+* `Marker` 에 `opacity`, `visible`, `clickable`, `title`, 스프라이트(`spriteOrigin`, `spriteWidth`, `spriteHeight`)를 추가하고, `setMarkerPosition()`(재생성 없는 이동), `setMarkerVisible()`, `showInfoWindow()`, `hideInfoWindow()` 를 추가했습니다.
+* 키워드/카테고리/주소 검색 응답에 `pagination`(`SearchPagination`: totalCount, current, hasNextPage, hasPrevPage)을 추가했습니다.
+* `KakaoMapLinks` 를 추가했습니다. 카카오맵 웹 링크(`map.kakao.com/link/…`)와 앱 스킴(`kakaomap://`)으로 장소 보기·길찾기·로드뷰·검색 URL 을 만듭니다(실행은 `url_launcher` 등으로).
+
 ### 앱 느낌 패키지
 * `InfoWindowStyle` 을 추가했습니다. `Marker.infoWindowStyle` 또는 `KakaoMapTheme.infoWindowStyle` 로 지정하면 SDK 기본 인포윈도우 대신 앱 스타일 말풍선(둥근 모서리, 그림자, 꼬리, 닫기 버튼)을 그립니다. `material()`, `cupertino()`, `dark()` 프리셋이 있고, 지정하지 않으면 기존 모양입니다.
 * `KakaoMapTheme` 을 추가했습니다(`AuthRepository.initialize(theme:)` 전역 / `KakaoMap(theme:)` 개별). 글꼴, 타일 로딩 전 배경색, 기본 인포윈도우 스타일, 추가 CSS 를 지정합니다.

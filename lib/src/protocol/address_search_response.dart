@@ -1,4 +1,5 @@
 import '../model/search_address.dart';
+import '../model/search_pagination.dart';
 
 /// 주소 검색 응답 클래스입니다.
 ///
@@ -15,7 +16,7 @@ import '../model/search_address.dart';
 ///   print('좌표: (${address.x}, ${address.y})');
 /// }
 /// ```
-class AddressSearchResponse {
+class AddressSearchResponse with SearchPaginationHolder {
   /// 검색된 주소 정보 목록입니다.
   ///
   /// 각 항목은 [SearchAddress] 타입으로, 주소명, 지번 주소, 도로명 주소,

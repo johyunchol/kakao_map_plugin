@@ -205,3 +205,52 @@ typedef OnMapTypeChanged = void Function(MapType mapType);
 /// 콜백을 호출합니다. 외부 브라우저로 열려면 `url_launcher` 등으로 [url] 을 여세요.
 /// 콜백을 지정하지 않으면 링크 탭은 무시됩니다.
 typedef OnLinkTap = void Function(Uri url);
+
+/// 지도 위 폴리라인을 탭했을 때 호출됩니다.
+/// [polylineId] 탭한 폴리라인의 ID, [latLng] 탭한 지점, [zoomLevel] 현재 레벨
+typedef OnPolylineTap = void Function(
+    String polylineId, LatLng latLng, int zoomLevel);
+
+/// 지도 위 원을 탭했을 때 호출됩니다.
+typedef OnCircleTap = void Function(String circleId, LatLng latLng, int zoomLevel);
+
+/// 지도 위 사각형을 탭했을 때 호출됩니다.
+typedef OnRectangleTap = void Function(
+    String rectangleId, LatLng latLng, int zoomLevel);
+
+/// 지도를 길게 눌렀을 때 호출됩니다.
+///
+/// 터치 기기에서는 한 지점을 약 0.5초 이상 누르고 있으면, 마우스 환경에서는
+/// 우클릭하거나 버튼을 0.5초 이상 누르고 있으면 발생합니다.
+/// [latLng] 누른 지점의 좌표
+typedef OnMapLongPress = void Function(LatLng latLng);
+
+// ---------------------------------------------------------------------------
+// 마우스 포인터 환경 전용 콜백 (hover)
+//
+// **지원 환경: 마우스 포인터가 있는 환경(데스크톱 브라우저 등) 전용입니다.**
+// 터치 기기(Android/iOS, 모바일 브라우저)에서는 호출되지 않거나, 브라우저가 탭
+// 직전에 합성한 mouseover 가 한 번 올 수 있습니다. 터치에서도 같은 UX 가
+// 필요하면 탭 콜백(onMarkerTap, onPolygonTap)을 함께 처리하세요.
+// 실행 환경이 hover 를 지원하는지는 `KakaoMapController.supportsHover()` 로 확인합니다.
+// ---------------------------------------------------------------------------
+
+/// 마커 위에 마우스 포인터가 올라갔을 때 호출됩니다. (마우스 환경 전용)
+typedef OnMarkerMouseOver = void Function(
+    String markerId, LatLng latLng, int zoomLevel);
+
+/// 마커에서 마우스 포인터가 벗어났을 때 호출됩니다. (마우스 환경 전용)
+typedef OnMarkerMouseOut = void Function(
+    String markerId, LatLng latLng, int zoomLevel);
+
+/// 다각형 위에 마우스 포인터가 올라갔을 때 호출됩니다. (마우스 환경 전용)
+typedef OnPolygonMouseOver = void Function(
+    String polygonId, LatLng latLng, int zoomLevel);
+
+/// 다각형 위에서 마우스 포인터가 움직일 때 호출됩니다. (마우스 환경 전용, 프레임당 최대 1회)
+typedef OnPolygonMouseMove = void Function(
+    String polygonId, LatLng latLng, int zoomLevel);
+
+/// 다각형에서 마우스 포인터가 벗어났을 때 호출됩니다. (마우스 환경 전용)
+typedef OnPolygonMouseOut = void Function(
+    String polygonId, LatLng latLng, int zoomLevel);

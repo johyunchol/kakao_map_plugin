@@ -35,6 +35,7 @@ import 'package:kakao_map_plugin_example/src/map_25_get_tile_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_26_flutter_controls_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_28_styled_info_window_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_29_widget_marker_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_30_widget_overlay_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_2_move_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_3_level_screen.dart';
 import 'package:kakao_map_plugin_example/src/map_4_info_screen.dart';
@@ -209,6 +210,9 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '위젯으로 마커 만들기 (플러그인 추가)',
           newPage: const Overlay29WidgetMarkerScreen()),
+      MenuItem(
+          title: 'Flutter 위젯 오버레이 (플러그인 추가)',
+          newPage: const Overlay30WidgetOverlayScreen()),
     ]),
     MenuGroup(name: '로드뷰', items: [
       MenuItem(title: '로드뷰 생성하기', newPage: const RoadView1DefaultScreen()),

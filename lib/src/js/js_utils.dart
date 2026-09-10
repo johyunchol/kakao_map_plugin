@@ -143,13 +143,13 @@ class JsUtils {
     }
 
     /** 동일한 이미지/크기/오프셋 조합은 MarkerImage 인스턴스를 재사용합니다. 이미지를 만들 수 없으면 null 을 반환합니다. */
-    function getMarkerImage(imageSrc, imageType, width, height, offsetX, offsetY) {
+    function getMarkerImage(imageSrc, imageType, width, height, offsetX, offsetY, spriteOrigin, spriteSize) {
         let byDims = __markerImageCache.get(imageSrc);
         if (!byDims) {
             byDims = new Map();
             __markerImageCache.set(imageSrc, byDims);
         }
-        const key = width + '|' + height + '|' + offsetX + '|' + offsetY;
+        const key = width + '|' + height + '|' + offsetX + '|' + offsetY + '|' + JSON.stringify(spriteOrigin || null) + '|' + JSON.stringify(spriteSize || null);
         let image = byDims.get(key);
         if (image) return image;
 
@@ -160,7 +160,15 @@ class JsUtils {
         if (offsetX != null && offsetY != null) {
             offset = new kakao.maps.Point(offsetX, offsetY);
         }
-        image = new kakao.maps.MarkerImage(src, size, { offset: offset });
+        const imageOptions = { offset: offset };
+        // 스프라이트 시트: 한 이미지에서 잘라 쓸 위치와 전체 크기
+        if (spriteOrigin && spriteOrigin.x != null && spriteOrigin.y != null) {
+            imageOptions.spriteOrigin = new kakao.maps.Point(spriteOrigin.x, spriteOrigin.y);
+        }
+        if (spriteSize && spriteSize.width != null && spriteSize.height != null) {
+            imageOptions.spriteSize = new kakao.maps.Size(spriteSize.width, spriteSize.height);
+        }
+        image = new kakao.maps.MarkerImage(src, size, imageOptions);
         byDims.set(key, image);
         return image;
     }
