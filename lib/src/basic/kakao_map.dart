@@ -19,6 +19,7 @@ import 'callbacks.dart';
 import 'constants/control_position.dart';
 import 'constants/kakao_map_library.dart';
 import 'constants/drag_type.dart';
+import 'constants/drawing_overlay_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
 
@@ -58,6 +59,7 @@ import '../js/js_overlay_clear.dart';
 import '../js/js_overlay_draw.dart';
 import '../js/js_marker.dart';
 import '../js/js_clusterer.dart';
+import '../js/js_drawing.dart';
 import '../js/js_custom_overlay.dart';
 import '../js/js_map_control.dart';
 import '../js/js_search.dart';
@@ -228,6 +230,17 @@ class KakaoMap extends StatefulWidget {
   /// 많은 마커를 그룹화하여 표시할 때 사용합니다.
   final Clusterer? clusterer;
 
+  /// 도형 하나를 다 그렸을 때 호출되는 콜백입니다.
+  ///
+  /// Drawing 기능은 `KakaoMapController.createDrawingManager()` 로 시작합니다.
+  final OnDrawingEnd? onDrawingEnd;
+
+  /// 그려진 도형이 제거되었을 때 호출되는 콜백입니다.
+  final OnDrawingRemove? onDrawingRemove;
+
+  /// 그리기 상태(되돌리기 가능 여부 등)가 바뀌었을 때 호출되는 콜백입니다.
+  final OnDrawingStateChange? onDrawingStateChange;
+
   /// 커스텀 오버레이의 닫기 버튼을 눌러 제거되었을 때 호출되는 콜백입니다.
   ///
   /// [CustomOverlay.removable] 이 true 인 오버레이에서만 발생합니다.
@@ -301,6 +314,9 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
+    this.onDrawingEnd,
+    this.onDrawingRemove,
+    this.onDrawingStateChange,
     this.onCustomOverlayRemove,
     this.onCustomOverlayDragEnd,
     this.onPolygonTap,
@@ -504,6 +520,12 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     )}
     ${JsMapControl.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
     ${JsUtils.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
+    ${JsDrawing.getScript(
+      hasDrawEndCallback: widget.onDrawingEnd != null,
+      hasDrawRemoveCallback: widget.onDrawingRemove != null,
+      hasDrawStateChangeCallback: widget.onDrawingStateChange != null,
+      isIOS: defaultTargetPlatform == TargetPlatform.iOS,
+    )}
     ${JsSearch.getScript()}
 </script>
     ''');
@@ -879,6 +901,30 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
             data.customOverlayId,
             data.toLatLng(),
           ),
+        );
+      })
+      ..addJavaScriptChannel('onDrawingEnd',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<DrawingOverlayType?>(
+          result.message,
+          (json) => DrawingOverlayType.fromValue(json['type']?.toString() ?? ''),
+          (type) => widget.onDrawingEnd?.call(type),
+        );
+      })
+      ..addJavaScriptChannel('onDrawingRemove',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<bool>(
+          result.message,
+          (json) => true,
+          (_) => widget.onDrawingRemove?.call(),
+        );
+      })
+      ..addJavaScriptChannel('onDrawingStateChange',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<bool>(
+          result.message,
+          (json) => true,
+          (_) => widget.onDrawingStateChange?.call(),
         );
       })
       ..addJavaScriptChannel('onCustomOverlayRemove',

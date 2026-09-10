@@ -11,6 +11,7 @@ import '../protocol/address_search_request.dart';
 import '../protocol/address_search_response.dart';
 import '../protocol/category_search_request.dart';
 import '../protocol/category_search_response.dart';
+import '../protocol/drawing_data.dart';
 import '../protocol/coord_2_address_request.dart';
 import '../protocol/coord_2_address_response.dart';
 import '../protocol/coord_2_region_code_request.dart';
@@ -29,7 +30,9 @@ import '../service/trans_coord_service.dart';
 import 'circle.dart';
 import 'clusterer.dart';
 import 'constants/map_type.dart';
+import 'constants/drawing_overlay_type.dart';
 import 'custom_overlay.dart';
+import 'drawing_options.dart';
 import 'marker.dart';
 import 'overlay_payload.dart';
 import 'polygon.dart';
@@ -815,5 +818,87 @@ class KakaoMapController {
       );
     }
     return Map<String, dynamic>.from(value);
+  }
+  // ---------------------------------------------------------------------------
+  // Drawing Library
+  // ---------------------------------------------------------------------------
+
+  /// 도형 그리기 관리자를 생성합니다.
+  ///
+  /// Drawing 기능을 쓰기 전에 한 번 호출해야 합니다. 이미 만들어져 있으면
+  /// 기존 관리자를 정리하고 새로 만듭니다.
+  ///
+  /// [options]로 그릴 수 있는 도형 종류와 도형별 스타일을 지정합니다.
+  ///
+  /// [KakaoMapLibrary.drawing] 을 제외하고 지도를 만든 경우에는 아무 일도
+  /// 일어나지 않습니다.
+  ///
+  /// 예시:
+  /// ```dart
+  /// await controller.createDrawingManager(
+  ///   options: const DrawingOptions(
+  ///     drawingMode: [DrawingOverlayType.polyline, DrawingOverlayType.polygon],
+  ///   ),
+  /// );
+  /// ```
+  Future<void> createDrawingManager({DrawingOptions? options}) async {
+    final payload = (options ?? const DrawingOptions()).toJson();
+    await _webViewController
+        .runJavaScript('createDrawingManager(${_jsJson(payload)});');
+  }
+
+  /// 그릴 도형의 종류를 선택합니다.
+  ///
+  /// 선택 후 사용자가 지도를 조작하면 해당 도형이 그려집니다.
+  Future<void> selectDrawingMode(DrawingOverlayType type) async {
+    await _webViewController
+        .runJavaScript('selectDrawingMode(${_jsStr(type.value)});');
+  }
+
+  /// 그리는 중이던 작업을 취소합니다.
+  Future<void> cancelDrawing() async {
+    await _webViewController.runJavaScript('cancelDrawing();');
+  }
+
+  /// 마지막 그리기 작업을 되돌립니다.
+  Future<void> undoDrawing() async {
+    await _webViewController.runJavaScript('undoDrawing();');
+  }
+
+  /// 되돌린 작업을 다시 실행합니다.
+  Future<void> redoDrawing() async {
+    await _webViewController.runJavaScript('redoDrawing();');
+  }
+
+  /// 선택된 도형을 지웁니다.
+  Future<void> removeDrawingShape() async {
+    await _webViewController.runJavaScript('removeDrawingShape();');
+  }
+
+  /// 지금까지 그린 도형 데이터를 가져옵니다.
+  ///
+  /// 관리자를 만들지 않았거나 그린 도형이 없으면 빈 [DrawingData]를 반환합니다.
+  Future<DrawingData> getDrawingData() async {
+    final raw =
+        await _webViewController.runJavaScriptReturningResult('getDrawingData();');
+    dynamic value = raw;
+    if (value is String) {
+      value = jsonDecode(value);
+      if (value is String) value = jsonDecode(value);
+    }
+    if (value is! Map) return const DrawingData([]);
+    return DrawingData.fromJson(Map<String, dynamic>.from(value));
+  }
+
+  /// 도형 그리기 도구 상자(Toolbox)를 지도 위에 표시합니다.
+  ///
+  /// [createDrawingManager] 를 먼저 호출해야 합니다.
+  Future<void> showDrawingToolbox() async {
+    await _webViewController.runJavaScript('showDrawingToolbox();');
+  }
+
+  /// 도형 그리기 도구 상자를 제거합니다.
+  Future<void> removeDrawingToolbox() async {
+    await _webViewController.runJavaScript('removeDrawingToolbox();');
   }
 }

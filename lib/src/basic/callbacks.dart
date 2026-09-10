@@ -3,6 +3,7 @@ import '../model/lat_lng_bounds.dart';
 import '../model/viewpoint.dart';
 import '../road/kakao_roadview_controller.dart';
 import 'constants/drag_type.dart';
+import 'constants/drawing_overlay_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
 import 'kakao_map_controller.dart';
@@ -104,6 +105,22 @@ typedef OnBoundsChangeCallback = void Function(LatLngBounds latLngBounds);
 /// [latLng] 지도 중심의 좌표
 /// [zoomLevel] 현재 지도의 확대/축소 레벨
 typedef OnTilesLoadedCallback = void Function(LatLng latLng, int zoomLevel);
+
+/// 도형 그리기 완료 콜백입니다.
+///
+/// 사용자가 도형 하나를 다 그렸을 때 호출됩니다.
+/// [type] 그려진 도형의 종류
+typedef OnDrawingEnd = void Function(DrawingOverlayType? type);
+
+/// 도형 제거 콜백입니다.
+///
+/// 그려진 도형이 제거되었을 때 호출됩니다.
+typedef OnDrawingRemove = void Function();
+
+/// 도형 그리기 상태 변경 콜백입니다.
+///
+/// 되돌리기/다시실행 가능 여부 등 그리기 상태가 바뀌면 호출됩니다.
+typedef OnDrawingStateChange = void Function();
 
 /// 커스텀 오버레이 제거 콜백입니다.
 ///

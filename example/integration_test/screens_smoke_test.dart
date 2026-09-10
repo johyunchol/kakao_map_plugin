@@ -7,6 +7,10 @@ import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_sc
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_14_drawing_undo_redo_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_13_drawing_toolbox_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_12_drawing_get_data_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_11_drawing_library_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_2_keyword_list_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_3_category_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_4_category_bounds_screen.dart';
@@ -146,6 +150,10 @@ final Map<String, Widget Function()> screens = {
   'Static2MarkerScreen': () => const Static2MarkerScreen(),
   'Static3MarkerTextScreen': () => const Static3MarkerTextScreen(),
   'Library1KeywordScreen': () => const Library1KeywordScreen(),
+  'Library14DrawingUntoRedoScreen': () => const Library14DrawingUntoRedoScreen(),
+  'Library13DrawingToolboxScreen': () => const Library13DrawingToolboxScreen(),
+  'Library12DrawingGetDataScreen': () => const Library12DrawingGetDataScreen(),
+  'Library11DrawingLibraryScreen': () => const Library11DrawingLibraryScreen(),
   'Library2KeywordListScreen': () => const Library2KeywordListScreen(),
   'Library3CategoryScreen': () => const Library3CategoryScreen(),
   'Library4CategoryBoundsScreen': () => const Library4CategoryBoundsScreen(),

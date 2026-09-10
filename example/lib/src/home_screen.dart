@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kakao_map_plugin_example/src/library_10_marker_clusterer_text_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_11_drawing_library_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_12_drawing_get_data_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_13_drawing_toolbox_screen.dart';
+import 'package:kakao_map_plugin_example/src/library_14_drawing_undo_redo_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_clusterer_custom_overlay_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_11_marker_clusterer_custom_image_screen.dart';
 import 'package:kakao_map_plugin_example/src/library_1_keyword_screen.dart';
@@ -241,10 +245,10 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '클러스터러 커스텀 마커 이미지 테스트',
           newPage: const Library11MarkerClustererCustomImageScreen()),
-      // MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
-      // MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
-      // MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),
-      // MenuItem(title: 'Drawing undo, redo', newPage: const Library14DrawingUntoRedoScreen()),
+      MenuItem(title: 'Drawing Library 사용하기', newPage: const Library11DrawingLibraryScreen()),
+      MenuItem(title: 'Drawing Library 에서 데이터 얻기', newPage: const Library12DrawingGetDataScreen()),
+      MenuItem(title: 'Toolbox 사용하기', newPage: const Library13DrawingToolboxScreen()),
+      MenuItem(title: 'Drawing undo, redo', newPage: const Library14DrawingUntoRedoScreen()),
     ]),
   ];
 
