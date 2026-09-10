@@ -93,34 +93,50 @@ String htmlWrapperWithRoadview(String script,
       touch-action: manipulation;
     }
 
-    /* 동동이(MapWalker) 스프라이트.
-       pan 값을 22.5도 단위로 16분할해 m0~m15 클래스를 갈아끼웁니다. */
-    .MapWalker {
-      position: absolute; width: 26px; height: 46px;
-      margin: -46px 0 0 -13px;
+    /* 동동이(MapWalker) 스프라이트. 카카오 공식 샘플(moveRoadview)의 좌표를 그대로 사용합니다.
+       pan 값을 22.5도 단위로 16분할해 m0~m15 클래스를 갈아끼웁니다.
+       angleBack 은 바라보는 방향의 시야각(부채꼴), figure 는 사람 아이콘입니다. */
+    .MapWalker { position: absolute; margin: -26px 0 0 -51px; }
+    .MapWalker .figure {
+      position: absolute; width: 25px; height: 39px; left: 38px; top: -2px;
+      background: url(https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png) -298px -114px no-repeat;
     }
-    .MapWalker .figure, .MapWalker .face {
-      position: absolute; left: 0; top: 0;
-      background: url(https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png) no-repeat;
+    .MapWalker .angleBack {
+      width: 102px; height: 52px;
+      background: url(https://t1.daumcdn.net/localimg/localimages/07/2018/pc/roadview_minimap_wk_2018.png) -834px -2px no-repeat;
     }
-    .MapWalker .figure { width: 26px; height: 46px; background-position: -50px -55px; }
-    .MapWalker .face { width: 26px; height: 46px; }
-    .MapWalker.m0 .face { background-position: -1px -1px; }
-    .MapWalker.m1 .face { background-position: -34px -1px; }
-    .MapWalker.m2 .face { background-position: -67px -1px; }
-    .MapWalker.m3 .face { background-position: -100px -1px; }
-    .MapWalker.m4 .face { background-position: -133px -1px; }
-    .MapWalker.m5 .face { background-position: -166px -1px; }
-    .MapWalker.m6 .face { background-position: -199px -1px; }
-    .MapWalker.m7 .face { background-position: -232px -1px; }
-    .MapWalker.m8 .face { background-position: -265px -1px; }
-    .MapWalker.m9 .face { background-position: -298px -1px; }
-    .MapWalker.m10 .face { background-position: -331px -1px; }
-    .MapWalker.m11 .face { background-position: -364px -1px; }
-    .MapWalker.m12 .face { background-position: -397px -1px; }
-    .MapWalker.m13 .face { background-position: -430px -1px; }
-    .MapWalker.m14 .face { background-position: -463px -1px; }
-    .MapWalker.m15 .face { background-position: -496px -1px; }
+    .MapWalker.m0 .figure { background-position: -298px -114px; }
+    .MapWalker.m1 .figure { background-position: -335px -114px; }
+    .MapWalker.m2 .figure { background-position: -372px -114px; }
+    .MapWalker.m3 .figure { background-position: -409px -114px; }
+    .MapWalker.m4 .figure { background-position: -446px -114px; }
+    .MapWalker.m5 .figure { background-position: -483px -114px; }
+    .MapWalker.m6 .figure { background-position: -520px -114px; }
+    .MapWalker.m7 .figure { background-position: -557px -114px; }
+    .MapWalker.m8 .figure { background-position: -2px -114px; }
+    .MapWalker.m9 .figure { background-position: -39px -114px; }
+    .MapWalker.m10 .figure { background-position: -76px -114px; }
+    .MapWalker.m11 .figure { background-position: -113px -114px; }
+    .MapWalker.m12 .figure { background-position: -150px -114px; }
+    .MapWalker.m13 .figure { background-position: -187px -114px; }
+    .MapWalker.m14 .figure { background-position: -224px -114px; }
+    .MapWalker.m15 .figure { background-position: -261px -114px; }
+    .MapWalker.m0 .angleBack { background-position: -834px -2px; }
+    .MapWalker.m1 .angleBack { background-position: -938px -2px; }
+    .MapWalker.m2 .angleBack { background-position: -1042px -2px; }
+    .MapWalker.m3 .angleBack { background-position: -1146px -2px; }
+    .MapWalker.m4 .angleBack { background-position: -1250px -2px; }
+    .MapWalker.m5 .angleBack { background-position: -1354px -2px; }
+    .MapWalker.m6 .angleBack { background-position: -1458px -2px; }
+    .MapWalker.m7 .angleBack { background-position: -1562px -2px; }
+    .MapWalker.m8 .angleBack { background-position: -2px -2px; }
+    .MapWalker.m9 .angleBack { background-position: -106px -2px; }
+    .MapWalker.m10 .angleBack { background-position: -210px -2px; }
+    .MapWalker.m11 .angleBack { background-position: -314px -2px; }
+    .MapWalker.m12 .angleBack { background-position: -418px -2px; }
+    .MapWalker.m13 .angleBack { background-position: -522px -2px; }
+    .MapWalker.m14 .angleBack { background-position: -626px -2px; }
+    .MapWalker.m15 .angleBack { background-position: -730px -2px; }
   </style>
 </head>
 

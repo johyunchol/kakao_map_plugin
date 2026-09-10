@@ -196,6 +196,9 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
   Timer? _relayoutTimer;
   bool _isReady = false;
 
+  // 마지막으로 측정된 레이아웃 크기. 바뀌면 relayout 해 지도/로드뷰 크기를 맞춥니다.
+  Size? _lastLayoutSize;
+
   @override
   void initState() {
     super.initState();
@@ -314,9 +317,26 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(
-      controller: _webViewController,
-      gestureRecognizers: widget.gestureRecognizers,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        if (_lastLayoutSize != size) {
+          final sizeChanged = _lastLayoutSize != null;
+          _lastLayoutSize = size;
+          // 위젯 크기가 바뀌면 WebView 안의 지도/로드뷰도 다시 배치합니다.
+          if (sizeChanged && _isReady) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _isReady) {
+                _controller?.relayout().catchError((_) {});
+              }
+            });
+          }
+        }
+        return WebViewWidget(
+          controller: _webViewController,
+          gestureRecognizers: widget.gestureRecognizers,
+        );
+      },
     );
   }
 
