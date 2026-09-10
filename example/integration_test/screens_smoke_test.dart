@@ -45,6 +45,18 @@ import 'package:kakao_map_plugin_example/src/overlay_14_markers_image_screen.dar
 import 'package:kakao_map_plugin_example/src/overlay_15_shape_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_16_line_distance_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_1_marker_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_26_maker_tracker.dart';
+import 'package:kakao_map_plugin_example/src/overlay_25_drag_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_24_image_marker_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_23_removable_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_20_circle_radius_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_19_polygon_event2_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_18_polygon_event1_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_17_polygon_area_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_13_markers_event2_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_9_marker_geolocation_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_8_marker_draggable_event_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_7_marker_mouse_event_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_21_custom_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_22_custom_overlay2_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_27_polygon_hole.dart';
@@ -95,6 +107,18 @@ final Map<String, Widget Function()> screens = {
   'Map22TilesLoadedScreen': () => const Map22TilesLoadedScreen(),
   'Map23CoordPixelConvertScreen': () => const Map23CoordPixelConvertScreen(),
   'Overlay1MarkerScreen': () => const Overlay1MarkerScreen(),
+  'Overlay26MarkerTrackerScreen': () => const Overlay26MarkerTrackerScreen(),
+  'Overlay25DragCustomOverlayScreen': () => const Overlay25DragCustomOverlayScreen(),
+  'Overlay24ImageMarkerCustomOverlayScreen': () => const Overlay24ImageMarkerCustomOverlayScreen(),
+  'Overlay23RemovableCustomOverlayScreen': () => const Overlay23RemovableCustomOverlayScreen(),
+  'Overlay20CircleRadiusScreen': () => const Overlay20CircleRadiusScreen(),
+  'Overlay19PolygonEvent2Screen': () => const Overlay19PolygonEvent2Screen(),
+  'Overlay18PolygonEvent1Screen': () => const Overlay18PolygonEvent1Screen(),
+  'Overlay17PolygonAreaScreen': () => const Overlay17PolygonAreaScreen(),
+  'Overlay13MarkersEvent2Screen': () => const Overlay13MarkersEvent2Screen(),
+  'Overlay9MarkerGeolocatorScreen': () => const Overlay9MarkerGeolocatorScreen(),
+  'Overlay8MarkerDraggableEventScreen': () => const Overlay8MarkerDraggableEventScreen(),
+  'Overlay7MarkerMouseEventScreen': () => const Overlay7MarkerMouseEventScreen(),
   'Overlay2MarkerDraggableScreen': () => const Overlay2MarkerDraggableScreen(),
   'Overlay3MarkerImageScreen': () => const Overlay3MarkerImageScreen(),
   'Overlay4InfoWindowScreen': () => const Overlay4InfoWindowScreen(),

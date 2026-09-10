@@ -228,6 +228,21 @@ class KakaoMap extends StatefulWidget {
   /// 많은 마커를 그룹화하여 표시할 때 사용합니다.
   final Clusterer? clusterer;
 
+  /// 커스텀 오버레이의 닫기 버튼을 눌러 제거되었을 때 호출되는 콜백입니다.
+  ///
+  /// [CustomOverlay.removable] 이 true 인 오버레이에서만 발생합니다.
+  final OnCustomOverlayRemove? onCustomOverlayRemove;
+
+  /// 커스텀 오버레이를 드래그해 놓았을 때 호출되는 콜백입니다.
+  ///
+  /// [CustomOverlay.draggable] 이 true 인 오버레이에서만 발생합니다.
+  final OnCustomOverlayDragEnd? onCustomOverlayDragEnd;
+
+  /// 다각형을 탭했을 때 호출되는 콜백입니다.
+  ///
+  /// 다각형 ID, 탭한 좌표, 현재 줌 레벨을 반환합니다.
+  final OnPolygonTap? onPolygonTap;
+
   /// 지도와 함께 불러올 카카오 SDK 확장 라이브러리입니다.
   ///
   /// 생략하면 [AuthRepository.libraries](기본값: 전체)를 사용하므로 기존과 동일하게
@@ -286,6 +301,9 @@ class KakaoMap extends StatefulWidget {
     this.markers,
     this.clusterer,
     this.customOverlays,
+    this.onCustomOverlayRemove,
+    this.onCustomOverlayDragEnd,
+    this.onPolygonTap,
     this.libraries,
     this.gestureRecognizers = const <Factory<OneSequenceGestureRecognizer>>{},
   });
@@ -468,7 +486,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       isIOS: defaultTargetPlatform == TargetPlatform.iOS,
     )}
     ${JsOverlayClear.getScript()}
-    ${JsOverlayDraw.getScript()}
+    ${JsOverlayDraw.getScript(
+      hasPolygonTapCallback: widget.onPolygonTap != null,
+    )}
     ${JsMarker.getScript(
       hasMarkerDragCallback: widget.onMarkerDragChangeCallback != null,
       hasMarkerTapCallback: widget.onMarkerTap != null,
@@ -479,6 +499,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     )}
     ${JsCustomOverlay.getScript(
       hasCustomOverlayTapCallback: widget.onCustomOverlayTap != null,
+      hasCustomOverlayRemoveCallback: widget.onCustomOverlayRemove != null,
+      hasCustomOverlayDragEndCallback: widget.onCustomOverlayDragEnd != null,
     )}
     ${JsMapControl.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
     ${JsUtils.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
@@ -856,6 +878,37 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           (data) => widget.onCustomOverlayTap?.call(
             data.customOverlayId,
             data.toLatLng(),
+          ),
+        );
+      })
+      ..addJavaScriptChannel('onCustomOverlayRemove',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<String>(
+          result.message,
+          (json) => json['customOverlayId'] as String,
+          (id) => widget.onCustomOverlayRemove?.call(id),
+        );
+      })
+      ..addJavaScriptChannel('onCustomOverlayDragEnd',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<_CustomOverlayTapEventData>(
+          result.message,
+          _CustomOverlayTapEventData.fromJson,
+          (data) => widget.onCustomOverlayDragEnd?.call(
+            data.customOverlayId,
+            data.toLatLng(),
+          ),
+        );
+      })
+      ..addJavaScriptChannel('onPolygonTap',
+          onMessageReceived: (JavaScriptMessage result) {
+        _handleChannel<_PolygonTapEventData>(
+          result.message,
+          _PolygonTapEventData.fromJson,
+          (data) => widget.onPolygonTap?.call(
+            data.polygonId,
+            data.toLatLng(),
+            data.zoomLevel,
           ),
         );
       })
@@ -1256,4 +1309,30 @@ class _BoundsChangeEventData {
         LatLng(swLatitude, swLongitude),
         LatLng(neLatitude, neLongitude),
       );
+}
+
+/// 다각형 탭 이벤트 내부 데이터 클래스입니다.
+class _PolygonTapEventData {
+  final String polygonId;
+  final double latitude;
+  final double longitude;
+  final int zoomLevel;
+
+  const _PolygonTapEventData({
+    required this.polygonId,
+    required this.latitude,
+    required this.longitude,
+    required this.zoomLevel,
+  });
+
+  factory _PolygonTapEventData.fromJson(Map<String, dynamic> json) {
+    return _PolygonTapEventData(
+      polygonId: json['polygonId'] as String,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+      zoomLevel: (json['zoomLevel'] as num).toInt(),
+    );
+  }
+
+  LatLng toLatLng() => LatLng(latitude, longitude);
 }

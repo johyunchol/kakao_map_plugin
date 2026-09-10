@@ -228,6 +228,8 @@ class JsUtils {
      * @returns {x: number, y: number}
      */
     function coordToPixel(latitude, longitude) {
+        // dispose() 이후처럼 지도가 없으면 호출자가 구분할 수 있도록 null 을 돌려줍니다.
+        if (!map) return $isIOS ? 'null' : null;
         const latLng = new kakao.maps.LatLng(latitude, longitude);
         const point = map.project(latLng);
 
@@ -250,6 +252,7 @@ class JsUtils {
      * @returns {latitude: number, longitude: number}
      */
     function pixelToCoord(x, y) {
+        if (!map) return $isIOS ? 'null' : null;
         const point = new kakao.maps.Point(x, y);
         const latLng = map.unproject(point);
 

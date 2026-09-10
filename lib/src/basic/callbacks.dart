@@ -105,6 +105,34 @@ typedef OnBoundsChangeCallback = void Function(LatLngBounds latLngBounds);
 /// [zoomLevel] 현재 지도의 확대/축소 레벨
 typedef OnTilesLoadedCallback = void Function(LatLng latLng, int zoomLevel);
 
+/// 커스텀 오버레이 제거 콜백입니다.
+///
+/// 닫기 버튼을 눌러 오버레이가 제거되었을 때 호출됩니다.
+/// [customOverlayId] 제거된 오버레이의 ID
+typedef OnCustomOverlayRemove = void Function(String customOverlayId);
+
+/// 커스텀 오버레이 드래그 종료 콜백입니다.
+///
+/// 오버레이를 끌어 놓았을 때 호출됩니다.
+/// [customOverlayId] 옮긴 오버레이의 ID
+/// [latLng] 놓은 지점의 좌표
+typedef OnCustomOverlayDragEnd = void Function(
+  String customOverlayId,
+  LatLng latLng,
+);
+
+/// 다각형 탭 콜백입니다.
+///
+/// 지도 위 다각형을 탭했을 때 호출됩니다.
+/// [polygonId] 탭한 다각형의 ID
+/// [latLng] 탭한 지점의 좌표
+/// [zoomLevel] 현재 지도의 확대/축소 레벨
+typedef OnPolygonTap = void Function(
+  String polygonId,
+  LatLng latLng,
+  int zoomLevel,
+);
+
 // ===========================================================================
 // 로드뷰 콜백
 // ===========================================================================

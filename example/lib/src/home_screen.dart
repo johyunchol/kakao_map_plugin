@@ -41,6 +41,18 @@ import 'package:kakao_map_plugin_example/src/overlay_14_markers_image_screen.dar
 import 'package:kakao_map_plugin_example/src/overlay_15_shape_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_16_line_distance_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_1_marker_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_7_marker_mouse_event_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_8_marker_draggable_event_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_9_marker_geolocation_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_13_markers_event2_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_17_polygon_area_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_18_polygon_event1_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_19_polygon_event2_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_20_circle_radius_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_23_removable_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_24_image_marker_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_25_drag_custom_overlay_screen.dart';
+import 'package:kakao_map_plugin_example/src/overlay_26_maker_tracker.dart';
 import 'package:kakao_map_plugin_example/src/overlay_21_custom_overlay1_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_22_custom_overlay2_screen.dart';
 import 'package:kakao_map_plugin_example/src/overlay_27_polygon_hole.dart';
@@ -146,9 +158,9 @@ class _HomeScreenState extends State<HomeScreen>
           newPage: const Overlay5MarkerInfoWindowScreen()),
       MenuItem(
           title: '마커에 클릭 이벤트 등록하기', newPage: const Overlay6MarkerClickScreen()),
-      // MenuItem(title: '마커에 마우스 이벤트 등록하기', newPage: const Overlay7MarkerMouseEventScreen()),
-      // MenuItem(title: 'draggable 마커 이벤트 적용하기', newPage: const Overlay8MarkerDraggableEventScreen()),
-      // MenuItem(title: 'geolocation으로 마커 표시하기', newPage: const Overlay9MarkerGeolocatorScreen()),
+      MenuItem(title: '마커에 마우스 이벤트 등록하기', newPage: const Overlay7MarkerMouseEventScreen()),
+      MenuItem(title: 'draggable 마커 이벤트 적용하기', newPage: const Overlay8MarkerDraggableEventScreen()),
+      MenuItem(title: 'geolocation으로 마커 표시하기', newPage: const Overlay9MarkerGeolocatorScreen()),
       MenuItem(
           title: '여러개 마커 표시하기',
           newPage: const Overlay10MarkersPresentationScreen()),
@@ -157,27 +169,27 @@ class _HomeScreenState extends State<HomeScreen>
       MenuItem(
           title: '여러개 마커에 이벤트 등록하기1',
           newPage: const Overlay12MarkersEvent1Screen()),
-      // MenuItem(title: '여러개 마커에 이벤트 등록하기2', newPage: const Overlay13MarkersEvent2Screen()),
+      MenuItem(title: '여러개 마커에 이벤트 등록하기2', newPage: const Overlay13MarkersEvent2Screen()),
       MenuItem(
           title: '다양한 이미지 마커 표시하기',
           newPage: const Overlay14MarkersImage2Screen()),
       MenuItem(
           title: '원, 선, 사각형, 다각형 표시하기', newPage: const Overlay15ShapeScreen()),
       MenuItem(title: '선의 거리 계산하기', newPage: const Overlay16LineDistanceScreen()),
-      // MenuItem(title: '다각형의 면적 계산하기', newPage: const Overlay17PolygonAreaScreen()),
-      // MenuItem(title: '다각형에 이벤트 등록하기1', newPage: const Overlay18PolygonEvent1Screen()),
-      // MenuItem(title: '다각형에 이벤트 등록하기2', newPage: const Overlay19PolygonEvent2Screen()),
-      // MenuItem(title: '원의 반경 계산하기', newPage: const Overlay20CircleRadiusScreen()),
+      MenuItem(title: '다각형의 면적 계산하기', newPage: const Overlay17PolygonAreaScreen()),
+      MenuItem(title: '다각형에 이벤트 등록하기1', newPage: const Overlay18PolygonEvent1Screen()),
+      MenuItem(title: '다각형에 이벤트 등록하기2', newPage: const Overlay19PolygonEvent2Screen()),
+      MenuItem(title: '원의 반경 계산하기', newPage: const Overlay20CircleRadiusScreen()),
       MenuItem(
           title: '커스텀 오버레이 생성하기1',
           newPage: const Overlay21CustomOverlay1Screen()),
       MenuItem(
           title: '커스텀 오버레이 생성하기2',
           newPage: const Overlay22CustomOverlay2Screen()),
-      // MenuItem(title: '닫기가 가능한 커스텀 오버레이', newPage: const Overlay23RemovableCustomOverlayScreen()),
-      // MenuItem(title: '이미지 마커와 커스텀 오버레이', newPage: const Overlay24ImageMarkerCustomOverlayScreen()),
-      // MenuItem(title: '커스텀오버레이를 드래그 하기', newPage: const Overlay25DragCustomOverlayScreen()),
-      // MenuItem(title: '지도 영역 밖의 마커위치 추적하기', newPage: const Overlay26MarkerTrackerScreen()),
+      MenuItem(title: '닫기가 가능한 커스텀 오버레이', newPage: const Overlay23RemovableCustomOverlayScreen()),
+      MenuItem(title: '이미지 마커와 커스텀 오버레이', newPage: const Overlay24ImageMarkerCustomOverlayScreen()),
+      MenuItem(title: '커스텀오버레이를 드래그 하기', newPage: const Overlay25DragCustomOverlayScreen()),
+      MenuItem(title: '지도 영역 밖의 마커위치 추적하기', newPage: const Overlay26MarkerTrackerScreen()),
       MenuItem(
           title: '구멍난 다각형 만들기', newPage: const Overlay27PolygonHoleScreen()),
     ]),

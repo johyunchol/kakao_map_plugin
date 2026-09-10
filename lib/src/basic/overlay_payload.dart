@@ -235,6 +235,8 @@ class OverlayPayload {
         o.xAnchor,
         o.yAnchor,
         o.zIndex,
+        o.removable,
+        o.draggable,
       );
 
   static Map<String, dynamic> customOverlay(CustomOverlay o) => {
@@ -244,6 +246,8 @@ class OverlayPayload {
         'xAnchor': o.xAnchor,
         'yAnchor': o.yAnchor,
         'zIndex': o.zIndex,
+        'removable': o.removable,
+        'draggable': o.draggable,
         'hash': customOverlayHash(o),
       };
 

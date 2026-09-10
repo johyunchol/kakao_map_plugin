@@ -1,7 +1,10 @@
 /// JavaScript 오버레이 그리기 스크립트를 제공합니다.
 class JsOverlayDraw {
   /// 오버레이 그리기 함수들의 스크립트를 반환합니다.
-  static String getScript() {
+  ///
+  /// [hasPolygonTapCallback] 이 false 면 다각형 탭 리스너를 등록하지 않아
+  /// 불필요한 브릿지 메시지가 발생하지 않습니다.
+  static String getScript({bool hasPolygonTapCallback = false}) {
     return '''
     /**
      * 동일 ID 오버레이가 있을 때 재사용 여부를 결정합니다.
@@ -158,6 +161,18 @@ class JsOverlayDraw {
         polygon.__hash = hash;
         polygonIndex.set(polygonId, polygon);
         syncOverlayArrays();
+
+        if ($hasPolygonTapCallback) {
+            kakao.maps.event.addListener(polygon, 'click', function (mouseEvent) {
+                const latLng = mouseEvent.latLng;
+                onPolygonTap.postMessage(JSON.stringify({
+                    polygonId: polygon.id,
+                    latitude: latLng.getLat(),
+                    longitude: latLng.getLng(),
+                    zoomLevel: map.getLevel()
+                }));
+            });
+        }
     }
 
     function addPolygons(payload) {

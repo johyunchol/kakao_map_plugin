@@ -21,9 +21,30 @@ class _Overlay8MarkerDraggableEventScreenState
 
   Set<Marker> markers = {};
 
+  final List<String> eventLog = [];
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void _handleMarkerDragChange(
+    String markerId,
+    LatLng latLng,
+    int zoomLevel,
+    MarkerDragType dragType,
+  ) {
+    setState(() {
+      final label =
+          dragType == MarkerDragType.start ? '드래그 시작' : '드래그 종료';
+      final lat = latLng.latitude.toStringAsFixed(6);
+      final lng = latLng.longitude.toStringAsFixed(6);
+
+      eventLog.insert(0, '$label · 위도: $lat, 경도: $lng');
+      if (eventLog.length > 5) {
+        eventLog.removeRange(5, eventLog.length);
+      }
+    });
   }
 
   @override
@@ -32,25 +53,55 @@ class _Overlay8MarkerDraggableEventScreenState
       appBar: AppBar(
         title: Text(widget.title ?? selectedTitle),
       ),
-      body: KakaoMap(
-        onMapCreated: ((controller) async {
-          mapController = controller;
+      body: Stack(
+        children: [
+          KakaoMap(
+            onMapCreated: ((controller) async {
+              mapController = controller;
 
-          markers.add(Marker(
-            markerId: markers.length.toString(),
-            latLng: await mapController.getCenter(),
-            width: 30,
-            height: 44,
-            offsetX: 15,
-            offsetY: 44,
-            markerImageSrc:
-                'https://w7.pngwing.com/pngs/96/889/png-transparent-marker-map-interesting-places-the-location-on-the-map-the-location-of-the-thumbnail.png',
-          ));
+              markers.add(Marker(
+                markerId: 'draggableMarker',
+                latLng: await mapController.getCenter(),
+                width: 30,
+                height: 44,
+                offsetX: 15,
+                offsetY: 44,
+                draggable: true,
+              ));
 
-          setState(() {});
-        }),
-        markers: markers.toList(),
-        center: LatLng(37.3608681, 126.9306506),
+              setState(() {});
+            }),
+            onMarkerDragChangeCallback: _handleMarkerDragChange,
+            markers: markers.toList(),
+            center: LatLng(37.3608681, 126.9306506),
+          ),
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 16,
+            child: Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '마커를 드래그해 보세요 (최근 5건)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (eventLog.isEmpty)
+                      const Text('아직 드래그 이벤트가 없습니다')
+                    else
+                      ...eventLog.map((e) => Text(e)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

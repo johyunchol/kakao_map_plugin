@@ -782,9 +782,8 @@ class KakaoMapController {
   /// Returns: 화면 픽셀 좌표 [Point]
   Future<Point> coordToPixel(LatLng latLng) async {
     final result = await _webViewController.runJavaScriptReturningResult(
-            "coordToPixel(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});")
-        as String;
-    return Point.fromJson(jsonDecode(result));
+        "coordToPixel(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
+    return Point.fromJson(_decodeMapResult(result, 'coordToPixel'));
   }
 
   /// 화면 픽셀 좌표를 지도 좌표(LatLng)로 변환합니다.
@@ -794,8 +793,27 @@ class KakaoMapController {
   /// Returns: 지도 좌표 [LatLng]
   Future<LatLng> pixelToCoord(Point point) async {
     final result = await _webViewController.runJavaScriptReturningResult(
-            "pixelToCoord(${_jsPrimitive(point.x)}, ${_jsPrimitive(point.y)});")
-        as String;
-    return LatLng.fromJson(jsonDecode(result));
+        "pixelToCoord(${_jsPrimitive(point.x)}, ${_jsPrimitive(point.y)});");
+    return LatLng.fromJson(_decodeMapResult(result, 'pixelToCoord'));
+  }
+
+  /// 좌표 변환 결과를 Map 으로 되돌립니다.
+  ///
+  /// 위젯이 이미 정리되어 지도가 없으면 JS 가 null 을 돌려주는데, 그대로
+  /// 캐스트하면 원인을 알기 어려운 타입 오류가 납니다. 무엇이 잘못됐는지
+  /// 알 수 있도록 [StateError] 로 바꿔 던집니다.
+  Map<String, dynamic> _decodeMapResult(Object? raw, String label) {
+    dynamic value = raw;
+    if (value is String) {
+      value = jsonDecode(value);
+      if (value is String) value = jsonDecode(value);
+    }
+    if (value is! Map) {
+      throw StateError(
+        '$label 결과를 받지 못했습니다. 지도가 아직 준비되지 않았거나 '
+        '이미 정리된 상태일 수 있습니다. 위젯이 화면에 있는 동안 호출하세요.',
+      );
+    }
+    return Map<String, dynamic>.from(value);
   }
 }

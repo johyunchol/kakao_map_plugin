@@ -101,6 +101,18 @@ class CustomOverlay {
   /// null 이면 카카오 SDK 기본값을 사용합니다.
   final double? altitude;
 
+  /// 닫기 버튼을 표시할지 여부입니다.
+  ///
+  /// true 이면 오버레이 오른쪽 위에 닫기 버튼이 붙고, 누르면 오버레이가
+  /// 지도에서 제거되며 `KakaoMap.onCustomOverlayRemove` 가 호출됩니다.
+  final bool removable;
+
+  /// 드래그로 위치를 옮길 수 있는지 여부입니다.
+  ///
+  /// true 이면 오버레이를 끌어 옮길 수 있고, 놓는 순간
+  /// `KakaoMap.onCustomOverlayDragEnd` 가 새 좌표와 함께 호출됩니다.
+  final bool draggable;
+
   CustomOverlay({
     required this.customOverlayId,
     required this.latLng,
@@ -109,5 +121,7 @@ class CustomOverlay {
     this.yAnchor = 1,
     this.zIndex = 3,
     this.altitude,
+    this.removable = false,
+    this.draggable = false,
   });
 }
