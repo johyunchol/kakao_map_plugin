@@ -89,8 +89,15 @@ void main() {
       await controller.setCenter(LatLng(37.5, 127.0));
       await controller.panTo(LatLng(37.6, 127.1));
 
-      expect(fake.scripts[0], 'setCenter(37.5, 127.0);');
-      expect(fake.scripts[1], 'panTo(37.6, 127.1);');
+      // web(dart2js)에서는 127.0 이 '127' 로 찍히므로 숫자 값으로 비교한다.
+      List<double> numbersOf(String script) => RegExp(r'-?\d+(?:\.\d+)?')
+          .allMatches(script)
+          .map((m) => double.parse(m.group(0)!))
+          .toList();
+      expect(fake.scripts[0], startsWith('setCenter('));
+      expect(numbersOf(fake.scripts[0]), [37.5, 127.0]);
+      expect(fake.scripts[1], startsWith('panTo('));
+      expect(numbersOf(fake.scripts[1]), [37.6, 127.1]);
     });
   });
   group('Tileset', () {

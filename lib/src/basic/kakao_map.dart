@@ -4,9 +4,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 // Model imports
 import '../model/lat_lng.dart';
@@ -23,7 +20,10 @@ import 'constants/drawing_overlay_type.dart';
 import 'constants/marker_drag_type.dart';
 import 'constants/zoom_type.dart';
 
-// Controller imports
+// Bridge / controller imports
+import '../bridge/bridge_factory.dart';
+import '../bridge/kakao_map_bridge.dart';
+import '../bridge/platform_flags.dart';
 import 'kakao_map_controller.dart';
 
 // Clusterer imports
@@ -339,6 +339,7 @@ typedef _OverlaySyncTask = ({
 });
 
 class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
+  late final KakaoMapBridge _bridge;
   late final KakaoMapController _mapController;
   bool _isMapReady = false;
   Timer? _relayoutTimer;
@@ -381,7 +382,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     _relayoutTimer?.cancel();
     _relayoutDebounceTimer?.cancel();
     // WebView 가 먼저 파괴된 경우 JS 실행이 실패할 수 있으므로 오류를 무시합니다.
-    unawaited(_mapController.dispose().catchError((_) {}));
+    unawaited(_mapController.dispose().catchError((_) {}).whenComplete(
+      () => _bridge.dispose().catchError((_) {}),
+    ));
     super.dispose();
   }
 
@@ -402,43 +405,14 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   }
 
   void _initializeWebView() {
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      params = AndroidWebViewControllerCreationParams();
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
+    final bridge = createKakaoMapBridge(transparentBackground: true);
+    _bridge = bridge;
 
     // dispose() 가 항상 초기화된 컨트롤러를 보도록 HTML 로드보다 먼저 대입합니다.
-    _mapController = KakaoMapController(controller);
+    _mapController = KakaoMapController.fromBridge(bridge);
 
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000));
-    addJavaScriptChannels(controller);
-    controller.loadHtmlString(_loadMap(),
-        baseUrl: AuthRepository.instance.baseUrl);
-
-    if (controller.platform is AndroidWebViewController) {
-      if (kDebugMode) {
-        AndroidWebViewController.enableDebugging(true);
-      }
-      final androidController = controller.platform as AndroidWebViewController;
-      androidController.setMediaPlaybackRequiresUserGesture(false);
-      // Set display mode to ensure proper rendering on Android (Flutter 3.27+ fix)
-      androidController
-          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
-        await request.grant();
-      });
-    }
+    addJavaScriptChannels(bridge);
+    bridge.loadHtml(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
   }
 
   @override
@@ -459,8 +433,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         }
         _lastLayoutSize = size;
 
-        return WebViewWidget(
-          controller: _mapController.webViewController,
+        return _bridge.buildView(
           gestureRecognizers: widget.gestureRecognizers,
         );
       },
@@ -500,7 +473,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       hasOnCameraIdle: widget.onCameraIdle != null,
       hasOnTilesLoadedCallback: widget.onTilesLoadedCallback != null,
       hasOnMapDoubleTap: widget.onMapDoubleTap != null,
-      isIOS: defaultTargetPlatform == TargetPlatform.iOS,
+      isIOS: isIOSWebView,
     )}
     ${JsOverlayClear.getScript()}
     ${JsOverlayDraw.getScript(
@@ -519,14 +492,14 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       hasCustomOverlayRemoveCallback: widget.onCustomOverlayRemove != null,
       hasCustomOverlayDragEndCallback: widget.onCustomOverlayDragEnd != null,
     )}
-    ${JsMapControl.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
-    ${JsUtils.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
-    ${JsTileset.getScript(isIOS: defaultTargetPlatform == TargetPlatform.iOS)}
+    ${JsMapControl.getScript(isIOS: isIOSWebView)}
+    ${JsUtils.getScript(isIOS: isIOSWebView)}
+    ${JsTileset.getScript(isIOS: isIOSWebView)}
     ${JsDrawing.getScript(
       hasDrawEndCallback: widget.onDrawingEnd != null,
       hasDrawRemoveCallback: widget.onDrawingRemove != null,
       hasDrawStateChangeCallback: widget.onDrawingStateChange != null,
-      isIOS: defaultTargetPlatform == TargetPlatform.iOS,
+      isIOS: isIOSWebView,
     )}
     ${JsSearch.getScript()}
 </script>
@@ -805,10 +778,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     }
   }
 
-  void addJavaScriptChannels(WebViewController controller) {
-    controller
-      ..addJavaScriptChannel('onMapCreated',
-          onMessageReceived: (JavaScriptMessage result) {
+  void addJavaScriptChannels(KakaoMapBridge bridge) {
+    bridge
+      ..addJavaScriptChannel('onMapCreated', (String result) {
         // 이 채널은 아래 두 시나리오에서 발화합니다.
         // 1) 최초 지도 생성 완료
         // 2) WebView 재로드(사용자의 reload() 호출, Android 렌더러 프로세스
@@ -854,26 +826,23 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }
         });
       })
-      ..addJavaScriptChannel('onMapTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMapTap', (String result) {
         _handleChannel<_MapTapEventData>(
-          result.message,
+          result,
           _MapTapEventData.fromJson,
           (data) => widget.onMapTap?.call(data.toLatLng()),
         );
       })
-      ..addJavaScriptChannel('onMapDoubleTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMapDoubleTap', (String result) {
         _handleChannel<_MapTapEventData>(
-          result.message,
+          result,
           _MapTapEventData.fromJson,
           (data) => widget.onMapDoubleTap?.call(data.toLatLng()),
         );
       })
-      ..addJavaScriptChannel('onMarkerTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerTap', (String result) {
         _handleChannel<_MarkerTapEventData>(
-          result.message,
+          result,
           _MarkerTapEventData.fromJson,
           (data) => widget.onMarkerTap?.call(
             data.markerId,
@@ -882,10 +851,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('onMarkerClustererTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerClustererTap', (String result) {
         _handleChannel<_ClusterTapEventData>(
-          result.message,
+          result,
           _ClusterTapEventData.fromJson,
           (data) => widget.onMarkerClustererTap?.call(
             data.toLatLng(),
@@ -894,10 +862,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('onCustomOverlayTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onCustomOverlayTap', (String result) {
         _handleChannel<_CustomOverlayTapEventData>(
-          result.message,
+          result,
           _CustomOverlayTapEventData.fromJson,
           (data) => widget.onCustomOverlayTap?.call(
             data.customOverlayId,
@@ -905,42 +872,37 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('onDrawingEnd',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onDrawingEnd', (String result) {
         _handleChannel<DrawingOverlayType?>(
-          result.message,
+          result,
           (json) => DrawingOverlayType.fromValue(json['type']?.toString() ?? ''),
           (type) => widget.onDrawingEnd?.call(type),
         );
       })
-      ..addJavaScriptChannel('onDrawingRemove',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onDrawingRemove', (String result) {
         _handleChannel<bool>(
-          result.message,
+          result,
           (json) => true,
           (_) => widget.onDrawingRemove?.call(),
         );
       })
-      ..addJavaScriptChannel('onDrawingStateChange',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onDrawingStateChange', (String result) {
         _handleChannel<bool>(
-          result.message,
+          result,
           (json) => true,
           (_) => widget.onDrawingStateChange?.call(),
         );
       })
-      ..addJavaScriptChannel('onCustomOverlayRemove',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onCustomOverlayRemove', (String result) {
         _handleChannel<String>(
-          result.message,
+          result,
           (json) => json['customOverlayId'] as String,
           (id) => widget.onCustomOverlayRemove?.call(id),
         );
       })
-      ..addJavaScriptChannel('onCustomOverlayDragEnd',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onCustomOverlayDragEnd', (String result) {
         _handleChannel<_CustomOverlayTapEventData>(
-          result.message,
+          result,
           _CustomOverlayTapEventData.fromJson,
           (data) => widget.onCustomOverlayDragEnd?.call(
             data.customOverlayId,
@@ -948,10 +910,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('onPolygonTap',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onPolygonTap', (String result) {
         _handleChannel<_PolygonTapEventData>(
-          result.message,
+          result,
           _PolygonTapEventData.fromJson,
           (data) => widget.onPolygonTap?.call(
             data.polygonId,
@@ -960,10 +921,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('onMarkerDragChangeCallback',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('onMarkerDragChangeCallback', (String result) {
         _handleChannel<_MarkerDragEventData>(
-          result.message,
+          result,
           _MarkerDragEventData.fromJson,
           (data) => widget.onMarkerDragChangeCallback?.call(
             data.markerId,
@@ -973,45 +933,40 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('zoomStart',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('zoomStart', (String result) {
         _handleChannel<_ZoomEventData>(
-          result.message,
+          result,
           _ZoomEventData.fromJson,
           (data) =>
               widget.onZoomChangeCallback?.call(data.zoomLevel, ZoomType.start),
         );
       })
-      ..addJavaScriptChannel('zoomChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('zoomChanged', (String result) {
         _handleChannel<_ZoomEventData>(
-          result.message,
+          result,
           _ZoomEventData.fromJson,
           (data) =>
               widget.onZoomChangeCallback?.call(data.zoomLevel, ZoomType.end),
         );
       })
-      ..addJavaScriptChannel('centerChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('centerChanged', (String result) {
         _handleChannel<_CenterChangeEventData>(
-          result.message,
+          result,
           _CenterChangeEventData.fromJson,
           (data) => widget.onCenterChangeCallback
               ?.call(data.toLatLng(), data.zoomLevel),
         );
       })
-      ..addJavaScriptChannel('boundsChanged',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('boundsChanged', (String result) {
         _handleChannel<_BoundsChangeEventData>(
-          result.message,
+          result,
           _BoundsChangeEventData.fromJson,
           (data) => widget.onBoundsChangeCallback?.call(data.toLatLngBounds()),
         );
       })
-      ..addJavaScriptChannel('dragStart',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('dragStart', (String result) {
         _handleChannel<_DragEventData>(
-          result.message,
+          result,
           _DragEventData.fromJson,
           (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
@@ -1020,10 +975,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('drag',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('drag', (String result) {
         _handleChannel<_DragEventData>(
-          result.message,
+          result,
           _DragEventData.fromJson,
           (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
@@ -1032,10 +986,9 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('dragEnd',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('dragEnd', (String result) {
         _handleChannel<_DragEventData>(
-          result.message,
+          result,
           _DragEventData.fromJson,
           (data) => widget.onDragChangeCallback?.call(
             data.toLatLng(),
@@ -1044,28 +997,25 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           ),
         );
       })
-      ..addJavaScriptChannel('cameraIdle',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('cameraIdle', (String result) {
         _handleChannel<_DragEventData>(
-          result.message,
+          result,
           _DragEventData.fromJson,
           (data) => widget.onCameraIdle?.call(data.toLatLng(), data.zoomLevel),
         );
       })
-      ..addJavaScriptChannel('tilesLoaded',
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('tilesLoaded', (String result) {
         _handleChannel<_DragEventData>(
-          result.message,
+          result,
           _DragEventData.fromJson,
           (data) =>
               widget.onTilesLoadedCallback?.call(data.toLatLng(), data.zoomLevel),
         );
       })
-      ..addJavaScriptChannel("keywordSearchCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('keywordSearchCallback', (String result) {
         if (!mounted) return;
         try {
-          KeywordSearchService.keywordSearchCallback(result.message);
+          KeywordSearchService.keywordSearchCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
@@ -1073,11 +1023,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }());
         }
       })
-      ..addJavaScriptChannel("categorySearchCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('categorySearchCallback', (String result) {
         if (!mounted) return;
         try {
-          CategorySearchService.categorySearchCallback(result.message);
+          CategorySearchService.categorySearchCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
@@ -1085,11 +1034,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }());
         }
       })
-      ..addJavaScriptChannel("addressSearchCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('addressSearchCallback', (String result) {
         if (!mounted) return;
         try {
-          AddressSearchService.addressSearchCallback(result.message);
+          AddressSearchService.addressSearchCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
@@ -1097,11 +1045,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }());
         }
       })
-      ..addJavaScriptChannel("coord2AddressCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('coord2AddressCallback', (String result) {
         if (!mounted) return;
         try {
-          Coord2AddressService.coord2AddressCallback(result.message);
+          Coord2AddressService.coord2AddressCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
@@ -1109,11 +1056,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }());
         }
       })
-      ..addJavaScriptChannel("coord2RegionCodeCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('coord2RegionCodeCallback', (String result) {
         if (!mounted) return;
         try {
-          Coord2RegionCodeService.coord2RegionCodeCallback(result.message);
+          Coord2RegionCodeService.coord2RegionCodeCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');
@@ -1121,11 +1067,10 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
           }());
         }
       })
-      ..addJavaScriptChannel("transCoordCallback",
-          onMessageReceived: (JavaScriptMessage result) {
+      ..addJavaScriptChannel('transCoordCallback', (String result) {
         if (!mounted) return;
         try {
-          TransCoordService.transCodeCallback(result.message);
+          TransCoordService.transCodeCallback(result);
         } catch (e, st) {
           assert(() {
             debugPrint('KakaoMap 채널 메시지 처리 실패: $e\n$st');

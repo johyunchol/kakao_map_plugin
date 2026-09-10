@@ -4,13 +4,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../basic/callbacks.dart';
 import '../basic/custom_overlay.dart';
 import '../basic/kakao_map_controller.dart';
+import '../bridge/bridge_factory.dart';
+import '../bridge/kakao_map_bridge.dart';
+import '../bridge/platform_flags.dart';
 import '../basic/marker.dart';
 import '../constants/wrapper.dart';
 import '../js/roadview/js_roadview_event.dart';
@@ -150,7 +150,7 @@ class KakaoRoadMap extends StatefulWidget {
 
 class _KakaoRoadMapState extends State<KakaoRoadMap>
     with WidgetsBindingObserver {
-  late WebViewController _webViewController;
+  late final KakaoMapBridge _bridge;
   KakaoMapController? _mapController;
   KakaoRoadviewController? _roadviewController;
   Timer? _relayoutTimer;
@@ -168,6 +168,7 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _relayoutTimer?.cancel();
+    unawaited(_bridge.dispose().catchError((_) {}));
     super.dispose();
   }
 
@@ -190,46 +191,15 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
   }
 
   void _initializeWebView() {
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      params = AndroidWebViewControllerCreationParams();
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
+    final bridge = createKakaoMapBridge();
+    _bridge = bridge;
 
     // dispose 가 항상 초기화된 컨트롤러를 보도록 HTML 로드보다 먼저 대입합니다.
-    _mapController = KakaoMapController(controller);
-    _roadviewController = KakaoRoadviewController(controller);
+    _mapController = KakaoMapController.fromBridge(bridge);
+    _roadviewController = KakaoRoadviewController.fromBridge(bridge);
 
-    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    _addJavaScriptChannels(controller);
-    controller.loadHtmlString(_loadRoadview(),
-        baseUrl: AuthRepository.instance.baseUrl);
-
-    if (controller.platform is AndroidWebViewController) {
-      if (kDebugMode) {
-        AndroidWebViewController.enableDebugging(true);
-      }
-      final androidController = controller.platform as AndroidWebViewController;
-      androidController.setMediaPlaybackRequiresUserGesture(false);
-      // Set permission handler for Android (Flutter 3.27+ fix)
-      // 주의: 로드뷰 표시에 필요하지 않은 권한 요청까지 무조건 승인합니다.
-      // 카메라/마이크 등 민감한 권한이 필요한 페이지를 로드하지 않는 한도 내에서만 사용하세요.
-      androidController.setOnPlatformPermissionRequest(
-          (PlatformWebViewPermissionRequest request) async {
-        await request.grant();
-      });
-    }
-
-    _webViewController = controller;
+    _addJavaScriptChannels(bridge);
+    bridge.loadHtml(_loadRoadview(), baseUrl: AuthRepository.instance.baseUrl);
     _isInitialized = true;
   }
 
@@ -246,10 +216,9 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
     }
   }
 
-  void _addJavaScriptChannels(WebViewController controller) {
-    controller
-      ..addJavaScriptChannel('onRoadviewInit',
-          onMessageReceived: (JavaScriptMessage message) {
+  void _addJavaScriptChannels(KakaoMapBridge bridge) {
+    bridge
+      ..addJavaScriptChannel('onRoadviewInit', (String message) {
         if (!mounted) return;
         _isRoadviewReady = true;
         // 위젯 속성으로 넘긴 오버레이를 준비 시점에 그립니다.
@@ -258,39 +227,34 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
         widget.onMapCreated?.call(_mapController!);
         widget.onRoadviewCreated?.call(_roadviewController!);
       })
-      ..addJavaScriptChannel('onRoadviewNotFound',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewNotFound', (String message) {
+        _handleChannel(message, (json) {
           widget.onRoadviewNotFound?.call(LatLng(
             (json['latitude'] as num).toDouble(),
             (json['longitude'] as num).toDouble(),
           ));
         });
       })
-      ..addJavaScriptChannel('onRoadviewPanoIdChange',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewPanoIdChange', (String message) {
+        _handleChannel(message, (json) {
           widget.onPanoIdChange?.call(json['panoId'].toString());
         });
       })
-      ..addJavaScriptChannel('onRoadviewViewpointChange',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewViewpointChange', (String message) {
+        _handleChannel(message, (json) {
           widget.onViewpointChange?.call(Viewpoint.fromJson(json));
         });
       })
-      ..addJavaScriptChannel('onRoadviewPositionChange',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewPositionChange', (String message) {
+        _handleChannel(message, (json) {
           widget.onPositionChange?.call(LatLng(
             (json['latitude'] as num).toDouble(),
             (json['longitude'] as num).toDouble(),
           ));
         });
       })
-      ..addJavaScriptChannel('onRoadviewMarkerTap',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewMarkerTap', (String message) {
+        _handleChannel(message, (json) {
           widget.onMarkerTap?.call(
             json['markerId'].toString(),
             LatLng(
@@ -300,9 +264,8 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
           );
         });
       })
-      ..addJavaScriptChannel('onRoadviewCustomOverlayTap',
-          onMessageReceived: (JavaScriptMessage message) {
-        _handleChannel(message.message, (json) {
+      ..addJavaScriptChannel('onRoadviewCustomOverlayTap', (String message) {
+        _handleChannel(message, (json) {
           widget.onCustomOverlayTap?.call(
             json['customOverlayId'].toString(),
             LatLng(
@@ -340,14 +303,13 @@ class _KakaoRoadMapState extends State<KakaoRoadMap>
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(
-      controller: _webViewController,
+    return _bridge.buildView(
       gestureRecognizers: widget.gestureRecognizers,
     );
   }
 
   String _loadRoadview() {
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+    final isIOS = isIOSWebView;
 
     return htmlWrapper('''<script>
     ${JsRoadviewInit.getScript(

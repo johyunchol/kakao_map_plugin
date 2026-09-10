@@ -30,6 +30,8 @@ import '../service/trans_coord_service.dart';
 import 'circle.dart';
 import 'clusterer.dart';
 import 'constants/map_type.dart';
+import '../bridge/kakao_map_bridge.dart';
+import '../bridge/webview_bridge.dart';
 import 'constants/drawing_overlay_type.dart';
 import 'custom_overlay.dart';
 import 'drawing_options.dart';
@@ -70,15 +72,41 @@ import 'rectangle.dart';
 /// );
 /// ```
 class KakaoMapController {
-  final WebViewController _webViewController;
+  final KakaoMapBridge _bridge;
 
   /// 내부적으로 사용하는 WebView 컨트롤러입니다.
-  WebViewController get webViewController => _webViewController;
+  ///
+  /// WebView 를 쓰지 않는 플랫폼(web)에서는 [StateError] 를 던집니다.
+  WebViewController get webViewController =>
+      _bridge.webViewController ??
+      (throw StateError('이 플랫폼에서는 WebView 컨트롤러를 제공하지 않습니다.'));
 
   /// [KakaoMapController]를 생성합니다.
   ///
-  /// [_webViewController]: 지도를 표시하는 WebView 컨트롤러
-  KakaoMapController(this._webViewController);
+  /// [webViewController]: 지도를 표시하는 WebView 컨트롤러
+  KakaoMapController(WebViewController webViewController)
+      : _bridge = WebViewBridge.fromController(webViewController);
+
+  /// 라이브러리 내부용. 통신 계층을 직접 주입해 생성합니다.
+  KakaoMapController.fromBridge(this._bridge);
+
+  /// 지도 문서 안에서 임의의 JavaScript 를 실행합니다.
+  ///
+  /// 이 플러그인이 제공하지 않는 카카오 SDK 기능을 직접 호출할 때 쓰는
+  /// 고급 진입점입니다. 지도 객체는 `map` 전역 변수로 접근할 수 있습니다.
+  /// 모든 플랫폼(Android, iOS, web)에서 동작합니다.
+  ///
+  /// 외부에서 받은 문자열을 그대로 넣지 마세요. 문서 안에서 그대로 실행됩니다.
+  Future<void> runJavaScript(String script) => _bridge.runJavaScript(script);
+
+  /// 지도 문서 안에서 JavaScript 를 실행하고 결과를 돌려줍니다.
+  ///
+  /// 결과 형식은 플랫폼마다 다릅니다. Android 와 web 은 JSON 문자열, iOS 는
+  /// 원시 값(문자열/숫자/불리언) 또는 문자열입니다. 플랫폼에 관계없이 같은
+  /// 값을 얻으려면 JS 쪽에서 `JSON.stringify(...)` 로 감싸고 Dart 에서
+  /// 문자열이면 `jsonDecode` 하세요(문자열이 한 번 더 감싸여 올 수 있습니다).
+  Future<Object?> evaluateJavaScript(String script) =>
+      _bridge.runJavaScriptReturningResult(script);
 
   /// 배치 전송 시 한 번의 JS 호출에 담을 최대 항목 수입니다.
   static const int _batchMaxItems = 200;
@@ -152,7 +180,7 @@ class KakaoMapController {
     var chars = 0;
     Future<void> flush() async {
       if (chunk.isEmpty) return;
-      await _webViewController
+      await _bridge
           .runJavaScript('registerImages(${_jsJson(chunk)});');
       _registeredImageKeys.addAll(chunk.keys);
       chunk = <String, String>{};
@@ -189,7 +217,7 @@ class KakaoMapController {
       }
       end = math.max(end, start + 1);
       final chunk = '[${encoded.sublist(start, end).join(',')}]';
-      await _webViewController.runJavaScript('$jsFunction(${_jsStr(chunk)});');
+      await _bridge.runJavaScript('$jsFunction(${_jsStr(chunk)});');
       start = end;
     }
   }
@@ -363,7 +391,7 @@ class KakaoMapController {
         '${_jsJson(clusterer.texts)}, '
         '${_jsJson(clusterer.calculator)}, '
         '${_jsJson(clusterer.styles)});';
-    await _webViewController.runJavaScript(clustererString);
+    await _bridge.runJavaScript(clustererString);
   }
 
   /// 지도에 커스텀 오버레이를 추가합니다.
@@ -389,14 +417,14 @@ class KakaoMapController {
   ///
   /// 지도에 표시된 모든 오버레이를 제거하고 지도 객체를 초기화합니다.
   Future<void> dispose() async {
-    await _webViewController.runJavaScript("dispose()");
+    await _bridge.runJavaScript("dispose()");
   }
 
   /// 지도에 표시된 모든 오버레이를 제거합니다.
   ///
   /// 폴리라인, 원, 사각형, 다각형, 마커, 커스텀 오버레이를 모두 제거합니다.
   Future<void> clear() async {
-    await _webViewController.runJavaScript('clear();');
+    await _bridge.runJavaScript('clear();');
   }
 
   /// 지도에 표시된 폴리라인을 제거합니다.
@@ -404,7 +432,7 @@ class KakaoMapController {
   /// [polylineIds]: **남길** 폴리라인 ID 목록입니다. 목록에 포함되지 않은 폴리라인이(가) 제거되며,
   /// null이거나 비어 있으면 모든 폴리라인을(를) 제거합니다.
   Future<void> clearPolyline({List<String>? polylineIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearPolyline(${_jsJson(polylineIds ?? const <String>[])});');
   }
 
@@ -413,7 +441,7 @@ class KakaoMapController {
   /// [circleIds]: **남길** 원 ID 목록입니다. 목록에 포함되지 않은 원이(가) 제거되며,
   /// null이거나 비어 있으면 모든 원을(를) 제거합니다.
   Future<void> clearCircle({List<String>? circleIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearCircle(${_jsJson(circleIds ?? const <String>[])});');
   }
 
@@ -422,7 +450,7 @@ class KakaoMapController {
   /// [rectangleIds]: **남길** 사각형 ID 목록입니다. 목록에 포함되지 않은 사각형이(가) 제거되며,
   /// null이거나 비어 있으면 모든 사각형을(를) 제거합니다.
   Future<void> clearRectangle({List<String>? rectangleIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearRectangle(${_jsJson(rectangleIds ?? const <String>[])});');
   }
 
@@ -431,7 +459,7 @@ class KakaoMapController {
   /// [polygonIds]: **남길** 다각형 ID 목록입니다. 목록에 포함되지 않은 다각형이(가) 제거되며,
   /// null이거나 비어 있으면 모든 다각형을(를) 제거합니다.
   Future<void> clearPolygon({List<String>? polygonIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearPolygon(${_jsJson(polygonIds ?? const <String>[])});');
   }
 
@@ -440,7 +468,7 @@ class KakaoMapController {
   /// [markerIds]: **남길** 마커 ID 목록입니다. 목록에 포함되지 않은 마커이(가) 제거되며,
   /// null이거나 비어 있으면 모든 마커을(를) 제거합니다.
   Future<void> clearMarker({List<String>? markerIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearMarker(${_jsJson(markerIds ?? const <String>[])});');
   }
 
@@ -448,7 +476,7 @@ class KakaoMapController {
   ///
   /// 클러스터러와 함께 클러스터러에 속한 모든 마커를 제거합니다.
   Future<void> clearMarkerClusterer() async {
-    await _webViewController.runJavaScript('clearMarkerClusterer();');
+    await _bridge.runJavaScript('clearMarkerClusterer();');
   }
 
   /// 지도에 표시된 커스텀 오버레이를 제거합니다.
@@ -456,7 +484,7 @@ class KakaoMapController {
   /// [overlayIds]: **남길** 커스텀 오버레이 ID 목록입니다. 목록에 포함되지 않은 오버레이가 제거되며,
   /// null이거나 비어 있으면 모든 커스텀 오버레이를 제거합니다.
   Future<void> clearCustomOverlay({List<String>? overlayIds}) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         'clearCustomOverlay(${_jsJson(overlayIds ?? const <String>[])});');
   }
 
@@ -466,7 +494,7 @@ class KakaoMapController {
   ///
   /// 이동 거리가 화면 크기보다 크면 애니메이션 없이 즉시 이동합니다.
   Future<void> panTo(LatLng latLng) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         "panTo(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
   }
 
@@ -476,7 +504,7 @@ class KakaoMapController {
   ///
   /// 모든 좌표가 화면에 보이도록 줌 레벨과 중심 좌표를 자동으로 조정합니다.
   Future<void> fitBounds(List<LatLng> points) async {
-    await _webViewController
+    await _bridge
         .runJavaScript("fitBounds(${_jsJson(points)});");
   }
 
@@ -485,7 +513,7 @@ class KakaoMapController {
   /// [markerId]: 대상 마커의 ID입니다.
   /// [draggable]: true이면 드래그 가능, false이면 불가능합니다.
   Future<void> setMarkerDraggable(String markerId, bool draggable) async {
-    await _webViewController
+    await _bridge
         .runJavaScript("setMarkerDraggable(${_jsStr(markerId)}, $draggable);");
   }
 
@@ -495,7 +523,7 @@ class KakaoMapController {
   ///
   /// 애니메이션 없이 즉시 중심이 이동합니다.
   Future<void> setCenter(LatLng latLng) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         "setCenter(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
   }
 
@@ -503,7 +531,7 @@ class KakaoMapController {
   ///
   /// Returns: 현재 중심 좌표 [LatLng]
   Future<LatLng> getCenter() async {
-    final center = await _webViewController
+    final center = await _bridge
         .runJavaScriptReturningResult("getCenter();") as String;
     return LatLng.fromJson(jsonDecode(center));
   }
@@ -518,9 +546,9 @@ class KakaoMapController {
   /// - SKYVIEW, HYBRID: 0~14
   Future<void> setLevel(int level, {LevelOptions? options}) async {
     if (options == null) {
-      await _webViewController.runJavaScript("setLevel('$level');");
+      await _bridge.runJavaScript("setLevel('$level');");
     } else {
-      await _webViewController
+      await _bridge
           .runJavaScript("setLevel('$level', ${_jsJson(options)});");
     }
   }
@@ -529,7 +557,7 @@ class KakaoMapController {
   ///
   /// Returns: 현재 줌 레벨
   Future<int> getLevel() async {
-    final result = await _webViewController
+    final result = await _bridge
         .runJavaScriptReturningResult("getLevel();") as String;
     final level = (jsonDecode(result)['level'] as num).toInt();
 
@@ -545,7 +573,7 @@ class KakaoMapController {
   /// - SKYVIEW: 스카이뷰 (위성 지도)
   /// - HYBRID: 하이브리드 (스카이뷰 + 라벨)
   Future<void> setMapTypeId(MapType mapType) async {
-    await _webViewController.runJavaScript("setMapTypeId('${mapType.id}');");
+    await _bridge.runJavaScript("setMapTypeId('${mapType.id}');");
   }
 
   /// 현재 지도 타입을 반환합니다.
@@ -555,7 +583,7 @@ class KakaoMapController {
   ///
   /// Returns: 현재 지도 타입 [MapType]
   Future<MapType> getMapTypeId() async {
-    final result = await _webViewController
+    final result = await _bridge
         .runJavaScriptReturningResult("getMapTypeId();") as String;
 
     final mapTypeId = jsonDecode(result)['mapTypeId'];
@@ -580,11 +608,11 @@ class KakaoMapController {
     int paddingLeft = 0,
   ]) async {
     if (bounds == null) {
-      await _webViewController.runJavaScript("setBounds();");
+      await _bridge.runJavaScript("setBounds();");
       return;
     }
 
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         "setBounds(${_jsJson(bounds)}, ${_jsPrimitive(paddingTop)}, "
         "${_jsPrimitive(paddingRight)}, ${_jsPrimitive(paddingBottom)}, "
         "${_jsPrimitive(paddingLeft)});");
@@ -596,7 +624,7 @@ class KakaoMapController {
   /// [height]: 지도 높이
   @Deprecated('컨테이너 크기는 Flutter 위젯으로 제어하세요. 지도 재계산은 relayout() 을 사용합니다.')
   Future<void> setStyle(int width, int height) async {
-    await _webViewController.runJavaScript(
+    await _bridge.runJavaScript(
         "setMapStyle(${_jsPrimitive(width)}, ${_jsPrimitive(height)});");
   }
 
@@ -605,14 +633,14 @@ class KakaoMapController {
   /// 지도 컨테이너의 크기가 변경되었거나 숨겨진 상태에서 다시 표시될 때 호출합니다.
   /// IndexedStack 등에서 탭 전환 시 유용합니다.
   Future<void> relayout() async {
-    await _webViewController.runJavaScript("relayout();");
+    await _bridge.runJavaScript("relayout();");
   }
 
   /// 현재 지도 화면의 영역 좌표를 반환합니다.
   ///
   /// Returns: 지도 영역의 남서(SW)와 북동(NE) 좌표를 포함하는 [LatLngBounds]
   Future<LatLngBounds> getBounds() async {
-    final bounds = await _webViewController
+    final bounds = await _bridge
         .runJavaScriptReturningResult("getBounds()") as String;
     return LatLngBounds.fromJson(jsonDecode(bounds));
   }
@@ -627,14 +655,14 @@ class KakaoMapController {
   /// - BICYCLE: 자전거 도로
   /// - USE_DISTRICT: 지적편집도
   Future<void> addOverlayMapTypeId(MapType mapType) async {
-    await _webViewController.runJavaScript("addOverlayMapTypeId('${mapType.id}');");
+    await _bridge.runJavaScript("addOverlayMapTypeId('${mapType.id}');");
   }
 
   /// 지도에서 오버레이 타입의 타일 레이어를 제거합니다.
   ///
   /// [mapType]: 제거할 오버레이 타입입니다.
   Future<void> removeOverlayMapTypeId(MapType mapType) async {
-    await _webViewController
+    await _bridge
         .runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
   }
 
@@ -642,7 +670,7 @@ class KakaoMapController {
   ///
   /// [draggable]: true이면 드래그 가능, false이면 불가능합니다.
   Future<void> setDraggable(bool draggable) async {
-    await _webViewController.runJavaScript("setDraggable($draggable);");
+    await _bridge.runJavaScript("setDraggable($draggable);");
   }
 
   /// 현재 지도의 드래그 가능 여부를 반환합니다.
@@ -651,7 +679,7 @@ class KakaoMapController {
   @Deprecated('플랫폼별 반환 타입이 달라 신뢰할 수 없습니다. isDraggable() 을 사용하세요.')
   Future<Object?> getDraggable() async {
     final draggable =
-        await _webViewController.runJavaScriptReturningResult("getDraggable();");
+        await _bridge.runJavaScriptReturningResult("getDraggable();");
 
     return draggable;
   }
@@ -664,7 +692,7 @@ class KakaoMapController {
   /// Returns: 드래그 가능 여부
   Future<bool> isDraggable() async {
     final draggable =
-        await _webViewController.runJavaScriptReturningResult("getDraggable();");
+        await _bridge.runJavaScriptReturningResult("getDraggable();");
     return draggable == true || draggable == 'true' || draggable == 1;
   }
 
@@ -672,7 +700,7 @@ class KakaoMapController {
   ///
   /// [zoomable]: true이면 줌 가능, false이면 불가능합니다.
   Future<void> setZoomable(bool zoomable) async {
-    await _webViewController.runJavaScript("setZoomable($zoomable);");
+    await _bridge.runJavaScript("setZoomable($zoomable);");
   }
 
   /// 현재 지도의 줌 가능 여부를 반환합니다.
@@ -681,7 +709,7 @@ class KakaoMapController {
   @Deprecated('플랫폼별 반환 타입이 달라 신뢰할 수 없습니다. isZoomable() 을 사용하세요.')
   Future<Object?> getZoomable() async {
     final zoomable =
-        await _webViewController.runJavaScriptReturningResult("getZoomable();");
+        await _bridge.runJavaScriptReturningResult("getZoomable();");
     return zoomable;
   }
 
@@ -693,7 +721,7 @@ class KakaoMapController {
   /// Returns: 줌 가능 여부
   Future<bool> isZoomable() async {
     final zoomable =
-        await _webViewController.runJavaScriptReturningResult("getZoomable();");
+        await _bridge.runJavaScriptReturningResult("getZoomable();");
     return zoomable == true || zoomable == 'true' || zoomable == 1;
   }
 
@@ -711,7 +739,7 @@ class KakaoMapController {
     final result = service.requestFuture(requestId);
 
     try {
-      await _webViewController
+      await _bridge
           .runJavaScript("$jsFunction(${_jsJson(request)}, $requestId);");
     } catch (e, st) {
       service.failRequest(requestId, e, st);
@@ -791,7 +819,7 @@ class KakaoMapController {
   ///
   /// Returns: 화면 픽셀 좌표 [Point]
   Future<Point> coordToPixel(LatLng latLng) async {
-    final result = await _webViewController.runJavaScriptReturningResult(
+    final result = await _bridge.runJavaScriptReturningResult(
         "coordToPixel(${_jsPrimitive(latLng.latitude)}, ${_jsPrimitive(latLng.longitude)});");
     return Point.fromJson(_decodeMapResult(result, 'coordToPixel'));
   }
@@ -802,7 +830,7 @@ class KakaoMapController {
   ///
   /// Returns: 지도 좌표 [LatLng]
   Future<LatLng> pixelToCoord(Point point) async {
-    final result = await _webViewController.runJavaScriptReturningResult(
+    final result = await _bridge.runJavaScriptReturningResult(
         "pixelToCoord(${_jsPrimitive(point.x)}, ${_jsPrimitive(point.y)});");
     return LatLng.fromJson(_decodeMapResult(result, 'pixelToCoord'));
   }
@@ -850,7 +878,7 @@ class KakaoMapController {
   /// ```
   Future<void> createDrawingManager({DrawingOptions? options}) async {
     final payload = (options ?? const DrawingOptions()).toJson();
-    await _webViewController
+    await _bridge
         .runJavaScript('createDrawingManager(${_jsJson(payload)});');
   }
 
@@ -858,28 +886,28 @@ class KakaoMapController {
   ///
   /// 선택 후 사용자가 지도를 조작하면 해당 도형이 그려집니다.
   Future<void> selectDrawingMode(DrawingOverlayType type) async {
-    await _webViewController
+    await _bridge
         .runJavaScript('selectDrawingMode(${_jsStr(type.value)});');
   }
 
   /// 그리는 중이던 작업을 취소합니다.
   Future<void> cancelDrawing() async {
-    await _webViewController.runJavaScript('cancelDrawing();');
+    await _bridge.runJavaScript('cancelDrawing();');
   }
 
   /// 마지막 그리기 작업을 되돌립니다.
   Future<void> undoDrawing() async {
-    await _webViewController.runJavaScript('undoDrawing();');
+    await _bridge.runJavaScript('undoDrawing();');
   }
 
   /// 되돌린 작업을 다시 실행합니다.
   Future<void> redoDrawing() async {
-    await _webViewController.runJavaScript('redoDrawing();');
+    await _bridge.runJavaScript('redoDrawing();');
   }
 
   /// 선택된 도형을 지웁니다.
   Future<void> removeDrawingShape() async {
-    await _webViewController.runJavaScript('removeDrawingShape();');
+    await _bridge.runJavaScript('removeDrawingShape();');
   }
 
   /// 지금까지 그린 도형 데이터를 가져옵니다.
@@ -887,7 +915,7 @@ class KakaoMapController {
   /// 관리자를 만들지 않았거나 그린 도형이 없으면 빈 [DrawingData]를 반환합니다.
   Future<DrawingData> getDrawingData() async {
     final raw =
-        await _webViewController.runJavaScriptReturningResult('getDrawingData();');
+        await _bridge.runJavaScriptReturningResult('getDrawingData();');
     dynamic value = raw;
     if (value is String) {
       value = jsonDecode(value);
@@ -901,12 +929,12 @@ class KakaoMapController {
   ///
   /// [createDrawingManager] 를 먼저 호출해야 합니다.
   Future<void> showDrawingToolbox() async {
-    await _webViewController.runJavaScript('showDrawingToolbox();');
+    await _bridge.runJavaScript('showDrawingToolbox();');
   }
 
   /// 도형 그리기 도구 상자를 제거합니다.
   Future<void> removeDrawingToolbox() async {
-    await _webViewController.runJavaScript('removeDrawingToolbox();');
+    await _bridge.runJavaScript('removeDrawingToolbox();');
   }
   // ---------------------------------------------------------------------------
   // Tileset
@@ -935,7 +963,7 @@ class KakaoMapController {
         '영문자, 숫자, 밑줄만 쓸 수 있고 숫자로 시작할 수 없습니다.',
       );
     }
-    await _webViewController
+    await _bridge
         .runJavaScript('addTileset(${_jsJson(tileset.toJson())});');
   }
 
@@ -946,7 +974,7 @@ class KakaoMapController {
   /// 일반 지도로 되돌리려면 `setMapTypeId(MapType.normal)` 을 호출하세요.
   /// 등록하지 않은 [tilesetId] 는 무시됩니다.
   Future<void> setTileset(String tilesetId) async {
-    await _webViewController
+    await _bridge
         .runJavaScript('setTileset(${_jsStr(tilesetId)});');
   }
 
@@ -954,13 +982,13 @@ class KakaoMapController {
   ///
   /// [removeOverlayTileset] 으로 내릴 수 있습니다.
   Future<void> addOverlayTileset(String tilesetId) async {
-    await _webViewController
+    await _bridge
         .runJavaScript('addOverlayTileset(${_jsStr(tilesetId)});');
   }
 
   /// [addOverlayTileset] 으로 올린 타일셋을 내립니다.
   Future<void> removeOverlayTileset(String tilesetId) async {
-    await _webViewController
+    await _bridge
         .runJavaScript('removeOverlayTileset(${_jsStr(tilesetId)});');
   }
 
@@ -968,7 +996,7 @@ class KakaoMapController {
   ///
   /// 일반 지도 타입([MapType])을 쓰고 있으면 null 을 반환합니다.
   Future<String?> getActiveTilesetId() async {
-    final raw = await _webViewController
+    final raw = await _bridge
         .runJavaScriptReturningResult('getActiveTilesetId();');
     final result = _decodeMapResult(raw, 'getActiveTilesetId');
     return result['tilesetId']?.toString();

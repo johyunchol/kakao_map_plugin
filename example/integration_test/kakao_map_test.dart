@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,7 +95,7 @@ Future<void> pumpFor(WidgetTester tester, Duration duration) async {
 /// 결과를 `{v: expr}` 로 감싸 undefined/null 도 안전하게 받고,
 /// Android 가 문자열 결과를 JSON 문자열 리터럴로 한 번 더 감싸는 것도 처리합니다.
 Future<dynamic> js(KakaoMapController c, String expr) async {
-  final raw = await c.webViewController.runJavaScriptReturningResult(
+  final raw = await c.evaluateJavaScript(
       'JSON.stringify({v: (function(){ try { return ($expr); } '
       'catch (e) { return "__js_error__: " + String(e); } })()})');
   dynamic value = raw;
@@ -126,7 +126,7 @@ Future<int> jsInt(KakaoMapController c, String expr) async =>
     ((await js(c, expr)) as num).toInt();
 
 Future<void> installErrorTrap(KakaoMapController c) async {
-  await c.webViewController.runJavaScript('''
+  await c.runJavaScript('''
     window.__errs = [];
     window.onerror = function (msg, src, line) { window.__errs.push(String(msg) + '@' + line); };
     window.addEventListener('unhandledrejection', function (e) { window.__errs.push('rejection:' + String(e.reason)); });
@@ -237,7 +237,16 @@ void main() {
     tick = ValueNotifier(0);
     ready = Completer();
     await tester.pumpWidget(MapHost(props: props, rebuildTick: tick, ready: ready));
-    final c = await ready.future.timeout(const Duration(seconds: 40));
+    // web 에서는 프레임이 그려져야 HtmlElementView(iframe)가 문서에 붙으므로,
+    // 준비될 때까지 프레임을 계속 펌프하면서 기다린다.
+    final deadline = DateTime.now().add(const Duration(seconds: 40));
+    while (!ready.isCompleted) {
+      if (DateTime.now().isAfter(deadline)) {
+        fail('onMapCreated 가 40초 안에 호출되지 않았습니다.');
+      }
+      await pumpFor(tester, const Duration(milliseconds: 200));
+    }
+    final c = await ready.future;
     await pumpFor(tester, const Duration(seconds: 2));
     await installErrorTrap(c);
     return c;
@@ -278,7 +287,7 @@ void main() {
   testWidgets('내용이 같은 rebuild 는 오버레이를 재생성하지 않는다', (tester) async {
     final c = await mount(tester, sampleProps());
 
-    await c.webViewController.runJavaScript('''
+    await c.runJavaScript('''
       markerIndex.get('m1').__tag = 1;
       polylineIndex.get('p1').__tag = 1;
       circleIndex.get('c1').__tag = 1;
@@ -308,7 +317,7 @@ void main() {
 
   testWidgets('같은 ID 마커의 좌표가 바뀌면 해당 마커만 갱신된다', (tester) async {
     final c = await mount(tester, sampleProps());
-    await c.webViewController.runJavaScript('''
+    await c.runJavaScript('''
       markerIndex.get('m1').__tag = 1;
       markerIndex.get('m2').__tag = 1;
     ''');
@@ -424,7 +433,7 @@ void main() {
     expect(sw.elapsedMilliseconds, lessThan(10000));
 
     // 동일 내용 재전송은 전부 skip 되어야 한다
-    await c.webViewController.runJavaScript("markerIndex.get('bulk0').__tag = 1;");
+    await c.runJavaScript("markerIndex.get('bulk0').__tag = 1;");
     await c.addMarker(markers: many);
     await pumpFor(tester, const Duration(milliseconds: 300));
     expect(await js(c, "markerIndex.get('bulk0').__tag"), 1);
@@ -465,7 +474,7 @@ void main() {
 
     // WebView 페이지 재로드(Android 렌더러 복구 등)와 동일한 상황을 재현한다.
     // JS 측 오버레이 상태를 전부 비우고 onMapCreated 를 다시 발화시킨다.
-    await c.webViewController.runJavaScript('''
+    await c.runJavaScript('''
       markerIndex.clear();
       polylineIndex.clear();
       circleIndex.clear();
@@ -505,7 +514,7 @@ void main() {
     await installErrorTrap(c);
     await expectNoJsErrors(c);
     await unmount(tester);
-  }, skip: !Platform.isAndroid);
+  }, skip: kIsWeb || defaultTargetPlatform != TargetPlatform.android);
 
   testWidgets('오버레이 목록을 null 로 바꾸면 지도에서 제거된다', (tester) async {
     final c = await mount(tester, sampleProps());
@@ -551,7 +560,7 @@ void main() {
     final c = await mount(tester, const MapProps());
 
     // latLng 이 없는 항목을 중간에 섞어 JS 배치 루프에서 예외를 유발한다.
-    await c.webViewController.runJavaScript('''
+    await c.runJavaScript('''
       addMarkers([
         {markerId: 'ok1', latLng: {latitude: 37.5665, longitude: 126.9780}},
         {markerId: 'broken'},

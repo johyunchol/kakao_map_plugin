@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../basic/custom_overlay.dart';
+import '../bridge/kakao_map_bridge.dart';
+import '../bridge/webview_bridge.dart';
 import '../basic/js_literal.dart';
 import '../basic/marker.dart';
 import '../model/lat_lng.dart';
@@ -28,24 +30,32 @@ import '../model/viewpoint.dart';
 /// await _controller.setViewpoint(const Viewpoint(pan: 45));
 /// ```
 class KakaoRoadviewController {
-  final WebViewController _webViewController;
+  final KakaoMapBridge _bridge;
 
   /// 내부적으로 사용하는 WebView 컨트롤러입니다.
-  WebViewController get webViewController => _webViewController;
+  ///
+  /// WebView 를 쓰지 않는 플랫폼(web)에서는 [StateError] 를 던집니다.
+  WebViewController get webViewController =>
+      _bridge.webViewController ??
+      (throw StateError('이 플랫폼에서는 WebView 컨트롤러를 제공하지 않습니다.'));
 
   /// [KakaoRoadviewController]를 생성합니다.
   ///
-  /// [_webViewController]: 로드뷰를 표시하는 WebView 컨트롤러
-  KakaoRoadviewController(this._webViewController);
+  /// [webViewController]: 로드뷰를 표시하는 WebView 컨트롤러
+  KakaoRoadviewController(WebViewController webViewController)
+      : _bridge = WebViewBridge.fromController(webViewController);
+
+  /// 라이브러리 내부용. 통신 계층을 직접 주입해 생성합니다.
+  KakaoRoadviewController.fromBridge(this._bridge);
 
   /// 배치 전송 시 한 번의 JS 호출에 담을 최대 항목 수입니다.
   static const int _batchMaxItems = 200;
 
   Future<void> _run(String script) =>
-      _webViewController.runJavaScript(script);
+      _bridge.runJavaScript(script);
 
   Future<String> _runReturning(String script) async {
-    final raw = await _webViewController.runJavaScriptReturningResult(script);
+    final raw = await _bridge.runJavaScriptReturningResult(script);
     return raw is String ? raw : raw.toString();
   }
 

@@ -40,6 +40,10 @@ flutter:
   # This is required for using `dart:ffi`.
   # All these are used by the tooling to maintain consistency when
   # adding or updating assets for this project.
+  # web 용 iframe 빈 문서. IframeBridge 가 같은 origin 의 실제 URL 로 불러옵니다.
+  assets:
+    - assets/web/
+
   plugin:
     platforms:
       android:
@@ -47,6 +51,9 @@ flutter:
         pluginClass: KakaoMapPlugin
       ios:
         pluginClass: KakaoMapPlugin
+      web:
+        pluginClass: KakaoMapPluginWeb
+        fileName: kakao_map_plugin_web.dart
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

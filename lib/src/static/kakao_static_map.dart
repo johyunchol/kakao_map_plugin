@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 import '../basic/callbacks.dart';
 import '../basic/marker.dart';
+import '../bridge/bridge_factory.dart';
+import '../bridge/kakao_map_bridge.dart';
 import '../constants/wrapper.dart';
 import '../model/lat_lng.dart';
 import '../repository/auth_repository.dart';
@@ -41,7 +40,7 @@ class KakaoStaticMap extends StatefulWidget {
 class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObserver {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
-  late WebViewController _webViewController;
+  late final KakaoMapBridge _bridge;
   bool _isInitialized = false;
 
   @override
@@ -55,6 +54,7 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _bridge.dispose().catchError((_) {});
     super.dispose();
   }
 
@@ -66,55 +66,21 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
     if (state == AppLifecycleState.resumed && _isInitialized) {
       Future.delayed(const Duration(milliseconds: 100), () {
         if (mounted) {
-          _webViewController.reload();
+          _bridge.reload();
         }
       });
     }
   }
 
   void _initializeWebView() {
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      params = AndroidWebViewControllerCreationParams();
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
-
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadHtmlString(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
-
-    if (controller.platform is AndroidWebViewController) {
-      if (kDebugMode) {
-        AndroidWebViewController.enableDebugging(true);
-      }
-      final androidController = controller.platform as AndroidWebViewController;
-      androidController.setMediaPlaybackRequiresUserGesture(false);
-      // Set permission handler for Android (Flutter 3.27+ fix)
-      // 주의: 정적 지도 표시에 필요하지 않은 권한 요청까지 무조건 승인합니다.
-      // 카메라/마이크 등 민감한 권한이 필요한 페이지를 로드하지 않는 한도 내에서만 사용하세요.
-      androidController
-          .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
-        await request.grant();
-      });
-    }
-
-    _webViewController = controller;
+    _bridge = createKakaoMapBridge();
+    _bridge.loadHtml(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
     _isInitialized = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(
-      controller: _webViewController,
+    return _bridge.buildView(
       gestureRecognizers: widget.gestureRecognizers,
     );
   }

@@ -6,11 +6,11 @@
 
 네이티브 라이브러리를 사용한 것이 아닌 Javascript 라이브러리를 이용하여 제작한 플러그인 입니다.
 
-`webview_flutter` package 를 사용하고 있어서 Android, iOS 최소 버전 확인이 필요합니다.
+Android, iOS 는 `webview_flutter` 로, Web 은 iframe 으로 동작합니다. 모바일은 최소 버전 확인이 필요합니다.
 
-|             | Android        | iOS  |
-|-------------|----------------|------|
-| **Support** | SDK 19+ or 20+ | 9.0+ |
+|             | Android        | iOS  | Web                          |
+|-------------|----------------|------|------------------------------|
+| **Support** | SDK 19+ or 20+ | 9.0+ | 지원 (사이트 도메인 등록 필요, 아래 참고) |
 
 ---
 
@@ -80,6 +80,20 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
     <true/>
 </dict>
 ```
+
+### Web
+
+web 에서는 WebView 대신 iframe 으로 지도를 그립니다. 별도 설정 없이 `flutter run -d chrome` 으로 실행되지만, **카카오 콘솔에 사이트 도메인을 등록해야 지도가 표시됩니다.**
+
+1. [Kakao Developers](https://developers.kakao.com) → 내 애플리케이션 → 플랫폼 → **Web** → 사이트 도메인에 앱이 서비스되는 origin 을 추가합니다. 포트까지 정확히 비교하므로 개발 중에는 `http://localhost:포트` 를 그대로 등록하세요. (예: `flutter run -d chrome --web-port=8080` 이면 `http://localhost:8080`)
+2. 등록되지 않은 도메인에서는 카카오 SDK 가 401 을 돌려주고 브라우저 콘솔에 `domain mismatched! caller=...` 오류가 찍힙니다.
+
+web 에서 다른 점:
+
+* `AuthRepository.initialize(baseUrl:)` 은 무시됩니다. 도메인 검사는 실제 페이지 origin 으로 이뤄집니다.
+* `gestureRecognizers` 는 쓰이지 않습니다. iframe 안의 포인터 이벤트는 브라우저가 직접 처리합니다.
+* `KakaoMapController.webViewController` 는 web 에서 `StateError` 를 던집니다(WebView 가 없습니다).
+* 그 외 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 는 모바일과 동일하게 동작합니다.
 
 ---
 
