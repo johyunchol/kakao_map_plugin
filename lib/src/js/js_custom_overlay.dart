@@ -6,38 +6,37 @@ class JsCustomOverlay {
   }) {
     return '''
     // Debounce tracking for iOS touch events to prevent duplicate triggers
-    let lastOverlayTapTime = {};
+    let lastOverlayTapTime = new Map();
     const OVERLAY_TAP_DEBOUNCE_MS = 300;
 
-    function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex) {
-        // customOverlays에 동일한 ID가 있는지 확인
-        if (customOverlays.some(existingOverlay => existingOverlay.id === customOverlayId)) {
-            return;
+    function addCustomOverlay(customOverlayId, latLng, content, xAnchor, yAnchor, zIndex, hash) {
+        const existing = customOverlayIndex.get(customOverlayId);
+        if (existing) {
+            if (hash !== undefined && hash !== null && existing.__hash === hash) {
+                return;
+            }
+            detachOverlay(existing);
+            customOverlayIndex.delete(customOverlayId);
         }
 
-        latLng = JSON.parse(latLng);
+        latLng = parseIfString(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
-        content = '<div id="' + customOverlayId + '">' + content + '</div>'
+        // DOM API 로 안전하게 요소를 구성합니다 (id 를 통한 HTML 인젝션 방지)
+        const el = document.createElement('div');
+        el.id = customOverlayId;
+        el.innerHTML = content;
         if ($hasCustomOverlayTapCallback) {
-            // Use both onclick and ontouchend for better iOS compatibility
+            // Use both click and touchend for better iOS compatibility
             // The custom-overlay-clickable class provides iOS-specific touch optimizations
-            content =
-                '<div id="' + customOverlayId +
-                '" class="custom-overlay-clickable"' +
-                ' onclick="handleOverlayTap(event, `' + customOverlayId +
-                '`, `' + latLng.latitude +
-                '`, `' + latLng.longitude +
-                '`)"' +
-                ' ontouchend="handleOverlayTap(event, `' + customOverlayId +
-                '`, `' + latLng.latitude +
-                '`, `' + latLng.longitude +
-                '`)">' + content + '</div>';
+            el.className = 'custom-overlay-clickable';
+            el.addEventListener('click', function (e) { handleOverlayTap(e, customOverlayId, latLng.latitude, latLng.longitude); });
+            el.addEventListener('touchend', function (e) { handleOverlayTap(e, customOverlayId, latLng.latitude, latLng.longitude); });
         }
 
         let customOverlay = new kakao.maps.CustomOverlay({
             map: map,
-            content: content,
+            content: el,
             position: markerPosition,
             xAnchor: xAnchor,
             yAnchor: yAnchor,
@@ -45,10 +44,18 @@ class JsCustomOverlay {
         });
 
         customOverlay['id'] = customOverlayId;
+        customOverlay.__hash = hash;
 
-        customOverlays.push(customOverlay);
+        customOverlayIndex.set(customOverlayId, customOverlay);
+        syncOverlayArrays();
+    }
 
-        customOverlay.setMap(map);
+    /** 커스텀 오버레이 여러 개를 한 번의 브릿지 호출로 추가합니다. */
+    function addCustomOverlays(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addCustomOverlays', function (o) {
+            addCustomOverlay(o.customOverlayId, o.latLng, o.content, nv(o.xAnchor), nv(o.yAnchor), nv(o.zIndex), nv(o.hash));
+        });
     }
 
     // Unified tap handler that works for both click and touch events
@@ -64,10 +71,11 @@ class JsCustomOverlay {
 
         // Debounce to prevent duplicate events (iOS may fire both touchend and click)
         const now = Date.now();
-        if (lastOverlayTapTime[customOverlayId] && (now - lastOverlayTapTime[customOverlayId]) < OVERLAY_TAP_DEBOUNCE_MS) {
+        const lastTap = lastOverlayTapTime.get(customOverlayId);
+        if (lastTap && (now - lastTap) < OVERLAY_TAP_DEBOUNCE_MS) {
             return;
         }
-        lastOverlayTapTime[customOverlayId] = now;
+        lastOverlayTapTime.set(customOverlayId, now);
 
         addCustomOverlayListener(customOverlayId, latitude, longitude);
     }
@@ -83,21 +91,6 @@ class JsCustomOverlay {
         }
 
         onCustomOverlayTap.postMessage(JSON.stringify(clickLatLng));
-    }
-
-
-    function showInfoWindow(marker, latitude, longitude, contents = '', infoWindowRemovable) {
-        let iwPosition = new kakao.maps.LatLng(latitude, longitude);
-
-        // 인포윈도우를 생성하고 지도에 표시합니다
-        let infoWindow = new kakao.maps.InfoWindow({
-            map: map, // 인포윈도우가 표시될 지도
-            position: iwPosition,
-            content: contents,
-            removable: infoWindowRemovable
-        });
-
-        infoWindow.open(map, marker);
     }
     ''';
   }

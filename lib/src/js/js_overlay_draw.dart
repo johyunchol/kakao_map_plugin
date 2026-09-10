@@ -3,108 +3,141 @@ class JsOverlayDraw {
   /// 오버레이 그리기 함수들의 스크립트를 반환합니다.
   static String getScript() {
     return '''
-    function addPolyline(polylineId, points, color, opacity, width, stroke, endArrow, zIndex) {
-        // polyline에 동일한 ID가 있는지 확인
-        if (polylines.some(existingPolyline => existingPolyline.id === polylineId)) {
-            return;
-        }
+    /**
+     * 동일 ID 오버레이가 있을 때 재사용 여부를 결정합니다.
+     * hash 가 같으면 true(건너뜀), 다르거나 없으면 기존 것을 제거하고 false 를 반환합니다.
+     */
+    function __reuseOrRemove(index, id, hash) {
+        const existing = index.get(id);
+        if (!existing) return false;
+        if (hash !== undefined && hash !== null && existing.__hash === hash) return true;
+        detachOverlay(existing);
+        index.delete(id);
+        return false;
+    }
 
-        let list = JSON.parse(points);
-        let paths = [];
+    function __toLatLngPath(points) {
+        const list = parseIfString(points) || [];
+        const paths = [];
         for (let i = 0; i < list.length; i++) {
             paths.push(new kakao.maps.LatLng(list[i].latitude, list[i].longitude));
         }
+        return paths;
+    }
+
+    function addPolyline(polylineId, points, color, opacity = 1, width = 8, stroke = 'solid', endArrow = false, zIndex, hash) {
+        if (__reuseOrRemove(polylineIndex, polylineId, hash)) return;
+
+        const paths = __toLatLngPath(points);
 
         opacity = Number(opacity)
         width = Number(width)
-        endArrow = endArrow === 'true'
+        endArrow = endArrow === true || endArrow === 'true'
 
         // 지도에 표시할 선을 생성합니다
         let polyline = new kakao.maps.Polyline({
             path: paths,
             strokeWeight: width,
-            strokeColor: color,
+            strokeColor: nv(color),
             strokeOpacity: opacity,
-            strokeStyle: stroke,
+            strokeStyle: nv(stroke),
             endArrow: endArrow,
             zIndex: zIndex,
         });
 
-        polylines.push(polyline);
+        polyline['id'] = polylineId;
+        polyline.__hash = hash;
+        polylineIndex.set(polylineId, polyline);
+        syncOverlayArrays();
 
         // 지도에 선을 표시합니다
         polyline.setMap(map);
     }
 
-    function addCircle(circleId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
-        // circle에 동일한 ID가 있는지 확인
-        if (circles.some(existingCircle => existingCircle.id === circleId)) {
-            return;
-        }
+    function addPolylines(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addPolylines', function (p) {
+            addPolyline(p.polylineId, p.points, nv(p.strokeColor), nv(p.strokeOpacity), nv(p.strokeWidth), nv(p.strokeStyle), nv(p.endArrow), nv(p.zIndex), nv(p.hash));
+        });
+    }
 
-        center = JSON.parse(center);
+    function addCircle(circleId, center, radius, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex, hash) {
+        if (__reuseOrRemove(circleIndex, circleId, hash)) return;
+
+        center = parseIfString(center);
 
         // 지도에 표시할 원을 생성합니다
         let circle = new kakao.maps.Circle({
             center: new kakao.maps.LatLng(center.latitude, center.longitude),  // 원의 중심좌표 입니다
             radius: radius, // 미터 단위의 원의 반지름입니다
             strokeWeight: strokeWeight, // 선의 두께입니다
-            strokeColor: strokeColor, // 선의 색깔입니다
+            strokeColor: nv(strokeColor), // 선의 색깔입니다
             strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-            strokeStyle: strokeStyle, // 선의 스타일 입니다
-            fillColor: fillColor, // 채우기 색깔입니다
+            strokeStyle: nv(strokeStyle), // 선의 스타일 입니다
+            fillColor: nv(fillColor), // 채우기 색깔입니다
             fillOpacity: fillOpacity,  // 채우기 불투명도 입니다
             zIndex: zIndex,
         });
 
-        circles.push(circle);
+        circle['id'] = circleId;
+        circle.__hash = hash;
+        circleIndex.set(circleId, circle);
+        syncOverlayArrays();
 
         // 지도에 원을 표시합니다
         circle.setMap(map);
     }
 
-    function addRectangle(rectangleId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
-        // rectangle에 동일한 ID가 있는지 확인
-        if (rectangles.some(existingRectangle => existingRectangle.id === rectangleId)) {
-            return;
-        }
+    function addCircles(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addCircles', function (c) {
+            addCircle(c.circleId, c.center, nv(c.radius), nv(c.strokeWidth), nv(c.strokeColor), nv(c.strokeOpacity), nv(c.strokeStyle), nv(c.fillColor), nv(c.fillOpacity), nv(c.zIndex), nv(c.hash));
+        });
+    }
 
-        rectangleBounds = JSON.parse(rectangleBounds);
+    function addRectangle(rectangleId, rectangleBounds, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex, hash) {
+        if (__reuseOrRemove(rectangleIndex, rectangleId, hash)) return;
 
-        // 지도에 표시할 원을 생성합니다
+        rectangleBounds = parseIfString(rectangleBounds);
+
+        // 지도에 표시할 사각형을 생성합니다
         let rectangle = new kakao.maps.Rectangle({
             bounds: new kakao.maps.LatLngBounds(
                 new kakao.maps.LatLng(rectangleBounds['sw'].latitude, rectangleBounds['sw'].longitude),
                 new kakao.maps.LatLng(rectangleBounds['ne'].latitude, rectangleBounds['ne'].longitude)
             ),
             strokeWeight: strokeWeight, // 선의 두께입니다
-            strokeColor: strokeColor, // 선의 색깔입니다
+            strokeColor: nv(strokeColor), // 선의 색깔입니다
             strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-            strokeStyle: strokeStyle, // 선의 스타일 입니다
-            fillColor: fillColor, // 채우기 색깔입니다
+            strokeStyle: nv(strokeStyle), // 선의 스타일 입니다
+            fillColor: nv(fillColor), // 채우기 색깔입니다
             fillOpacity: fillOpacity, // 채우기 불투명도 입니다
             zIndex: zIndex,
         });
 
-        rectangles.push(rectangle);
+        rectangle['id'] = rectangleId;
+        rectangle.__hash = hash;
+        rectangleIndex.set(rectangleId, rectangle);
+        syncOverlayArrays();
 
-        // 지도에 원을 표시합니다
+        // 지도에 사각형을 표시합니다
         rectangle.setMap(map);
     }
 
-    function addPolygon(polygonId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
-        // polygon에 동일한 ID가 있는지 확인
-        if (polygons.some(existingPolygon => existingPolygon.id === polygonId)) {
-            return;
-        }
+    function addRectangles(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addRectangles', function (r) {
+            addRectangle(r.rectangleId, r.bounds, nv(r.strokeWidth), nv(r.strokeColor), nv(r.strokeOpacity), nv(r.strokeStyle), nv(r.fillColor), nv(r.fillOpacity), nv(r.zIndex), nv(r.hash));
+        });
+    }
 
-        points = JSON.parse(points);
-        let paths = [];
-        for (let i = 0; i < points.length; i++) {
-            paths.push(new kakao.maps.LatLng(points[i].latitude, points[i].longitude));
-        }
+    function addPolygon(polygonId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex, hash) {
+        if (__reuseOrRemove(polygonIndex, polygonId, hash)) return;
 
-        holes = JSON.parse(holes);
+        const paths = __toLatLngPath(points);
+
+        holes = parseIfString(holes);
+        let polygon;
         if (!empty(holes)) {
             let holePaths = [];
 
@@ -116,13 +149,25 @@ class JsOverlayDraw {
                 holePaths.push(array);
             }
 
-            return addPolygonWithHole(polygonId, paths, holePaths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
+            polygon = addPolygonWithHole(paths, holePaths, strokeWeight, nv(strokeColor), strokeOpacity, nv(strokeStyle), nv(fillColor), fillOpacity, zIndex);
+        } else {
+            polygon = addPolygonWithoutHole(paths, strokeWeight, nv(strokeColor), strokeOpacity, nv(strokeStyle), nv(fillColor), fillOpacity, zIndex);
         }
 
-        return addPolygonWithoutHole(polygonId, paths, strokeWeight, strokeColor, strokeOpacity, strokeStyle, fillColor, fillOpacity, zIndex);
+        polygon['id'] = polygonId;
+        polygon.__hash = hash;
+        polygonIndex.set(polygonId, polygon);
+        syncOverlayArrays();
     }
 
-    function addPolygonWithoutHole(polygonId, points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addPolygons(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addPolygons', function (p) {
+            addPolygon(p.polygonId, p.points, p.holes, nv(p.strokeWidth), nv(p.strokeColor), nv(p.strokeOpacity), nv(p.strokeStyle), nv(p.fillColor), nv(p.fillOpacity), nv(p.zIndex), nv(p.hash));
+        });
+    }
+
+    function addPolygonWithoutHole(points, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
         // 지도에 표시할 다각형을 생성합니다
         let polygon = new kakao.maps.Polygon({
             path: points, // 그려질 다각형의 좌표 배열입니다
@@ -135,13 +180,12 @@ class JsOverlayDraw {
             zIndex: zIndex,
         });
 
-        polygons.push(polygon);
-
         // 지도에 다각형을 표시합니다
         polygon.setMap(map);
+        return polygon;
     }
 
-    function addPolygonWithHole(polygonId, points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
+    function addPolygonWithHole(points, holes, strokeWeight, strokeColor, strokeOpacity = 1, strokeStyle = 'solid', fillColor = '#FFFFFF', fillOpacity = 0, zIndex) {
         // 다각형을 생성하고 지도에 표시합니다
         let polygon = new kakao.maps.Polygon({
             map: map,
@@ -149,12 +193,13 @@ class JsOverlayDraw {
             strokeWeight: strokeWeight, // 선의 두께입니다
             strokeColor: strokeColor, // 선의 색깔입니다
             strokeOpacity: strokeOpacity, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+            strokeStyle: strokeStyle, // 선의 스타일입니다
             fillColor: fillColor, // 채우기 색깔입니다
             fillOpacity: fillOpacity, // 채우기 불투명도 입니다
             zIndex: zIndex,
         });
 
-        polygons.push(polygon);
+        return polygon;
     }
     ''';
   }

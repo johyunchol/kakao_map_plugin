@@ -21,6 +21,7 @@ class JsMapInit {
     required bool hasOnCameraIdle,
     required bool hasOnTilesLoadedCallback,
     required bool isIOS,
+    required bool hasOnMapDoubleTap,
   }) {
     return '''
     window.onload = function () {
@@ -28,6 +29,19 @@ class JsMapInit {
         kakao.maps.load(function() {
             initializeMap();
         });
+    }
+
+    /**
+     * 검색 서비스 객체(geocoder, places)를 준비합니다.
+     * services 라이브러리가 로드되지 않았으면 false 를 반환합니다.
+     */
+    function ensureServices() {
+        if (typeof kakao === 'undefined' || !kakao.maps || !kakao.maps.services) {
+            return false;
+        }
+        if (!geocoder) geocoder = new kakao.maps.services.Geocoder();
+        if (!places) places = new kakao.maps.services.Places();
+        return true;
     }
 
     function initializeMap() {
@@ -44,8 +58,9 @@ class JsMapInit {
         };
 
         map = new kakao.maps.Map(container, options);
-        geocoder = new kakao.maps.services.Geocoder();
-        places = new kakao.maps.services.Places();
+        // services 라이브러리를 제외하고 로드한 경우에도 지도 생성이 실패하지 않도록
+        // 존재할 때만 생성합니다. (검색 API 사용 시 ensureServices() 가 재확인합니다)
+        ensureServices();
 
         if ($mapTypeControl) {
             const mapTypeControl = new kakao.maps.MapTypeControl();
@@ -119,18 +134,20 @@ class JsMapInit {
             });
         }
 
-        // 지도를 더블클릭하면 발생한다.
-        kakao.maps.event.addListener(map, 'dblclick', function (mouseEvent) {
-            const latLng = mouseEvent.latLng;
+        if ($hasOnMapDoubleTap) {
+            // 지도를 더블클릭하면 발생한다.
+            kakao.maps.event.addListener(map, 'dblclick', function (mouseEvent) {
+                const latLng = mouseEvent.latLng;
 
-            const clickLatLng = {
-                latitude: latLng.getLat(),
-                longitude: latLng.getLng(),
-                zoomLevel: map.getLevel(),
-            }
+                const clickLatLng = {
+                    latitude: latLng.getLat(),
+                    longitude: latLng.getLng(),
+                    zoomLevel: map.getLevel(),
+                }
 
-            onMapDoubleTap.postMessage(JSON.stringify(clickLatLng));
-        });
+                onMapDoubleTap.postMessage(JSON.stringify(clickLatLng));
+            });
+        }
 
         if ($hasOnDragChangeCallback) {
             // 마우스 드래그로 지도 이동이 완료되었을 때 마지막 파라미터로 넘어온 함수를 호출하도록 이벤트를 등록합니다
@@ -204,7 +221,7 @@ class JsMapInit {
 
         map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT, false)
 
-        onMapCreated.postMessage({"test": 1});
+        onMapCreated.postMessage(JSON.stringify({ ready: true }));
     }
     ''';
   }

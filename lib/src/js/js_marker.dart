@@ -6,13 +6,27 @@ class JsMarker {
     required bool hasMarkerTapCallback,
   }) {
     return '''
-    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType) {
-        // marker에 동일한 ID가 있는지 확인
-        if (markers.some(existingMarker => existingMarker.id === markerId)) {
-            return;
+    /**
+     * 마커를 추가합니다.
+     * 동일한 ID의 마커가 이미 있고 hash 가 같으면 아무 것도 하지 않습니다.
+     * hash 가 다르거나(또는 hash 가 없으면) 기존 마커를 제거하고 새로 만듭니다.
+     * latLng 는 JSON 문자열 또는 {latitude, longitude} 객체 모두 허용합니다.
+     */
+    function addMarker(markerId, latLng, draggable, width = 24, height = 30, offsetX = null, offsetY = null, imageSrc = '', infoWindowText = '', infoWindowRemovable = true, infoWindowFirstShow, zIndex, imageType, hash) {
+        const existing = markerIndex.get(markerId);
+        if (existing) {
+            if (hash !== undefined && hash !== null && existing.__hash === hash) {
+                return;
+            }
+            if (clusterer && clustererMarkerIds.has(markerId)) {
+                try { clusterer.removeMarker(existing); } catch (e) {}
+            }
+            detachOverlay(existing);
+            markerIndex.delete(markerId);
+            clustererMarkerIds.delete(markerId);
         }
 
-        latLng = JSON.parse(latLng);
+        latLng = parseIfString(latLng);
         let markerPosition = new kakao.maps.LatLng(latLng.latitude, latLng.longitude); // 마커가 표시될 위치입니다
 
         // 마커를 생성합니다
@@ -21,8 +35,9 @@ class JsMarker {
         });
 
         marker['id'] = markerId;
+        marker.__hash = hash;
 
-        marker.setDraggable(draggable);
+        marker.setDraggable(draggable === true || draggable === 'true');
 
         if (zIndex) {
             marker.setZIndex(zIndex);
@@ -31,39 +46,25 @@ class JsMarker {
         // 마커가 지도 위에 표시되도록 설정합니다
         marker.setMap(map);
 
-        if (imageSrc !== '' && imageSrc !== 'null') {
-          if (imageType !== null && imageType === 'file') {
-              // Convert base64 to Blob and create Object URL
-              const byteCharacters = atob(imageSrc);
-              const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
-              const byteArray = new Uint8Array(byteNumbers);
-              const blob = new Blob([byteArray], { type: 'image/png' });
-              imageSrc = URL.createObjectURL(blob);
-          }
-
-            let imageSize = new kakao.maps.Size(width, height); // 마커이미지의 크기입니다
-
-            let offset;
-            if (offsetX && offsetY) {
-                offset = new kakao.maps.Point(offsetX, offsetY);
+        if (!empty(imageSrc)) {
+            const markerImage = getMarkerImage(imageSrc, imageType, width, height, offsetX, offsetY);
+            if (markerImage) {
+                marker.setImage(markerImage);
             }
-            let imageOption = {offset: offset}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
-
-            let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
-            marker.setImage(markerImage);
         }
 
-        markers.push(marker);
+        markerIndex.set(markerId, marker);
+        syncOverlayArrays();
 
         let infoWindow = null
-        if (infoWindowText !== '' && infoWindowText !== 'null') {
-
+        if (!empty(infoWindowText)) {
             // 인포윈도우를 생성하고 지도에 표시합니다
             infoWindow = new kakao.maps.InfoWindow({
                 position: markerPosition,
                 content: infoWindowText,
                 removable: infoWindowRemovable
             });
+            marker.__infoWindow = infoWindow;
         }
 
         if (infoWindowFirstShow) {
@@ -125,16 +126,35 @@ class JsMarker {
         }
     }
 
-    function setMarkerDraggable(markerId, draggable) {
-        let marker = null;
-        for (let i = 0; i < markers.length; i++) {
-            if (markerId === markers[i].markerId) {
-                marker = markers[i];
-                break;
-            }
-        }
+    /**
+     * 마커 여러 개를 한 번의 브릿지 호출로 추가합니다.
+     * payload: JSON 문자열 또는 배열. 각 항목은 Dart 쪽 OverlayPayload.marker() 형태입니다.
+     */
+    function addMarkers(payload) {
+        const list = parseIfString(payload);
+        forEachSafe(list, 'addMarkers', function (m) {
+            addMarker(
+                m.markerId,
+                m.latLng,
+                nv(m.draggable),
+                nv(m.width),
+                nv(m.height),
+                nv(m.offsetX),
+                nv(m.offsetY),
+                nv(m.imageSrc),
+                nv(m.infoWindowContent),
+                nv(m.infoWindowRemovable),
+                nv(m.infoWindowFirstShow),
+                nv(m.zIndex),
+                nv(m.imageType),
+                nv(m.hash),
+            );
+        });
+    }
 
-        if (marker != null) {
+    function setMarkerDraggable(markerId, draggable) {
+        const marker = markerIndex.get(markerId);
+        if (marker) {
             marker.setDraggable(draggable);
         }
     }

@@ -7,15 +7,15 @@ class JsClusterer {
   }) {
     return '''
     function addMarkerClusterer(markerList, gridSize = 60, averageCenter = true, disableClickZoom = true, minLevel = 10, minClusterSize = 2, texts, calculator, styles) {
-        markerList = JSON.parse(markerList);
+        markerList = parseIfString(markerList) || [];
 
-        // Clear existing clusterer custom overlays
-        clustererCustomOverlays.forEach(function(overlay) {
-            overlay.setMap(null);
-        });
-        clustererCustomOverlays = [];
+        // 이전 클러스터러와 그에 속한 마커/오버레이를 정리합니다
+        clearMarkerClusterer();
 
-        markerList.map(function (marker) {
+        const ownMarkers = [];
+        const seenIds = new Set();
+
+        forEachSafe(markerList, 'addMarkerClusterer', function (marker) {
             // icon 객체에서 imageSrc와 imageType 추출, 없으면 markerImageSrc 사용
             let imageSrc = '';
             let imageType = null;
@@ -29,36 +29,42 @@ class JsClusterer {
 
             addMarker(
                 marker.markerId,
-                JSON.stringify(marker.latLng),
-                marker?.draggable,
-                marker?.width,
-                marker?.height,
-                marker?.offsetX,
-                marker?.offsetY,
+                marker.latLng,
+                nv(marker?.draggable),
+                nv(marker?.width),
+                nv(marker?.height),
+                nv(marker?.offsetX),
+                nv(marker?.offsetY),
                 imageSrc,
-                marker?.infoWindowContent,
-                marker?.infoWindowRemovable,
-                marker?.infoWindowFirstShow,
-                marker?.zIndex,
+                nv(marker?.infoWindowContent),
+                nv(marker?.infoWindowRemovable),
+                nv(marker?.infoWindowFirstShow),
+                nv(marker?.zIndex),
                 imageType,
             )
 
+            const created = markerIndex.get(marker.markerId);
+            if (created && !seenIds.has(marker.markerId)) {
+                seenIds.add(marker.markerId);
+                clustererMarkerIds.add(marker.markerId);
+                ownMarkers.push(created);
+            }
+
             // If marker has custom overlay content, create and store it
-            if (marker.customOverlayContent && marker.customOverlayContent !== 'null' && marker.customOverlayContent !== '') {
+            if (!empty(marker.customOverlayContent)) {
                 let position = new kakao.maps.LatLng(marker.latLng.latitude, marker.latLng.longitude);
 
-                let content = '<div id="clusterer_overlay_' + marker.markerId + '">' + marker.customOverlayContent + '</div>';
+                // DOM API 로 안전하게 요소를 구성합니다 (markerId 를 통한 HTML 인젝션 방지)
+                const el = document.createElement('div');
+                el.id = 'clusterer_overlay_' + marker.markerId;
+                el.innerHTML = marker.customOverlayContent;
                 if ($hasCustomOverlayTapCallback) {
-                    content =
-                        '<div id="clusterer_overlay_' + marker.markerId +
-                        '" onclick="addCustomOverlayListener(\`clusterer_overlay_' + marker.markerId +
-                        '\`, \`' + marker.latLng.latitude +
-                        '\`, \`' + marker.latLng.longitude +
-                        '\`)">' + marker.customOverlayContent + '</div>';
+                    el.addEventListener('click', function (e) { addCustomOverlayListener(el.id, marker.latLng.latitude, marker.latLng.longitude); });
+                    el.addEventListener('touchend', function (e) { addCustomOverlayListener(el.id, marker.latLng.latitude, marker.latLng.longitude); });
                 }
 
                 let customOverlay = new kakao.maps.CustomOverlay({
-                    content: content,
+                    content: el,
                     position: position,
                     xAnchor: marker.customOverlayXAnchor || 0.5,
                     yAnchor: marker.customOverlayYAnchor || 1.0,
@@ -68,38 +74,44 @@ class JsClusterer {
                 customOverlay['markerId'] = marker.markerId;
                 clustererCustomOverlays.push(customOverlay);
             }
-        })
+        });
 
         clusterer = new kakao.maps.MarkerClusterer({
             map: map,
             gridSize: gridSize,
             averageCenter: averageCenter,
             minLevel: minLevel,
-            disableClickZoom: true,
+            disableClickZoom: disableClickZoom,
         });
 
         clusterer.setMinClusterSize(minClusterSize);
 
-        texts = JSON.parse(texts)
+        texts = parseIfString(texts)
         if (texts) {
             clusterer.setTexts(texts)
         }
 
-        calculator = JSON.parse(calculator)
+        calculator = parseIfString(calculator)
         if (calculator) {
             clusterer.setCalculator(calculator)
         }
 
-        styles = JSON.parse(styles)
+        styles = parseIfString(styles)
         if (styles) {
             styles = styles.map(function (style) {
-                return {...style, background: hexToRgba(style.background), color: hexToRgba(style.color)}
+                const converted = {...style};
+                if (style.background) converted.background = hexToRgba(style.background);
+                else delete converted.background;
+                if (style.color) converted.color = hexToRgba(style.color);
+                else delete converted.color;
+                return converted;
             })
 
             clusterer.setStyles(styles)
         }
 
-        clusterer.addMarkers(markers);
+        // 클러스터러에는 이 클러스터러가 만든 마커만 등록합니다 (일반 마커는 제외)
+        clusterer.addMarkers(ownMarkers);
 
         // Update custom overlay visibility based on clusterer state
         updateClustererCustomOverlays();
@@ -153,8 +165,8 @@ class JsClusterer {
         clustererCustomOverlays.forEach(function(overlay) {
             let markerId = overlay.markerId;
 
-            // Find the corresponding marker
-            let correspondingMarker = markers.find(m => m.id === markerId);
+            // Find the corresponding marker (O(1))
+            let correspondingMarker = markerIndex.get(markerId);
 
             if (clusteredMarkerIds.has(markerId)) {
                 // Marker is in a cluster, hide custom overlay and show default marker (which will be hidden by cluster)
@@ -170,28 +182,6 @@ class JsClusterer {
                 }
             }
         });
-    }
-
-    function getMarkerClustererStyles(styles) {
-        styles = JSON.parse(styles)
-
-        styles = styles?.map(function (style) {
-            return removeUndefinedValue(style)
-        })
-
-        return styles
-    }
-
-    function removeUndefinedValue(obj) {
-        const newObj = {}; // 빈객체를 만들어놓고
-
-        Object.keys(obj).forEach(key => {
-            if (obj[key]) {
-                newObj[key] = obj[key]
-            }
-        });
-
-        return newObj;
     }
     ''';
   }

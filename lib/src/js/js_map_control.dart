@@ -126,8 +126,35 @@ class JsMapControl {
         return map.getZoomable();
     }
 
+    /**
+     * 지도가 표시할 영역을 설정한다.
+     * bounds 가 없으면(하위호환: 인자 없이 호출되던 기존 방식) 아무 것도 하지 않고 조용히 반환한다.
+     */
     function setBounds(bounds, paddingTop = 0, paddingRight = 0, paddingBottom = 0, paddingLeft = 0) {
-        map.setBounds(bounds, paddingTop, paddingRight, paddingBottom, paddingLeft);
+        if (empty(bounds)) return;
+
+        bounds = parseIfString(bounds);
+        const sw = bounds.sw;
+        const ne = bounds.ne;
+        const latLngBounds = new kakao.maps.LatLngBounds(
+            new kakao.maps.LatLng(sw.latitude, sw.longitude),
+            new kakao.maps.LatLng(ne.latitude, ne.longitude)
+        );
+
+        map.setBounds(latLngBounds, paddingTop, paddingRight, paddingBottom, paddingLeft);
+    }
+
+    /**
+     * 지도 컨테이너(#map)의 크기를 지정한 뒤 다시 그린다.
+     * @param width Number
+     * @param height Number
+     */
+    function setMapStyle(width, height) {
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) return;
+        mapContainer.style.width = width + 'px';
+        mapContainer.style.height = height + 'px';
+        relayout();
     }
 
     function getBounds() {
