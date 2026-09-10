@@ -6,6 +6,7 @@ enum MapType {
   normal(1),
 
   /// 로드맵 (일반 지도와 동일)
+  @Deprecated('MapType.normal 과 동일한 값입니다. normal 을 사용하세요.')
   roadMap(1),
 
   /// 스카이뷰 (위성 지도)
@@ -44,6 +45,9 @@ enum MapType {
   ///
   /// [mapTypeId] 찾을 지도 타입의 ID
   /// 해당하는 ID가 없으면 [MapType.normal]을 반환합니다.
+  ///
+  /// 주의: id 1 은 [MapType.normal] 과 [MapType.roadMap] 이 공유하므로,
+  /// id 1 은 항상 [MapType.normal] 로 정규화되어 반환됩니다.
   factory MapType.getById(int mapTypeId) {
     return MapType.values.firstWhere((value) => value.id == mapTypeId,
         orElse: () => MapType.normal);

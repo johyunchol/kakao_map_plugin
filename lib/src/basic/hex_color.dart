@@ -36,10 +36,10 @@ extension HexColor on Color {
   /// ```
   String toHexColorWithAlpha({bool leadingHashSign = true}) =>
       '${leadingHashSign ? '#' : ''}'
-      '${(a * 255).toInt().toRadixString(16).padLeft(2, '0')}'
-      '${(r * 255).toInt().toRadixString(16).padLeft(2, '0')}'
-      '${(g * 255).toInt().toRadixString(16).padLeft(2, '0')}'
-      '${(b * 255).toInt().toRadixString(16).padLeft(2, '0')}';
+      '${(a * 255).round().toRadixString(16).padLeft(2, '0')}'
+      '${(r * 255).round().toRadixString(16).padLeft(2, '0')}'
+      '${(g * 255).round().toRadixString(16).padLeft(2, '0')}'
+      '${(b * 255).round().toRadixString(16).padLeft(2, '0')}';
 
   /// Color 객체를 16진수 문자열로 변환합니다 (투명도 제외).
   ///
@@ -54,7 +54,7 @@ extension HexColor on Color {
   /// ```
   String toHexColor({bool leadingHashSign = true}) =>
       '${leadingHashSign ? '#' : ''}'
-      '${(r * 255).toInt().toRadixString(16).padLeft(2, '0')}'
-      '${(g * 255).toInt().toRadixString(16).padLeft(2, '0')}'
-      '${(b * 255).toInt().toRadixString(16).padLeft(2, '0')}';
+      '${(r * 255).round().toRadixString(16).padLeft(2, '0')}'
+      '${(g * 255).round().toRadixString(16).padLeft(2, '0')}'
+      '${(b * 255).round().toRadixString(16).padLeft(2, '0')}';
 }

@@ -89,9 +89,16 @@ class LatLngBounds {
   }
 }
 
+LatLng _$parseLatLng(dynamic value) {
+  if (value is LatLng) {
+    return value;
+  }
+  return LatLng.fromJson(Map<String, dynamic>.from(value as Map));
+}
+
 LatLngBounds _$LatLngBoundsFromJson(Map<String, dynamic> json) => LatLngBounds(
-      json['sw'] as LatLng,
-      json['ne'] as LatLng,
+      _$parseLatLng(json['sw']),
+      _$parseLatLng(json['ne']),
     );
 
 Map<String, dynamic> _$LatLngBoundsToJson(LatLngBounds instance) =>

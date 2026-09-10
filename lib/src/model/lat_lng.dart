@@ -68,8 +68,8 @@ class LatLng {
 }
 
 LatLng _$LatLngFromJson(Map<String, dynamic> json) => LatLng(
-      json['latitude'] as double,
-      json['longitude'] as double,
+      (json['latitude'] as num).toDouble(),
+      (json['longitude'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$LatLngToJson(LatLng instance) => <String, dynamic>{

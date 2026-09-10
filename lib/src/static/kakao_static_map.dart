@@ -93,10 +93,14 @@ class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObse
       ..loadHtmlString(_loadMap(), baseUrl: AuthRepository.instance.baseUrl);
 
     if (controller.platform is AndroidWebViewController) {
-      AndroidWebViewController.enableDebugging(true);
+      if (kDebugMode) {
+        AndroidWebViewController.enableDebugging(true);
+      }
       final androidController = controller.platform as AndroidWebViewController;
       androidController.setMediaPlaybackRequiresUserGesture(false);
       // Set permission handler for Android (Flutter 3.27+ fix)
+      // 주의: 정적 지도 표시에 필요하지 않은 권한 요청까지 무조건 승인합니다.
+      // 카메라/마이크 등 민감한 권한이 필요한 페이지를 로드하지 않는 한도 내에서만 사용하세요.
       androidController
           .setOnPlatformPermissionRequest((PlatformWebViewPermissionRequest request) async {
         await request.grant();
