@@ -36,6 +36,37 @@
 * 검색 요청이 타임아웃될 때 레거시 `xxxResult()` 콜백 경로도 함께 종료되지 않던 문제를 수정했습니다(이제 타임아웃 시 레거시 경로도 함께 종료됩니다).
 * `services` 라이브러리를 제외하고 지도를 만든 경우, 검색 API 호출이 조용히 멈추지 않고 `SERVICES_LIBRARY_NOT_LOADED` 오류로 완료됩니다.
 
+### 로드뷰
+* `KakaoRoadMap` 이 `onMapCreated` 를 호출하지 않고, 마커가 그려지지 않으며, rebuild 마다 마커가 무한 증식하던 문제를 수정했습니다.
+* 백그라운드 복귀 시 iOS 에서 로드뷰가 빈 화면이 되던 문제를 수정했습니다(`reload()` 대신 `relayout()` 사용).
+* 로드뷰가 없는 지역(`panoId === null`)에서 오류 없이 `onRoadviewNotFound` 콜백을 호출하도록 했습니다.
+* `KakaoRoadviewController` 를 추가했습니다(`onRoadviewCreated` 로 전달). `setPanoId`, `setPanoIdNear`, `getPanoId`, `setViewpoint`, `getViewpoint`, `getPosition`, `viewpointFromCoords`, `relayout`, `addMarker`, `addCustomOverlay`, `clearMarker`, `clearCustomOverlay`, `clear` 를 제공합니다.
+* `KakaoRoadMap` 에 `panoId`, `radius`, `viewpoint`, `customOverlays` 와 콜백 `onRoadviewInit`, `onPanoIdChange`, `onViewpointChange`, `onPositionChange`, `onRoadviewNotFound`, `onMarkerTap`, `onCustomOverlayTap` 을 추가했습니다. 기존 `onMapCreated`, `currentLevel` 은 그대로 유지됩니다.
+* `Viewpoint` 모델(pan, tilt, zoom)을 추가했습니다.
+* `Marker` 에 `altitude`, `range`, `CustomOverlay` 에 `altitude` 를 추가했습니다(로드뷰에서 사용).
+* 동동이(MapWalker) 스프라이트 좌표가 잘못되어 아이콘이 잘려 보이던 문제를 수정했습니다(카카오 공식 샘플 좌표 사용).
+* `KakaoMapRoadviewView` 에서 표시 모드 전환·크기 변경 후 지도 중심이 화면 절반만큼 어긋나던 문제를 수정했습니다. 분할/로드뷰 모드로 처음 들어갈 때 지도 중심 위치의 로드뷰를 자동으로 불러옵니다.
+* 지도와 로드뷰를 한 WebView 에 함께 띄우는 `KakaoMapRoadviewView` / `KakaoMapRoadviewController` / `RoadviewViewMode` 를 추가했습니다. 지도 클릭으로 로드뷰를 이동하고, 동동이(MapWalker)가 로드뷰 시점 방향을 지도에 표시합니다.
+
+### 오버레이 상호작용
+* `KakaoMap(onPolygonTap:)` 다각형 탭 콜백을 추가했습니다.
+* `CustomOverlay.removable` (닫기 버튼 + `onCustomOverlayRemove` 콜백), `CustomOverlay.draggable` (드래그 + `onCustomOverlayDragEnd` 콜백) 을 추가했습니다. 드래그 중에는 지도 이동이 잠기고, 문서 레벨 리스너는 드래그가 끝나면 즉시 제거됩니다.
+* `coordToPixel` / `pixelToCoord` 를 지도 정리 후 호출하면 원인을 알기 어려운 캐스트 오류가 나던 문제를 수정했습니다. 이제 원인을 설명하는 `StateError` 를 던집니다.
+
+### Drawing Library
+* 사용자가 지도 위에 도형을 그리는 Drawing Library 바인딩을 추가했습니다. `KakaoMapController.createDrawingManager`, `selectDrawingMode`, `cancelDrawing`, `undoDrawing`, `redoDrawing`, `removeDrawingShape`, `getDrawingData`, `showDrawingToolbox`, `removeDrawingToolbox`.
+* `DrawingOverlayType`, `DrawingOptions`, `DrawingStyle` 과 그린 결과 DTO `DrawingData` / `DrawingShape` 계열(`DrawingMarkerShape`, `DrawingPathShape`, `DrawingRectangleShape`, `DrawingCircleShape`, `DrawingEllipseShape`) 을 추가했습니다. 좌표는 `LatLng` 로 정규화됩니다.
+* `KakaoMap` 콜백 `onDrawingEnd`, `onDrawingRemove`, `onDrawingStateChange` 를 추가했습니다.
+* `KakaoMapLibrary.drawing` 을 제외하고 지도를 만든 경우 Drawing API 는 조용히 무시되며 오류가 `window.__kakaoMapErrors` 에 기록됩니다.
+
+### 커스텀 타일셋
+* `Tileset` / `TilesetCopyright` 와 `KakaoMapController.addTileset`, `setTileset`, `addOverlayTileset`, `removeOverlayTileset`, `getActiveTilesetId` 를 추가했습니다. 타일 소스는 주소 템플릿(`{x}` `{y}` `{z}`), 주소 함수, DOM 타일 함수 중 하나로 지정합니다.
+* 커스텀 타일셋이 기본 지도 타입인 상태에서 `getMapTypeId()` 를 호출해도 예외 없이 `MapType.normal` 을 돌려줍니다. 타일셋 ID 는 `getActiveTilesetId()` 로 확인합니다.
+
+### 예제
+* 카카오 공식 샘플 77개를 모두 예제 앱에서 확인할 수 있습니다. 로드뷰 9개, 오버레이 12개, Drawing 4개, 커스텀 타일셋 2개 화면을 추가했습니다. (마커 mouseover/mouseout 은 모바일에 hover 개념이 없어 안내 화면으로 대체)
+* 라이브러리 예제 파일 번호 중복(`library_11_*` 3개)을 정리했습니다.
+
 ### ⚠️ BREAKING (동작 변경)
 * `controller.clearMarker()` 는 이제 **클러스터러가 관리하는 마커를 제외**하고 일반 마커만 제거합니다. 마이그레이션: 클러스터러 마커까지 지우려면 `clearMarkerClusterer()` 를 함께 호출하세요.
 * `controller.clear()` 는 이제 클러스터러 객체와 클러스터러 마커까지 함께 제거합니다(이전에는 마커만 숨겨지고 클러스터 표시가 남을 수 있었음). 마이그레이션: 클러스터러만 남기고 싶다면 `clear()` 대신 개별 `clearXxx()` 메서드를 조합해서 호출하세요.

@@ -654,6 +654,138 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
     );
     ```
 
+* 불러올 확장 라이브러리 선택 - 기본값은 전체(`services`, `clusterer`, `drawing`)입니다. 쓰지 않는 라이브러리를 빼면 지도 생성이 조금 빨라집니다.
+
+    ``` dart
+    // 앱 전역 기본값
+    AuthRepository.initialize(
+      appKey: 'YOUR_JAVASCRIPT_KEY',
+      libraries: {KakaoMapLibrary.services},
+    );
+
+    // 위젯 단위로 덮어쓰기 (clusterer 를 쓰면 자동으로 포함됩니다)
+    KakaoMap(
+      libraries: const {KakaoMapLibrary.services, KakaoMapLibrary.drawing},
+    );
+    ```
+
+* 로드뷰 생성 - `onRoadviewCreated` 로 받은 `KakaoRoadviewController` 로 파노라마 이동과 시점을 제어합니다.
+
+    ``` dart
+    KakaoRoadviewController? roadviewController;
+
+    Scaffold(
+      body: KakaoRoadMap(
+        center: LatLng(33.450701, 126.570667),
+        radius: 50,
+        viewpoint: const Viewpoint(pan: 90, tilt: 0, zoom: 0),
+        markers: [
+          Marker(
+            markerId: 'm1',
+            latLng: LatLng(33.450701, 126.570667),
+            altitude: 5,   // 로드뷰에서 마커가 놓일 높이(m)
+            range: 100,    // 마커가 보이는 반경(m)
+          ),
+        ],
+        onRoadviewCreated: (controller) => roadviewController = controller,
+        onViewpointChange: (viewpoint) => print('pan ${viewpoint.pan}'),
+        onRoadviewNotFound: (latLng) => print('이 지점에는 로드뷰가 없습니다.'),
+      ),
+    );
+
+    // 다른 위치의 가장 가까운 파노라마로 이동
+    await roadviewController?.setPanoIdNear(LatLng(37.566826, 126.9786567));
+    await roadviewController?.setViewpoint(const Viewpoint(pan: 180, tilt: 0, zoom: 1));
+    ```
+
+* 지도와 로드뷰 함께 쓰기 - 한 화면에서 지도 클릭으로 로드뷰를 옮기고, 지도 위 동동이(MapWalker)가 로드뷰 시점 방향을 따라갑니다.
+
+    ``` dart
+    KakaoMapRoadviewController? linkController;
+
+    Scaffold(
+      body: KakaoMapRoadviewView(
+        center: LatLng(33.450701, 126.570667),
+        initialViewMode: RoadviewViewMode.split, // map / roadview / split
+        splitRatio: 50,                          // split 일 때 지도 비율(%)
+        showRoadviewOverlay: true,               // 로드뷰 가능 도로 표시
+        useMapWalker: true,
+        onCreated: (controller) => linkController = controller,
+      ),
+    );
+
+    await linkController?.toggleRoadview(LatLng(33.450701, 126.570667));
+    await linkController?.setViewMode(RoadviewViewMode.roadview);
+    ```
+
+* Drawing Library - 사용자가 지도 위에 마커·선·다각형·원 등을 직접 그리고, 그린 결과를 데이터로 가져옵니다.
+
+    ``` dart
+    late KakaoMapController mapController;
+
+    Scaffold(
+      body: KakaoMap(
+        onMapCreated: ((controller) async {
+          mapController = controller;
+
+          await mapController.createDrawingManager(
+            options: const DrawingOptions(
+              drawingMode: [
+                DrawingOverlayType.marker,
+                DrawingOverlayType.polyline,
+                DrawingOverlayType.polygon,
+              ],
+              polylineStyle: DrawingStyle(strokeColor: Colors.blue, strokeWidth: 3),
+            ),
+          );
+          await mapController.showDrawingToolbox(); // 카카오 기본 툴박스 UI (선택)
+          await mapController.selectDrawingMode(DrawingOverlayType.polyline);
+        }),
+        onDrawingEnd: (type) async {
+          final data = await mapController.getDrawingData();
+          for (final line in data.polylines) {
+            print('선 좌표 ${line.points.length}개');
+          }
+        },
+      ),
+    );
+
+    // 되돌리기 / 다시 실행 / 그리던 도형 취소
+    await mapController.undoDrawing();
+    await mapController.redoDrawing();
+    await mapController.cancelDrawing();
+    ```
+
+* 커스텀 타일셋 - 직접 만든 타일 이미지를 기본 지도로 쓰거나 기존 지도 위에 겹칩니다.
+
+    ``` dart
+    // 1) 주소 템플릿 ({x} {y} {z} 치환)
+    await mapController.addTileset(const Tileset(
+      id: 'MY_TILES',
+      urlTemplate: 'https://tiles.example.com/{z}/{y}/{x}.png',
+      copyright: [TilesetCopyright('© Example')],
+    ));
+    await mapController.setTileset('MY_TILES');         // 기본 지도로 사용
+    await mapController.setMapTypeId(MapType.normal);   // 일반 지도로 복귀
+
+    // 2) DOM 타일 (JavaScript 함수 원문을 그대로 전달)
+    await mapController.addTileset(const Tileset(
+      id: 'TILE_NUMBER',
+      tileFunction: '''
+        function (x, y, z) {
+          var div = document.createElement('div');
+          div.innerHTML = x + ', ' + y + ', ' + z;
+          div.style.border = '1px dashed #ff5050';
+          return div;
+        }
+      ''',
+    ));
+    await mapController.addOverlayTileset('TILE_NUMBER');    // 지도 위에 겹치기
+    await mapController.removeOverlayTileset('TILE_NUMBER');
+    ```
+
+    `urlFunction` / `tileFunction` 은 WebView 안에서 그대로 실행되므로 앱이 직접 작성한 문자열만 넘기세요.
+
 더 많은 카카오지도 샘플소스는 **[여기](https://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.
 
 ---
