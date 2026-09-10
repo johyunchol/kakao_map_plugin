@@ -94,8 +94,8 @@ class _Library14DrawingGetDataScreenState
                       const Text('지도에 도형을 그린 뒤 아래 버튼을 누르세요.',
                           style: TextStyle(fontSize: 13))
                     else
-                      ...summary.map((e) =>
-                          Text(e, style: const TextStyle(fontSize: 13))),
+                      ...summary.map(
+                          (e) => Text(e, style: const TextStyle(fontSize: 13))),
                   ],
                 ),
               ),
@@ -103,11 +103,12 @@ class _Library14DrawingGetDataScreenState
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton.extended(
         onPressed: _readData,
         label: const Text('데이터 얻기'),
         icon: const Icon(Icons.download),
-      ),
+      )),
     );
   }
 }

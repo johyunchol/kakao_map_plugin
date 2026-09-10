@@ -55,7 +55,8 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
           ),
           Align(
             alignment: Alignment.bottomLeft,
-            child: SafeArea(
+            child: KakaoMapPointerInterceptor(
+                child: SafeArea(
               child: Container(
                 width: double.infinity,
                 color: Colors.white,
@@ -64,7 +65,7 @@ class _Map4InfoScreenState extends State<Map4InfoScreen> {
                   child: Text(message),
                 ),
               ),
-            ),
+            )),
           )
         ],
       ),

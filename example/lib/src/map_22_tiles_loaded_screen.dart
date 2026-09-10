@@ -39,12 +39,13 @@ class _Map22TilesLoadedScreenState extends State<Map22TilesLoadedScreen> {
           ),
           Align(
             alignment: Alignment.bottomLeft,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(16),
               width: double.infinity,
               color: Colors.white,
               child: Text(message),
-            ),
+            )),
           )
         ],
       ),

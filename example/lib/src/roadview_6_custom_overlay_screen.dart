@@ -62,16 +62,18 @@ class _RoadView6CustomOverlayScreenState
             Positioned(
               left: 12,
               bottom: 12,
-              child: Card(
+              child: KakaoMapPointerInterceptor(
+                  child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text('탭한 오버레이: $tappedOverlayId'),
                 ),
-              ),
+              )),
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton.extended(
         onPressed: () async {
           // 모든 오버레이를 제거합니다.
           await roadviewController?.clearCustomOverlay();
@@ -79,7 +81,7 @@ class _RoadView6CustomOverlayScreenState
         },
         label: const Text('오버레이 제거'),
         icon: const Icon(Icons.delete_outline),
-      ),
+      )),
     );
   }
 }

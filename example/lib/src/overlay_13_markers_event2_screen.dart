@@ -95,7 +95,8 @@ class _Overlay13MarkersEvent2ScreenState
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -109,7 +110,7 @@ class _Overlay13MarkersEvent2ScreenState
                   ),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

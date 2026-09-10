@@ -50,7 +50,9 @@ class _Map12MapTypeRadioScreenState extends State<Map12MapTypeRadioScreen> {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: Column(
+            child: KakaoMapPointerInterceptor(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 ...overlayList
@@ -71,7 +73,7 @@ class _Map12MapTypeRadioScreenState extends State<Map12MapTypeRadioScreen> {
                     )
                     .toList(),
               ],
-            ),
+            )),
           ),
         ],
       ),

@@ -90,6 +90,23 @@ web 에서는 WebView 대신 iframe 으로 지도를 그립니다. 별도 설정
 
 web 에서 다른 점:
 
+* **지도 위에 겹쳐 놓은 Flutter 위젯은 `KakaoMapPointerInterceptor` 로 감싸세요.** web 에서 지도는 iframe 이라 그 위에 `Stack` 으로 올린 버튼·카드가 탭을 받지 못합니다. 이 위젯이 자식 영역의 포인터 이벤트를 Flutter 로 돌려주며, Android/iOS 에서는 자식을 그대로 반환하므로 플랫폼 구분 없이 쓰면 됩니다. `Scaffold` 의 `floatingActionButton` 처럼 지도와 겹치는 것도 포함됩니다.
+
+    ``` dart
+    Stack(
+      children: [
+        KakaoMap(onMapCreated: (c) => mapController = c),
+        Positioned(
+          top: 16,
+          right: 16,
+          child: KakaoMapPointerInterceptor(
+            child: ElevatedButton(onPressed: () {}, child: const Text('현재 위치')),
+          ),
+        ),
+      ],
+    )
+    ```
+
 * `AuthRepository.initialize(baseUrl:)` 은 무시됩니다. 도메인 검사는 실제 페이지 origin 으로 이뤄집니다.
 * `gestureRecognizers` 는 쓰이지 않습니다. iframe 안의 포인터 이벤트는 브라우저가 직접 처리합니다.
 * `KakaoMapController.webViewController` 는 web 에서 `StateError` 를 던집니다(WebView 가 없습니다). 플랫폼에 관계없이 지도 문서 안에서 JavaScript 를 직접 실행하려면 `controller.runJavaScript()` / `controller.evaluateJavaScript()` 를 사용하세요.

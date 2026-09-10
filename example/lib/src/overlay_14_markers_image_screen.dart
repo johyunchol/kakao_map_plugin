@@ -49,7 +49,8 @@ class _Overlay14MarkersImage2ScreenState
             markers: markers.toList(),
             center: LatLng(37.498004414546934, 127.02770621963765),
           ),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () {
@@ -155,7 +156,7 @@ class _Overlay14MarkersImage2ScreenState
                 child: const Text('주차장'),
               ),
             ],
-          )
+          ))
         ],
       ),
     );

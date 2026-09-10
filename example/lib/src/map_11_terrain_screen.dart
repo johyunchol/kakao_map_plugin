@@ -32,7 +32,8 @@ class _Map11TerrainScreenState extends State<Map11TerrainScreen> {
             }),
             currentLevel: 8,
           ),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () {
@@ -48,7 +49,7 @@ class _Map11TerrainScreenState extends State<Map11TerrainScreen> {
                 child: const Text('지형도 표시하기'),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

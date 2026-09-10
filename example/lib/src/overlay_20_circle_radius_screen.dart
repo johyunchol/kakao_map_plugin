@@ -156,7 +156,8 @@ class _Overlay20CircleRadiusScreenState
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -168,15 +169,16 @@ class _Overlay20CircleRadiusScreenState
                   ),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton(
         onPressed: _resetCircle,
         tooltip: '초기화',
         child: const Icon(Icons.refresh),
-      ),
+      )),
     );
   }
 }

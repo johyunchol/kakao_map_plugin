@@ -29,7 +29,8 @@ class _Map8ZoomableScreenState extends State<Map8ZoomableScreen> {
           KakaoMap(onMapCreated: ((controller) async {
             mapController = controller;
           })),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () {
@@ -41,7 +42,7 @@ class _Map8ZoomableScreenState extends State<Map8ZoomableScreen> {
                 child: const Text('zoomable'),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

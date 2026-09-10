@@ -61,7 +61,8 @@ class _Map23CoordPixelConvertScreenState
             top: 16,
             left: 16,
             right: 16,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.9),
@@ -108,13 +109,14 @@ class _Map23CoordPixelConvertScreenState
                   ],
                 ],
               ),
-            ),
+            )),
           ),
           Positioned(
             bottom: 16,
             left: 16,
             right: 16,
-            child: Row(
+            child: KakaoMapPointerInterceptor(
+                child: Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
@@ -160,7 +162,7 @@ class _Map23CoordPixelConvertScreenState
                   ),
                 ),
               ],
-            ),
+            )),
           ),
         ],
       ),

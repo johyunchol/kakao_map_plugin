@@ -38,6 +38,7 @@
 
 ### Web 지원
 * **web 플랫폼을 지원합니다.** web 에서는 WebView 대신 같은 HTML 을 같은 origin 의 iframe 문서에 넣어 그립니다. 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 가 모바일과 동일하게 동작하며, 기존 코드 변경은 필요 없습니다.
+* `KakaoMapPointerInterceptor` 를 추가했습니다. web 에서 지도(iframe) 위에 겹친 Flutter 위젯이 탭을 받도록 감싸는 위젯이며, Android/iOS 에서는 자식을 그대로 반환합니다.
 * 카카오 콘솔 **Web 플랫폼 사이트 도메인**에 앱의 origin(포트 포함)을 등록해야 합니다. `baseUrl` 우회는 web 에서 동작하지 않습니다.
 * 내부적으로 Dart↔JS 통신을 `KakaoMapBridge` 로 추상화했습니다(모바일 `WebViewBridge`, web `IframeBridge`). `KakaoMapController(WebViewController)` 등 기존 생성자는 그대로 유지되며, web 에서 `webViewController` getter 는 `StateError` 를 던집니다.
 

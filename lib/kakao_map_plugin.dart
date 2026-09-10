@@ -69,6 +69,7 @@ export 'src/basic/drawing_options.dart';
 export 'src/basic/hex_color.dart';
 export 'src/basic/kakao_map.dart';
 export 'src/basic/kakao_map_controller.dart';
+export 'src/basic/kakao_map_pointer_interceptor.dart';
 export 'src/basic/marker.dart';
 export 'src/basic/marker_icon.dart';
 export 'src/basic/polygon.dart';

@@ -36,7 +36,8 @@ class _Map3LevelScreenState extends State<Map3LevelScreen> {
               setState(() {});
             }),
           ),
-          Column(
+          KakaoMapPointerInterceptor(
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -76,7 +77,7 @@ class _Map3LevelScreenState extends State<Map3LevelScreen> {
                 child: Text('현재 지도레벨은 $currentLevel 입니다'),
               )
             ],
-          )
+          ))
         ],
       ),
     );

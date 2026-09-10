@@ -53,12 +53,13 @@ class _RoadView4Overlay1ScreenState extends State<RoadView4Overlay1Screen> {
             Positioned(
               left: 12,
               bottom: 12,
-              child: Card(
+              child: KakaoMapPointerInterceptor(
+                  child: Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Text('탭한 마커: $tappedMarkerId'),
                 ),
-              ),
+              )),
             ),
         ],
       ),

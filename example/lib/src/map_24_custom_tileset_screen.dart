@@ -55,7 +55,8 @@ function (x, y, z) {
     // 2) 주소 템플릿으로 만드는 타일셋 ({x} {y} {z} 치환)
     await controller.addTileset(const Tileset(
       id: 'BLANK',
-      urlTemplate: 'https://i1.daumcdn.net/dmaps/apis/white.png?z={z}&y={y}&x={x}',
+      urlTemplate:
+          'https://i1.daumcdn.net/dmaps/apis/white.png?z={z}&y={y}&x={x}',
       copyright: [TilesetCopyright('빈 타일 예제')],
     ));
   }

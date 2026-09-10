@@ -81,8 +81,7 @@ class _RoadView7ImageScreenState extends State<RoadView7ImageScreen> {
                         customOverlays: _overlays());
                   },
                 ),
-                if (tappedOverlayId != null)
-                  Text('탭한 오버레이: $tappedOverlayId'),
+                if (tappedOverlayId != null) Text('탭한 오버레이: $tappedOverlayId'),
               ],
             ),
           ),

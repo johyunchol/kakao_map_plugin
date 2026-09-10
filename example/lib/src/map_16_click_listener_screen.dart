@@ -41,12 +41,13 @@ class _Map16ClickListenerScreenState extends State<Map16ClickListenerScreen> {
           ),
           Align(
             alignment: Alignment.bottomLeft,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(16),
               width: double.infinity,
               color: Colors.white,
               child: Text(message),
-            ),
+            )),
           )
         ],
       ),

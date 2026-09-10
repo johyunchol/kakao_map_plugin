@@ -78,7 +78,8 @@ class _Overlay18PolygonEvent1ScreenState
             left: 12,
             bottom: 12,
             right: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
@@ -90,7 +91,7 @@ class _Overlay18PolygonEvent1ScreenState
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

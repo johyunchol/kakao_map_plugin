@@ -158,12 +158,12 @@ class _Overlay26MarkerTrackerScreenState
                 center: _initialCenter,
               ),
               if (!_isMarkerInside && _mapSize != null)
-                _buildEdgeArrow(_mapSize!),
+                KakaoMapPointerInterceptor(child: _buildEdgeArrow(_mapSize!)),
               Positioned(
                 top: 16,
                 left: 16,
                 right: 16,
-                child: _buildStatusPanel(),
+                child: KakaoMapPointerInterceptor(child: _buildStatusPanel()),
               ),
             ],
           );

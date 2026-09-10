@@ -35,8 +35,7 @@ class _Overlay8MarkerDraggableEventScreenState
     MarkerDragType dragType,
   ) {
     setState(() {
-      final label =
-          dragType == MarkerDragType.start ? '드래그 시작' : '드래그 종료';
+      final label = dragType == MarkerDragType.start ? '드래그 시작' : '드래그 종료';
       final lat = latLng.latitude.toStringAsFixed(6);
       final lng = latLng.longitude.toStringAsFixed(6);
 
@@ -81,7 +80,8 @@ class _Overlay8MarkerDraggableEventScreenState
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -101,7 +101,7 @@ class _Overlay8MarkerDraggableEventScreenState
                   ],
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

@@ -43,22 +43,24 @@ class _RoadView1DefaultScreenState extends State<RoadView1DefaultScreen> {
             },
           ),
           if (notFound)
-            const Center(
+            const KakaoMapPointerInterceptor(
+                child: Center(
               child: Card(
                 child: Padding(
                   padding: EdgeInsets.all(16),
                   child: Text('이 위치에는 로드뷰가 없습니다.'),
                 ),
               ),
-            ),
+            )),
           Positioned(
             left: 12,
             bottom: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               color: Colors.black54,
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Text(
                   'pan ${viewpoint.pan.toStringAsFixed(1)}°  '
                   'tilt ${viewpoint.tilt.toStringAsFixed(1)}°  '
@@ -66,11 +68,12 @@ class _RoadView1DefaultScreenState extends State<RoadView1DefaultScreen> {
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),
-      floatingActionButton: Row(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
@@ -92,7 +95,7 @@ class _RoadView1DefaultScreenState extends State<RoadView1DefaultScreen> {
             icon: const Icon(Icons.rotate_right),
           ),
         ],
-      ),
+      )),
     );
   }
 }

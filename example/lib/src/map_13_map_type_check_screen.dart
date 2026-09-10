@@ -53,7 +53,9 @@ class _Map13MapTypeCheckScreenState extends State<Map13MapTypeCheckScreen> {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: Column(
+            child: KakaoMapPointerInterceptor(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 ...overlayList
@@ -83,7 +85,7 @@ class _Map13MapTypeCheckScreenState extends State<Map13MapTypeCheckScreen> {
                     )
                     .toList(),
               ],
-            ),
+            )),
           ),
         ],
       ),

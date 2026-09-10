@@ -29,7 +29,8 @@ class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
           KakaoMap(onMapCreated: ((controller) async {
             mapController = controller;
           })),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () async {
@@ -42,7 +43,7 @@ class _Map7DraggableScreenState extends State<Map7DraggableScreen> {
                 child: const Text('draggable'),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

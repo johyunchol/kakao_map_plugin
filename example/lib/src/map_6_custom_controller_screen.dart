@@ -41,7 +41,9 @@ class _Map6CustomControllerScreenState
           ),
           Align(
             alignment: Alignment.topRight,
-            child: Column(
+            child: KakaoMapPointerInterceptor(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Row(
@@ -96,7 +98,7 @@ class _Map6CustomControllerScreenState
                   ],
                 )
               ],
-            ),
+            )),
           ),
         ],
       ),

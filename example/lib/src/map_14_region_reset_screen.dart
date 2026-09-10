@@ -52,7 +52,8 @@ class _Map14RegionResetScreenState extends State<Map14RegionResetScreen> {
           ),
           Align(
             alignment: Alignment.topLeft,
-            child: SingleChildScrollView(
+            child: KakaoMapPointerInterceptor(
+                child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Row(
@@ -70,7 +71,7 @@ class _Map14RegionResetScreenState extends State<Map14RegionResetScreen> {
                   ),
                 ],
               ),
-            ),
+            )),
           ),
         ],
       ),

@@ -29,7 +29,8 @@ class _Map2MoveScreenState extends State<Map2MoveScreen> {
               mapController = controller;
             }),
           ),
-          SingleChildScrollView(
+          KakaoMapPointerInterceptor(
+              child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
@@ -49,7 +50,7 @@ class _Map2MoveScreenState extends State<Map2MoveScreen> {
                 )
               ],
             ),
-          )
+          ))
         ],
       ),
     );

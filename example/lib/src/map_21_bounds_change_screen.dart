@@ -45,12 +45,13 @@ class _Map21BoundsChangeScreenState extends State<Map21BoundsChangeScreen> {
           ),
           Align(
             alignment: Alignment.bottomLeft,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(16),
               width: double.infinity,
               color: Colors.white,
               child: Text(message),
-            ),
+            )),
           )
         ],
       ),

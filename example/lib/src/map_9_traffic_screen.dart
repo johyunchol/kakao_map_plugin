@@ -29,7 +29,8 @@ class _Map9TrafficScreenState extends State<Map9TrafficScreen> {
           KakaoMap(onMapCreated: ((controller) async {
             mapController = controller;
           })),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () {
@@ -45,7 +46,7 @@ class _Map9TrafficScreenState extends State<Map9TrafficScreen> {
                 child: const Text('교통정보 표시하기'),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

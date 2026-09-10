@@ -56,7 +56,8 @@ class _Overlay2MarkerDraggableScreenState
             markers: markers.toList(),
             center: LatLng(37.3608681, 126.9306506),
           ),
-          SingleChildScrollView(
+          KakaoMapPointerInterceptor(
+              child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Row(
@@ -82,7 +83,7 @@ class _Overlay2MarkerDraggableScreenState
                 )
               ],
             ),
-          )
+          ))
         ],
       ),
     );

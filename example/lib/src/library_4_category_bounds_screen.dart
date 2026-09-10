@@ -95,7 +95,8 @@ class _Library4CategoryBoundsScreenState
             },
             markers: markers.toList(),
           ),
-          Container(
+          KakaoMapPointerInterceptor(
+              child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(4),
@@ -136,7 +137,7 @@ class _Library4CategoryBoundsScreenState
                 ),
               ],
             ),
-          ),
+          )),
         ],
       ),
     );

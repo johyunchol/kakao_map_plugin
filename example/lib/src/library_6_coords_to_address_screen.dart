@@ -88,7 +88,8 @@ class _Library6CoordsToAddressScreenState
                   },
                 ),
                 Center(
-                  child: Column(
+                  child: KakaoMapPointerInterceptor(
+                      child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
@@ -99,9 +100,10 @@ class _Library6CoordsToAddressScreenState
                       const SizedBox(width: 0, height: 0),
                       const SizedBox(height: 40),
                     ],
-                  ),
+                  )),
                 ),
-                Container(
+                KakaoMapPointerInterceptor(
+                    child: Container(
                   margin: const EdgeInsets.all(12),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -122,7 +124,7 @@ class _Library6CoordsToAddressScreenState
                       Text(address1),
                     ],
                   ),
-                ),
+                )),
               ],
             ),
           ),

@@ -77,12 +77,13 @@ class _Overlay23RemovableCustomOverlayScreenState
           Positioned(
             left: 12,
             bottom: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(message, style: const TextStyle(fontSize: 13)),
               ),
-            ),
+            )),
           ),
         ],
       ),

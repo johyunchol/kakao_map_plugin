@@ -21,8 +21,8 @@ class _RoadView9ToggleButtonScreenState
 
   Future<void> _toggle() async {
     final next = !showRoadview;
-    await controller?.setViewMode(
-        next ? RoadviewViewMode.split : RoadviewViewMode.map);
+    await controller
+        ?.setViewMode(next ? RoadviewViewMode.split : RoadviewViewMode.map);
     setState(() => showRoadview = next);
   }
 
@@ -37,11 +37,12 @@ class _RoadView9ToggleButtonScreenState
         useMapWalker: true,
         onCreated: (c) => controller = c,
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton.extended(
         onPressed: _toggle,
         label: Text(showRoadview ? '로드뷰 닫기' : '로드뷰 열기'),
         icon: Icon(showRoadview ? Icons.map : Icons.streetview),
-      ),
+      )),
     );
   }
 }

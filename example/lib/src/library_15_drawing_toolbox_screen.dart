@@ -62,7 +62,8 @@ class _Library15DrawingToolboxScreenState
           Positioned(
             left: 12,
             bottom: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
@@ -72,15 +73,16 @@ class _Library15DrawingToolboxScreenState
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton.extended(
         onPressed: _toggleToolbox,
         label: Text(toolboxVisible ? '도구 상자 숨기기' : '도구 상자 보이기'),
         icon: Icon(toolboxVisible ? Icons.visibility_off : Icons.visibility),
-      ),
+      )),
     );
   }
 }

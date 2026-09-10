@@ -97,7 +97,8 @@ class _Overlay9MarkerGeolocatorScreenState
             left: 12,
             right: 12,
             bottom: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
@@ -109,15 +110,16 @@ class _Overlay9MarkerGeolocatorScreenState
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton.extended(
         onPressed: _locate,
         label: const Text('현재 위치'),
         icon: const Icon(Icons.my_location),
-      ),
+      )),
     );
   }
 }

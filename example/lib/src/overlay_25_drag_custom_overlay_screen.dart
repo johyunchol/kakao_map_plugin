@@ -55,7 +55,8 @@ class _Overlay25DragCustomOverlayScreenState
           Positioned(
             left: 12,
             bottom: 12,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
@@ -66,7 +67,7 @@ class _Overlay25DragCustomOverlayScreenState
                   style: const TextStyle(fontSize: 13),
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),

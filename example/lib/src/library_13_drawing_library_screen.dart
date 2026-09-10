@@ -68,8 +68,8 @@ class _Library13DrawingLibraryScreenState
               onMapCreated: _setup,
               center: LatLng(33.450701, 126.570667),
               onDrawingEnd: (type) {
-                setState(() =>
-                    message = '${_labels[type] ?? type?.name ?? '도형'} 을(를) 그렸습니다.');
+                setState(() => message =
+                    '${_labels[type] ?? type?.name ?? '도형'} 을(를) 그렸습니다.');
               },
             ),
           ),

@@ -5,7 +5,8 @@ import 'package:kakao_map_plugin_example/src/home_screen.dart';
 /// Drawing undo, redo
 /// https://apis.map.kakao.com/web/sample/drawingUndo/
 class Library16DrawingUndoRedoScreen extends StatefulWidget {
-  const Library16DrawingUndoRedoScreen({Key? key, this.title}) : super(key: key);
+  const Library16DrawingUndoRedoScreen({Key? key, this.title})
+      : super(key: key);
 
   final String? title;
 

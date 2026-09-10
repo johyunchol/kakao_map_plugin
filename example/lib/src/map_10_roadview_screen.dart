@@ -29,7 +29,8 @@ class _Map10RoadViewScreenState extends State<Map10RoadViewScreen> {
           KakaoMap(onMapCreated: ((controller) async {
             mapController = controller;
           })),
-          Row(
+          KakaoMapPointerInterceptor(
+              child: Row(
             children: [
               MaterialButton(
                 onPressed: () {
@@ -45,7 +46,7 @@ class _Map10RoadViewScreenState extends State<Map10RoadViewScreen> {
                 child: const Text('로드뷰 표시하기'),
               ),
             ],
-          ),
+          )),
         ],
       ),
     );

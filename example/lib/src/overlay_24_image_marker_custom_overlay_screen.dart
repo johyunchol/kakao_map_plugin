@@ -120,7 +120,8 @@ class _Overlay24ImageMarkerCustomOverlayScreenState
             bottom: 16,
             left: 16,
             right: 16,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.92),
@@ -140,7 +141,7 @@ class _Overlay24ImageMarkerCustomOverlayScreenState
                 style:
                     const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
-            ),
+            )),
           ),
         ],
       ),

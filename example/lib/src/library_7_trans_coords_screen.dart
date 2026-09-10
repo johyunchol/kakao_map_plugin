@@ -59,7 +59,8 @@ class _Library7transCoordsScreenState extends State<Library7transCoordsScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: Container(
+            child: KakaoMapPointerInterceptor(
+                child: Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -76,7 +77,7 @@ class _Library7transCoordsScreenState extends State<Library7transCoordsScreen> {
                   Text(resultText),
                 ],
               ),
-            ),
+            )),
           )
         ],
       ),

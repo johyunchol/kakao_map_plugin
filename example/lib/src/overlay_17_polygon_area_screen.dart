@@ -38,9 +38,8 @@ class _Overlay17PolygonAreaScreenState
   double _calculatePolygonArea(List<LatLng> vertices) {
     if (vertices.length < 3) return 0;
 
-    final avgLat =
-        vertices.map((e) => e.latitude).reduce((a, b) => a + b) /
-            vertices.length;
+    final avgLat = vertices.map((e) => e.latitude).reduce((a, b) => a + b) /
+        vertices.length;
     final avgLatRad = avgLat * pi / 180;
 
     final xs = <double>[];
@@ -148,7 +147,8 @@ class _Overlay17PolygonAreaScreenState
             left: 16,
             right: 16,
             bottom: 16,
-            child: Card(
+            child: KakaoMapPointerInterceptor(
+                child: Card(
               elevation: 4,
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -168,15 +168,16 @@ class _Overlay17PolygonAreaScreenState
                   ],
                 ),
               ),
-            ),
+            )),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: KakaoMapPointerInterceptor(
+          child: FloatingActionButton(
         onPressed: _resetPolygon,
         tooltip: '초기화',
         child: const Icon(Icons.refresh),
-      ),
+      )),
     );
   }
 }

@@ -31,9 +31,9 @@ class _RoadView2DefaultScreenState extends State<RoadView2DefaultScreen> {
               useMapWalker: true,
               onCreated: (c) => controller = c,
               onPositionChange: (latLng) {
-                setState(() => message =
-                    '로드뷰 위치: ${latLng.latitude.toStringAsFixed(6)}, '
-                    '${latLng.longitude.toStringAsFixed(6)}');
+                setState(() =>
+                    message = '로드뷰 위치: ${latLng.latitude.toStringAsFixed(6)}, '
+                        '${latLng.longitude.toStringAsFixed(6)}');
               },
               onRoadviewNotFound: (latLng) {
                 setState(() => message = '이 위치에는 로드뷰가 없습니다.');

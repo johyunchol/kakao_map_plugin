@@ -40,10 +40,8 @@ class _RoadView8ButtonScreenState extends State<RoadView8ButtonScreen> {
             padding: const EdgeInsets.all(8),
             child: SegmentedButton<RoadviewViewMode>(
               segments: const [
-                ButtonSegment(
-                    value: RoadviewViewMode.map, label: Text('지도')),
-                ButtonSegment(
-                    value: RoadviewViewMode.split, label: Text('분할')),
+                ButtonSegment(value: RoadviewViewMode.map, label: Text('지도')),
+                ButtonSegment(value: RoadviewViewMode.split, label: Text('분할')),
                 ButtonSegment(
                     value: RoadviewViewMode.roadview, label: Text('로드뷰')),
               ],
