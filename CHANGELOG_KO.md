@@ -1,0 +1,152 @@
+# 변경 이력 (한국어)
+
+pub.dev 에 표시되는 공식 변경 이력은 영문 [CHANGELOG.md](CHANGELOG.md) 입니다. 이 문서는 1.0.0 항목의 한국어 번역이며, 0.4.0 이하 항목은 CHANGELOG.md 에서 확인하세요.
+
+## 1.0.0
+
+첫 안정 버전입니다. Web 지원과 공식 카카오 지도 JS 샘플 77개 전부를 포함하며, 아래의 동작 변경이 있습니다. 마이그레이션 방법은 README 의 "0.x → 1.0.0 마이그레이션" 절을 참고하세요.
+
+### ⚠️ BREAKING (동작 변경)
+* `controller.clearMarker()` 는 이제 **클러스터러가 관리하는 마커를 제외**하고 일반 마커만 제거합니다. 마이그레이션: 클러스터러 마커까지 지우려면 `clearMarkerClusterer()` 를 함께 호출하세요.
+* `controller.clear()` 는 이제 클러스터러 객체와 클러스터러 마커까지 함께 제거합니다(이전에는 마커만 숨겨지고 클러스터 표시가 남을 수 있었음). 마이그레이션: 클러스터러만 남기고 싶다면 `clear()` 대신 개별 `clearXxx()` 메서드를 조합해서 호출하세요.
+* `controller.clearMarkerClusterer()` 는 클러스터러 객체를 해제하고(`null`) 소속 마커를 전역 목록에서 제거합니다. 마이그레이션: 클러스터러 해제 후 마커를 다시 표시하려면 `addMarker()` 를 다시 호출하세요.
+* 진행 중인 검색 요청이 있는 상태에서 같은 종류의 새 검색을 시작하면, 이전 요청의 레거시 `xxxResult()` 대기가 영구 대기 대신 `StateError('새 요청으로 대체되었습니다.')` 로 종료됩니다. 마이그레이션: 레거시 정적 결과 경로를 쓰고 있다면 `await` 지점을 `try/catch` 로 감싸거나, 요청별로 결과를 받는 `controller.keywordSearch()` 반환값을 사용하세요.
+* `controller.addMarker(markers: [])` 및 `KakaoMap(markers: [])` 는 이제 다른 오버레이와 동일하게 **기존 일반 마커를 모두 제거**합니다(이전에는 무시됨). `null` 은 여전히 무시됩니다. 마이그레이션: 기존 마커를 유지하려면 빈 리스트(`[]`) 대신 `null` 을 전달하세요.
+* 같은 ID 의 마커를 다른 내용으로 다시 추가하면 갱신됩니다(이전에는 무시됨). 마이그레이션: 기존 마커를 유지하고 싶다면 동일한 ID 로 재호출하지 마세요.
+* `KakaoMap` 위젯 속성으로 넘긴 오버레이는 지도 준비(`onMapCreated`) 시점에 자동으로 그려집니다. 마이그레이션: `onMapCreated` 콜백에서 별도로 오버레이를 그리던 코드는 중복 호출이 되지 않도록 제거하세요.
+
+
+* 인포윈도우·커스텀 오버레이 안의 링크(`<a href>`)를 탭하면 WebView 가 이동하지 않고 `KakaoMap(onLinkTap:)` 으로 알립니다(콜백이 없으면 무시). 마이그레이션: 외부 브라우저로 열려면 `onLinkTap` 에서 `url_launcher` 등으로 여세요.
+* 지도 문서에서 텍스트 선택, 탭 하이라이트, 롱프레스 컨텍스트 메뉴, 페이지 핀치 줌, 오버스크롤이 기본으로 꺼집니다. 마이그레이션: 선택이 필요한 요소에 `kmp-selectable` 클래스를 주세요.
+* `pointer_interceptor` 의존성이 추가되었습니다(실질적으로 Web 에서만 사용). 마이그레이션: `flutter pub get` 만 하면 되고 Android/iOS 코드 변경은 없습니다.
+* 검색 실패(카카오 API 오류 상태 또는 `null` 결과)는 성공이 아니라 `Future` 에러로 완료됩니다. 마이그레이션: 검색 호출을 `try/catch` 로 감싸세요. 결과 없음(`ZERO_RESULT`)은 빈 목록으로 성공 처리됩니다.
+
+### 성능
+* 오버레이(마커, 폴리라인, 원, 사각형, 다각형, 커스텀 오버레이)를 요소별 개별 호출 대신 **배치 1회 호출**로 전송합니다. 마커 N개 기준 N+1회 → 1~3회 브릿지 왕복.
+* `didUpdateWidget` 에서 오버레이 종류별 **내용 시그니처를 비교**해 실제로 바뀐 종류만 재전송합니다. 부모 위젯의 무관한 rebuild 로 인한 전량 재생성이 사라집니다.
+* JS 쪽 오버레이 관리를 배열 선형 탐색(O(N²))에서 **id 인덱스(Map) 기반 O(1) 조회**로 전환했습니다.
+* 같은 ID + 같은 내용의 오버레이는 재생성하지 않고 재사용합니다(항목별 hash). 내용이 바뀐 항목만 교체됩니다.
+* base64 마커 아이콘의 Blob URL 과 `MarkerImage` 인스턴스를 캐시하고, `dispose()` 시 `revokeObjectURL` 로 해제합니다. `MarkerIcon.fromAsset` 결과도 assetName 기준으로 캐시합니다.
+* `onMapDoubleTap` 콜백이 없으면 `dblclick` 리스너를 등록하지 않습니다.
+* `relayout()` 호출을 코얼레싱해 위젯 rebuild 마다 중복 발생하던 지도 리플로우를 제거했습니다. 지도 준비 직후와 위젯 크기 변경 시에는 즉시 반영됩니다.
+* 불러올 SDK 확장 라이브러리를 선택할 수 있게 했습니다. 사용하지 않는 라이브러리를 제외하면 지도 생성 시 다운로드/파싱 비용이 줄어듭니다(예: `drawing` 번들은 압축 전 약 99KB 로 지도 본체와 맞먹습니다). 기본값은 전체이므로 지정하지 않으면 기존과 동일합니다.
+
+### 버그 수정
+* 폴리라인/원/사각형/다각형에 JS 측 `id` 가 할당되지 않아 ID 기반 부분 갱신과 `clearXxx(ids:)` 가 항상 전량 삭제되던 문제를 수정했습니다.
+* 같은 `markerId` 로 좌표나 속성을 바꿔도 지도에 반영되지 않던 문제를 수정했습니다.
+* `setMarkerDraggable` 이 항상 동작하지 않던 문제(`markerId` 속성명 불일치)를 수정했습니다.
+* `Clusterer.disableClickZoom` 이 무시되고 항상 `true` 로 동작하던 문제를 수정했습니다.
+* 클러스터러가 일반 마커까지 흡수하고, 재생성 시 이전 마커가 누적되던 문제를 수정했습니다. 클러스터러 마커와 일반 마커는 이제 분리 관리됩니다.
+* `ClustererStyle.color`/`background` 가 null 이면 클러스터러 생성이 실패하던 문제를 수정했습니다.
+* 구멍이 있는 폴리곤(`holes`)에서 `strokeStyle` 이 무시되던 문제를 수정했습니다.
+* `LatLng.fromJson` 이 정수 좌표에서 `TypeError` 를 던지던 문제, `LatLngBounds.fromJson` 이 항상 실패하던 문제를 수정했습니다.
+* `getBounds()`, `getLevel()` 이 정수 좌표를 반환하는 경우 `TypeError` 가 발생하던 문제를 수정했습니다.
+* 검색어/콘텐츠에 작은따옴표·줄바꿈·U+2028 등이 포함되면 JS 구문이 깨지던 문제(인젝션 가능)를 수정했습니다. 모든 값은 JSON 문자열 리터럴로 안전하게 전달됩니다.
+* 커스텀 오버레이 ID 를 통한 HTML/JS 인젝션을 차단했습니다.
+* 위젯 속성으로 전달한 초기 오버레이가 rebuild 전까지 그려지지 않던 문제를 수정했습니다. 이제 `onMapCreated` 시점에 그려집니다.
+* WebView 페이지가 재로드될 때 기존에 그려져 있던 오버레이가 복구되지 않던 문제를 수정했습니다. (참고: iOS 는 `loadHtmlString` 으로 로드한 문서를 `reload()` 하면 HTML 이 다시 실행되지 않는 WKWebView 동작 때문에 복구되지 않습니다. 지도를 다시 그리려면 위젯을 재생성하세요.)
+* 배치 전송 중 오버레이 하나가 실패해도 나머지 오버레이는 정상적으로 표시되도록 수정했습니다.
+* `markers` 등 오버레이 목록을 `null` 로 바꿔도 기존 오버레이가 지도에 남아있던 문제를 수정했습니다.
+* `setBounds()` 가 항상 실패하던 문제를 수정했습니다(optional `bounds` 파라미터 추가).
+* 릴리스 빌드에서도 Android WebView 원격 디버깅이 켜져 있던 문제를 수정했습니다(`kDebugMode` 에서만 활성화).
+
+### 검색 서비스
+* 키워드/카테고리/주소/좌표 변환 요청에 **요청 ID 기반 라우팅**을 도입했습니다. 동시에 여러 요청을 보내도 각자의 응답을 받으며, 카카오 API 가 오류 상태를 반환하면 `Future` 가 에러로 완료됩니다(이전에는 영구 대기). 60초 안에 응답이 없으면 `TimeoutException` 으로 완료됩니다.
+* 검색 실패(카카오 API 가 `ERROR` 상태를 반환하거나 결과가 `null` 인 경우)가 성공으로 처리되던 문제를 수정했습니다. 단, **결과 0건(`ZERO_RESULT`)은 오류가 아니라 빈 목록**으로 처리되며 이는 기존 동작과 동일합니다.
+* `AddressSearchRequest.analyzeType` 이 요청 시 무시되던 문제를 수정했습니다.
+* 검색 요청이 타임아웃될 때 레거시 `xxxResult()` 콜백 경로도 함께 종료되지 않던 문제를 수정했습니다(이제 타임아웃 시 레거시 경로도 함께 종료됩니다).
+* `services` 라이브러리를 제외하고 지도를 만든 경우, 검색 API 호출이 조용히 멈추지 않고 `SERVICES_LIBRARY_NOT_LOADED` 오류로 완료됩니다.
+
+### Web 지원
+* **web 플랫폼을 지원합니다.** web 에서는 WebView 대신 같은 HTML 을 같은 origin 의 iframe 문서에 넣어 그립니다. 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 가 모바일과 동일하게 동작하며, 기존 코드 변경은 필요 없습니다.
+* `KakaoMapPointerInterceptor` 를 추가했습니다. web 에서 지도(iframe) 위에 겹친 Flutter 위젯이 탭을 받도록 감싸는 위젯이며, Android/iOS 에서는 자식을 그대로 반환합니다.
+* 카카오 콘솔 **Web 플랫폼 사이트 도메인**에 앱의 origin(포트 포함)을 등록해야 합니다. `baseUrl` 우회는 web 에서 동작하지 않습니다.
+* 내부적으로 Dart↔JS 통신을 `KakaoMapBridge` 로 추상화했습니다(모바일 `WebViewBridge`, web `IframeBridge`). `KakaoMapController(WebViewController)` 등 기존 생성자는 그대로 유지되며, web 에서 `webViewController` getter 는 `StateError` 를 던집니다.
+
+### 앱 느낌 개선 (기본 적용)
+* 지도 문서에 시스템 글꼴(`-apple-system`, Roboto, Noto Sans KR …)을 기본 적용하고, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃/컨텍스트 메뉴·페이지 핀치 줌·오버스크롤 글로우/바운스·스크롤바·포커스 링을 껐습니다. 선택 가능해야 하는 요소에는 `kmp-selectable` 클래스를 주세요. iOS 에서는 링크 미리보기도 끕니다.
+* 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라지던 문제를 수정했습니다. 링크 이동은 가로채고 `KakaoMap(onLinkTap:)`(로드뷰 위젯도 동일)으로 알립니다. 콜백이 없으면 무시됩니다.
+
+### 오버레이 이벤트 · 마커 · Flutter 위젯 오버레이 · 검색 · 링크
+* `KakaoMapWidgetOverlay` 와 `KakaoMap(widgetOverlays:)` 를 추가했습니다. 진짜 Flutter 위젯을 지도 좌표에 붙이고, 지도가 움직이면 JS 가 보내는 픽셀 좌표를 따라 이동합니다(프레임당 1회). web 에서도 눌립니다.
+* 선/원/사각형 탭 콜백 `onPolylineTap`, `onCircleTap`, `onRectangleTap` 과 길게 누르기 `onMapLongPress`(마우스 환경은 우클릭 포함)를 추가했습니다.
+* 마우스 hover 콜백 `onMarkerMouseOver / onMarkerMouseOut / onPolygonMouseOver / onPolygonMouseMove / onPolygonMouseOut` 과 `supportsHover()` 를 추가했습니다. **마우스 포인터 환경 전용**이며 터치 기기에서는 호출되지 않습니다. 예제 "마커에 마우스 이벤트 등록하기", "다각형에 이벤트 등록하기 1·2" 를 공식 샘플대로 복원하고 터치 대체 동작을 함께 넣었습니다.
+* `Marker` 에 `opacity`, `visible`, `clickable`, `title`, 스프라이트(`spriteOrigin`, `spriteWidth`, `spriteHeight`)를 추가하고, `setMarkerPosition()`(재생성 없는 이동), `setMarkerVisible()`, `showInfoWindow()`, `hideInfoWindow()` 를 추가했습니다.
+* 키워드/카테고리/주소 검색 응답에 `pagination`(`SearchPagination`: totalCount, current, hasNextPage, hasPrevPage)을 추가했습니다.
+* `KakaoMapLinks` 를 추가했습니다. 카카오맵 웹 링크(`map.kakao.com/link/…`)와 앱 스킴(`kakaomap://`)으로 장소 보기·길찾기·로드뷰·검색 URL 을 만듭니다(실행은 `url_launcher` 등으로).
+
+### 앱 느낌 패키지
+* `InfoWindowStyle` 을 추가했습니다. `Marker.infoWindowStyle` 또는 `KakaoMapTheme.infoWindowStyle` 로 지정하면 SDK 기본 인포윈도우 대신 앱 스타일 말풍선(둥근 모서리, 그림자, 꼬리, 닫기 버튼)을 그립니다. `material()`, `cupertino()`, `dark()` 프리셋이 있고, 지정하지 않으면 기존 모양입니다.
+* `KakaoMapTheme` 을 추가했습니다(`AuthRepository.initialize(theme:)` 전역 / `KakaoMap(theme:)` 개별). 글꼴, 타일 로딩 전 배경색, 기본 인포윈도우 스타일, 추가 CSS 를 지정합니다.
+* `KakaoMapControls`(확대/축소·지도 타입 Flutter 버튼)와 `KakaoDrawingToolbar`(Drawing 도형 선택·되돌리기 칩 바)를 추가했습니다. web 에서도 눌리도록 내부에서 `KakaoMapPointerInterceptor` 를 사용합니다.
+* `MarkerIcon.pin(color:)`(색만 바꾼 SVG 핀)과 `MarkerIcon.fromWidget()`(Flutter 위젯을 그려 마커 이미지로)을 추가했습니다.
+* `ClustererStyle.material(color)` 프리셋과 `fontSize / fontWeight / fontFamily / border / boxShadow / opacity` 필드를 추가했습니다.
+* `KakaoMap(copyrightPosition:, copyrightReversed:)` 와 `KakaoRoadMap / KakaoMapRoadviewView(disableZoomControl:)` 을 추가했습니다.
+
+### 카메라 / 측정
+* `KakaoMap(minLevel:, maxLevel:)` 을 rebuild 로 바꿔도 반영되지 않던 문제를 수정하고, `setMinLevel()` / `setMaxLevel()` 을 추가했습니다.
+* `jump(center, level, animate:, duration:)`, `panBy(dx, dy)`, `panToBounds(bounds, padding:)`, `fitBounds(points, padding:)` 를 추가했습니다.
+* SDK 계산값을 돌려주는 `getPolylineLength()`, `getPolygonArea()`, `getPolygonLength()` 를 추가했습니다. 예제 "선의 거리 계산하기", "다각형의 면적 계산하기"가 공식 샘플과 같이 동작합니다.
+* 지도 생성 옵션 `mapTypeId`(초기 지도 타입), `disableDoubleClick`, `disableDoubleClickZoom`, `scrollwheel`, `keyboardShortcuts` 와 `onMapTypeChanged` 콜백을 추가했습니다.
+
+### 버그 수정 (추가)
+* `ClustererStyle.background` 가 Flutter 순서(`#aarrggbb`)의 16진수로 CSS 에 들어가 색이 달라지던 문제를 수정했습니다. 이제 CSS 형식(`#rrggbb` / `rgba()`)으로 전달됩니다.
+* `KeywordSearchRequest.useMapCenter / useMapBounds` 가 항상 무시되던 문제를 수정했습니다(`Places` 를 지도와 연결).
+* `KakaoStaticMap` 초기 HTML 에 마커 텍스트가 이스케이프 없이 들어가 `</script>` 가 포함되면 스크립트가 깨지던 문제를 수정했습니다.
+
+### 로드뷰
+* `KakaoRoadMap` 이 `onMapCreated` 를 호출하지 않고, 마커가 그려지지 않으며, rebuild 마다 마커가 무한 증식하던 문제를 수정했습니다.
+* 백그라운드 복귀 시 iOS 에서 로드뷰가 빈 화면이 되던 문제를 수정했습니다(`reload()` 대신 `relayout()` 사용).
+* 로드뷰가 없는 지역(`panoId === null`)에서 오류 없이 `onRoadviewNotFound` 콜백을 호출하도록 했습니다.
+* `KakaoRoadviewController` 를 추가했습니다(`onRoadviewCreated` 로 전달). `setPanoId`, `setPanoIdNear`, `getPanoId`, `setViewpoint`, `getViewpoint`, `getPosition`, `viewpointFromCoords`, `relayout`, `addMarker`, `addCustomOverlay`, `clearMarker`, `clearCustomOverlay`, `clear` 를 제공합니다.
+* `KakaoRoadMap` 에 `panoId`, `radius`, `viewpoint`, `customOverlays` 와 콜백 `onRoadviewInit`, `onPanoIdChange`, `onViewpointChange`, `onPositionChange`, `onRoadviewNotFound`, `onMarkerTap`, `onCustomOverlayTap` 을 추가했습니다. 기존 `onMapCreated`, `currentLevel` 은 그대로 유지됩니다.
+* `Viewpoint` 모델(pan, tilt, zoom)을 추가했습니다.
+* `Marker` 에 `altitude`, `range`, `CustomOverlay` 에 `altitude` 를 추가했습니다(로드뷰에서 사용).
+* 동동이(MapWalker) 스프라이트 좌표가 잘못되어 아이콘이 잘려 보이던 문제를 수정했습니다(카카오 공식 샘플 좌표 사용).
+* `KakaoMapRoadviewView` 에서 표시 모드 전환·크기 변경 후 지도 중심이 화면 절반만큼 어긋나던 문제를 수정했습니다. 분할/로드뷰 모드로 처음 들어갈 때 지도 중심 위치의 로드뷰를 자동으로 불러옵니다.
+* 지도와 로드뷰를 한 WebView 에 함께 띄우는 `KakaoMapRoadviewView` / `KakaoMapRoadviewController` / `RoadviewViewMode` 를 추가했습니다. 지도 클릭으로 로드뷰를 이동하고, 동동이(MapWalker)가 로드뷰 시점 방향을 지도에 표시합니다.
+
+### 오버레이 상호작용
+* `KakaoMap(onPolygonTap:)` 다각형 탭 콜백을 추가했습니다.
+* `CustomOverlay.removable` (닫기 버튼 + `onCustomOverlayRemove` 콜백), `CustomOverlay.draggable` (드래그 + `onCustomOverlayDragEnd` 콜백) 을 추가했습니다. 드래그 중에는 지도 이동이 잠기고, 문서 레벨 리스너는 드래그가 끝나면 즉시 제거됩니다.
+* `coordToPixel` / `pixelToCoord` 를 지도 정리 후 호출하면 원인을 알기 어려운 캐스트 오류가 나던 문제를 수정했습니다. 이제 원인을 설명하는 `StateError` 를 던집니다.
+
+### Drawing Library
+* 사용자가 지도 위에 도형을 그리는 Drawing Library 바인딩을 추가했습니다. `KakaoMapController.createDrawingManager`, `selectDrawingMode`, `cancelDrawing`, `undoDrawing`, `redoDrawing`, `removeDrawingShape`, `getDrawingData`, `showDrawingToolbox`, `removeDrawingToolbox`.
+* `DrawingOverlayType`, `DrawingOptions`, `DrawingStyle` 과 그린 결과 DTO `DrawingData` / `DrawingShape` 계열(`DrawingMarkerShape`, `DrawingPathShape`, `DrawingRectangleShape`, `DrawingCircleShape`, `DrawingEllipseShape`) 을 추가했습니다. 좌표는 `LatLng` 로 정규화됩니다.
+* `KakaoMap` 콜백 `onDrawingEnd`, `onDrawingRemove`, `onDrawingStateChange` 를 추가했습니다.
+* `KakaoMapLibrary.drawing` 을 제외하고 지도를 만든 경우 Drawing API 는 조용히 무시되며 오류가 `window.__kakaoMapErrors` 에 기록됩니다.
+
+### 커스텀 타일셋
+* `Tileset` / `TilesetCopyright` 와 `KakaoMapController.addTileset`, `setTileset`, `addOverlayTileset`, `removeOverlayTileset`, `getActiveTilesetId` 를 추가했습니다. 타일 소스는 주소 템플릿(`{x}` `{y}` `{z}`), 주소 함수, DOM 타일 함수 중 하나로 지정합니다.
+* 커스텀 타일셋이 기본 지도 타입인 상태에서 `getMapTypeId()` 를 호출해도 예외 없이 `MapType.normal` 을 돌려줍니다. 타일셋 ID 는 `getActiveTilesetId()` 로 확인합니다.
+
+### 예제
+* 카카오 공식 샘플 77개를 모두 예제 앱에서 확인할 수 있습니다. 로드뷰 9개, 오버레이 12개, Drawing 4개, 커스텀 타일셋 2개 화면을 추가했습니다. (마커 mouseover/mouseout 은 모바일에 hover 개념이 없어 안내 화면으로 대체)
+* 라이브러리 예제 파일 번호 중복(`library_11_*` 3개)을 정리했습니다.
+
+### API 추가 (하위호환 유지)
+* `KakaoMapLibrary` 열거형과 `AuthRepository.initialize(libraries:)`, `KakaoMap(libraries:)` 를 추가했습니다. 지정하지 않으면 기존과 동일하게 전체를 불러오며, `clusterer` 를 사용하면 자동으로 포함됩니다.
+* `MarkerIcon.network(url)` 동기 생성자를 추가했습니다. 기존 `MarkerIcon.fromNetwork` 는 `Future<MarkerIcon>` 을 그대로 반환합니다.
+* `MarkerIcon.fromBytes(bytes)`, `MarkerIcon.fromBase64(base64)` 를 추가했습니다.
+* 같은 base64 아이콘을 쓰는 마커가 여러 개여도 이미지는 WebView 에 1회만 전송됩니다(`registerImages` 레지스트리).
+* `BaseService.createRequest()` / `requestFuture()` / `failRequest()` / `handleMessage()` 를 추가했습니다. 기존 `resetCompleter()` / `completer` / `xxxCallback` 은 유지됩니다.
+* `AuthRepository.isInitialized` 를 추가했고, 초기화 전에 `appKey` 에 접근하면 명확한 `StateError` 를 던집니다. `appKey` setter 는 유지됩니다.
+* `setBounds()` 에 optional `bounds` 파라미터를 추가했습니다.
+* `isDraggable()`, `isZoomable()` 을 추가했습니다. 기존 `getDraggable()`, `getZoomable()` 은 `@Deprecated` 되었으며 계속 동작합니다.
+
+### Deprecated (계속 동작하며 2.0.0 에서 제거 예정)
+1.0.0 에서 제거된 API 는 없습니다.
+
+* `getDraggable()`, `getZoomable()` 은 `@Deprecated` 되었습니다. `isDraggable()`, `isZoomable()` 을 사용하세요.
+* `MapType.roadMap` 은 `MapType.normal` 과 값이 동일하여 `@Deprecated` 되었습니다. `normal` 을 사용하세요.
+* `setStyle()` 을 `@Deprecated` 처리했습니다.
+* 사용되지 않는 플랫폼 템플릿 클래스(`KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin`)를 `@Deprecated` 처리했습니다. 다음 메이저 버전에서 제거될 예정입니다. (`KakaoMapPluginWeb` 은 web 플랫폼 등록 클래스로 계속 사용됩니다.)
+
+### 기타
+* web 지원을 위해 `pointer_interceptor` 의존성을 추가했습니다(모바일 동작에는 영향 없음).
+* `dart:io` 의존성을 제거했습니다.
+* `flutter_lints` 를 적용해 정적 분석 규칙을 강화했습니다.
+
+### 문서
+* `clearMarker(markerIds:)` 등 `clearXxx(ids:)` 의 `ids` 는 **남길 ID 목록**임을 문서에 명시했습니다(동작 변경 없음).

@@ -1,5 +1,7 @@
 ## 1.0.0
 
+Korean translation of this entry: [CHANGELOG_KO.md](CHANGELOG_KO.md)
+
 First stable release. It adds Web support, covers all 77 official Kakao Maps JS samples, and includes the behavior changes listed below. A migration guide is available in the README (`README.md` in Korean, `README_EN.md` in English) under "Migrating from 0.x".
 
 ### ⚠️ BREAKING (behavior changes)
