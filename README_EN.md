@@ -1,41 +1,41 @@
 # kakao_map_plugin
 
-한국어 | [English](README_EN.md)
+[한국어](README.md) | English
 
 [![pub package](https://img.shields.io/pub/v/kakao_map_plugin.svg?color=4285F4)](https://pub.dev/packages/kakao_map_plugin)
 
-**[카카오 지도](https://apis.map.kakao.com/web/guide)** 를 구동할 수 있는 Flutter 플러그인 입니다.
+A Flutter plugin that runs **[Kakao Map](https://apis.map.kakao.com/web/guide)**.
 
-네이티브 라이브러리를 사용한 것이 아닌 Javascript 라이브러리를 이용하여 제작한 플러그인 입니다.
+It is not built on a native library — it is built on the Kakao Maps JavaScript library.
 
-Android, iOS 는 `webview_flutter` 로, Web 은 iframe 으로 동작합니다. 모바일은 최소 버전 확인이 필요합니다.
+Android and iOS run through `webview_flutter`, and Web runs through an iframe. Mobile platforms have minimum version requirements.
 
-|             | Android        | iOS  | Web                          |
-|-------------|----------------|------|------------------------------|
-| **Support** | SDK 19+ or 20+ | 9.0+ | 지원 (사이트 도메인 등록 필요, 아래 참고) |
+|             | Android        | iOS  | Web                                                    |
+|-------------|----------------|------|--------------------------------------------------------|
+| **Support** | SDK 19+ or 20+ | 9.0+ | Supported (site domain registration required, see below) |
 
 ---
 
-## 시작하기
+## Getting started
 
-### 공통
+### Common
 
-**[카카오 개발자센터](https://developers.kakao.com/)** 에서 javascript key 를 발급받아야 합니다.
+You need to issue a JavaScript key from the **[Kakao Developers console](https://developers.kakao.com/)**.
 
-`pubspec.yaml`에 dependencies에 작성
+Add the dependency to `pubspec.yaml`
 
 ``` yaml
 dependencies:
-  kakao_map_plugin: [최신버전]
+  kakao_map_plugin: [latest version]
 ```
 
-1. javascript key 등록
+1. Register the JavaScript key
 
-* Singleton 으로 되어 있어서 KakaoMap 위젯이 호출 되기 전에만 initialize 하면 됩니다. 여기서는 main 함수에서 호출하도록 했습니다.
-* example 에서는 flutter_dotenv 라이브러리를 사용하였습니다. 바로 실행해 보시려면 `example/assets/env/.env.sample`을
-  복사하여 `example/assets/env/.env`로 만들어주시고 `.env` 파일 내부에 `APP_KEY=`뒤에 본인의 javascript key 를 넣으시면 됩니다.
-* 키워드로 장소검색하기, 카테고리로 장소 검색, 주소로 장소 표시, 좌표로 주소를 얻어오기, 좌표 변환하기 와 같은 services 기능을 사용하려면 baseUrl 을 추가 해야 합니다.
-* `.env`에 `BASE_URL=`뒤에 본인의 baseUrl 주소를 넣으시면 됩니다.
+* It is a singleton, so you only need to initialize it before the `KakaoMap` widget is created. Here it is called from the `main` function.
+* The example app uses the `flutter_dotenv` package. To run it right away, copy `example/assets/env/.env.sample` to
+  `example/assets/env/.env` and put your JavaScript key after `APP_KEY=` inside the `.env` file.
+* To use the services features — keyword place search, category place search, address search, coordinate-to-address lookup, and coordinate transformation — you must also set `baseUrl`.
+* Put your baseUrl after `BASE_URL=` in `.env`.
 
 ``` dart
 void main() {
@@ -51,11 +51,11 @@ void main() {
 
 ### Android
 
-AndroidManifest.xml 에 INTERNET 권한 및 usesCleartextTraffic="true" 설정
+Declare the INTERNET permission and set `usesCleartextTraffic="true"` in AndroidManifest.xml
 
 ``` xml
 <manifest>
-    <!-- webview_flutter 에서 인터넷 접속을 위한 권한을 선언합니다 -->
+    <!-- Declares the permission that webview_flutter needs for internet access -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -67,7 +67,7 @@ AndroidManifest.xml 에 INTERNET 권한 및 usesCleartextTraffic="true" 설정
 
 ### iOS
 
-Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_preview 설정
+Set NSAppTransportSecurity and io.flutter.embedded_views_preview in Info.plist
 
 ``` xml
 <dict>
@@ -85,14 +85,14 @@ Info.plist 에 NSAppTransportSecurity 권한 및 io.flutter.embedded_views_previ
 
 ### Web
 
-web 에서는 WebView 대신 iframe 으로 지도를 그립니다. 별도 설정 없이 `flutter run -d chrome` 으로 실행되지만, **카카오 콘솔에 사이트 도메인을 등록해야 지도가 표시됩니다.**
+On web the map is rendered in an iframe instead of a WebView. It runs with `flutter run -d chrome` without extra setup, but **the map only appears once you register the site domain in the Kakao Developers console.**
 
-1. [Kakao Developers](https://developers.kakao.com) → 내 애플리케이션 → 플랫폼 → **Web** → 사이트 도메인에 앱이 서비스되는 origin 을 추가합니다. 포트까지 정확히 비교하므로 개발 중에는 `http://localhost:포트` 를 그대로 등록하세요. (예: `flutter run -d chrome --web-port=8080` 이면 `http://localhost:8080`)
-2. 등록되지 않은 도메인에서는 카카오 SDK 가 401 을 돌려주고 브라우저 콘솔에 `domain mismatched! caller=...` 오류가 찍힙니다.
+1. Go to [Kakao Developers](https://developers.kakao.com) → My Application → Platform → **Web** → Site domain, and add the origin your app is served from. The port is compared exactly, so during development register `http://localhost:port` as-is. (For example, `flutter run -d chrome --web-port=8080` means `http://localhost:8080`.)
+2. On an unregistered domain the Kakao SDK returns 401 and the browser console logs a `domain mismatched! caller=...` error.
 
-web 에서 다른 점:
+Differences on web:
 
-* **지도 위에 겹쳐 놓은 Flutter 위젯은 `KakaoMapPointerInterceptor` 로 감싸세요.** web 에서 지도는 iframe 이라 그 위에 `Stack` 으로 올린 버튼·카드가 탭을 받지 못합니다. 이 위젯이 자식 영역의 포인터 이벤트를 Flutter 로 돌려주며, Android/iOS 에서는 자식을 그대로 반환하므로 플랫폼 구분 없이 쓰면 됩니다. `Scaffold` 의 `floatingActionButton` 처럼 지도와 겹치는 것도 포함됩니다.
+* **Wrap Flutter widgets that sit on top of the map with `KakaoMapPointerInterceptor`.** On web the map is an iframe, so buttons and cards placed over it with a `Stack` never receive taps. This widget routes pointer events in the child's area back to Flutter, and on Android/iOS it simply returns the child, so you can use it on every platform. This also applies to things that overlap the map such as `Scaffold`'s `floatingActionButton`.
 
     ``` dart
     Stack(
@@ -102,105 +102,105 @@ web 에서 다른 점:
           top: 16,
           right: 16,
           child: KakaoMapPointerInterceptor(
-            child: ElevatedButton(onPressed: () {}, child: const Text('현재 위치')),
+            child: ElevatedButton(onPressed: () {}, child: const Text('Current location')),
           ),
         ),
       ],
     )
     ```
 
-* `AuthRepository.initialize(baseUrl:)` 은 무시됩니다. 도메인 검사는 실제 페이지 origin 으로 이뤄집니다.
-* `gestureRecognizers` 는 쓰이지 않습니다. iframe 안의 포인터 이벤트는 브라우저가 직접 처리합니다.
-* `KakaoMapController.webViewController` 는 web 에서 `StateError` 를 던집니다(WebView 가 없습니다). 플랫폼에 관계없이 지도 문서 안에서 JavaScript 를 직접 실행하려면 `controller.runJavaScript()` / `controller.evaluateJavaScript()` 를 사용하세요.
+* `AuthRepository.initialize(baseUrl:)` is ignored. The domain check uses the actual page origin.
+* `gestureRecognizers` is not used. Pointer events inside the iframe are handled directly by the browser.
+* `KakaoMapController.webViewController` throws a `StateError` on web (there is no WebView). To run JavaScript directly inside the map document regardless of platform, use `controller.runJavaScript()` / `controller.evaluateJavaScript()`.
 
     ``` dart
-    // 플러그인이 아직 감싸지 않은 SDK 기능을 직접 호출할 때 (Android / iOS / Web 공통)
+    // Calling SDK features the plugin does not wrap yet (Android / iOS / Web)
     await mapController.runJavaScript('map.setCopyrightPosition(kakao.maps.CopyrightPosition.BOTTOMRIGHT);');
     final raw = await mapController.evaluateJavaScript('JSON.stringify(map.getLevel())');
     ```
-* 그 외 지도·오버레이·로드뷰·Drawing·검색·타일셋 API 는 모바일과 동일하게 동작합니다.
+* Every other map, overlay, Roadview, Drawing, search, and tileset API behaves the same as on mobile.
 
-### 플랫폼별 차이
+### Platform differences
 
-| 항목 | Android | iOS | Web |
+| Item | Android | iOS | Web |
 |---|---|---|---|
-| `gestureRecognizers` | ✅ | ✅ | 무시 (iframe 이 직접 처리) |
-| `AuthRepository.initialize(baseUrl:)` | ✅ | ✅ | 무시 (실제 origin 검사) |
-| `controller.webViewController` | ✅ | ✅ | `StateError` → `runJavaScript / evaluateJavaScript` 사용 |
-| 지도 위에 겹친 Flutter 위젯 탭 | ✅ | ✅ | `KakaoMapPointerInterceptor` 로 감싸야 함 |
-| `reload()` 후 HTML 재실행 | ✅ | ❌ (WKWebView 제약, 위젯 재생성 권장) | ✅ |
-| `scrollwheel`, `keyboardShortcuts` | 해당 없음 | 해당 없음 | ✅ |
-| hover 콜백 (`onMarkerMouseOver` 등) | ❌ | ❌ | ✅ 마우스가 있을 때 (`supportsHover()`) |
-| `onMapLongPress` | ✅ | ✅ | ✅ (우클릭 포함) |
+| `gestureRecognizers` | ✅ | ✅ | Ignored (the iframe handles it) |
+| `AuthRepository.initialize(baseUrl:)` | ✅ | ✅ | Ignored (the actual origin is checked) |
+| `controller.webViewController` | ✅ | ✅ | `StateError` → use `runJavaScript / evaluateJavaScript` |
+| Tapping Flutter widgets layered over the map | ✅ | ✅ | Must be wrapped in `KakaoMapPointerInterceptor` |
+| HTML re-execution after `reload()` | ✅ | ❌ (WKWebView limitation, recreating the widget is recommended) | ✅ |
+| `scrollwheel`, `keyboardShortcuts` | N/A | N/A | ✅ |
+| Hover callbacks (`onMarkerMouseOver`, etc.) | ❌ | ❌ | ✅ when a mouse is present (`supportsHover()`) |
+| `onMapLongPress` | ✅ | ✅ | ✅ (including right-click) |
 
-### 카카오 지도 API 로 지원되지 않는 것
+### What the Kakao Maps API does not support
 
-카카오 JavaScript API 자체에 없는 기능이라 이 플러그인으로도 제공할 수 없습니다.
+These features do not exist in the Kakao JavaScript API itself, so this plugin cannot provide them either.
 
-* 지도 회전(bearing)·기울기(tilt)·3D 건물·실내 지도
-* 지도 스타일 JSON / 다크 모드 기본 지도 (커스텀 타일셋으로 직접 만든 타일만 가능)
-* 타일에 그려진 POI(상호명 라벨) 탭 이벤트
-* 기본 지도 타일의 오프라인 캐싱
-* 지도 스냅샷(이미지 캡처) — 타일이 교차 출처라 캔버스에서 읽을 수 없습니다. 정적 지도가 필요하면 `KakaoStaticMap` 을 사용하세요
+* Map rotation (bearing), tilt, 3D buildings, indoor maps
+* Map style JSON / dark mode base map (only tiles you build yourself as a custom tileset)
+* Tap events on POIs (business name labels) drawn into the tiles
+* Offline caching of the base map tiles
+* Map snapshots (image capture) — the tiles are cross-origin, so they cannot be read from a canvas. Use `KakaoStaticMap` if you need a static map
 
 ---
 
-## 0.x → 1.0.0 마이그레이션
+## Migrating from 0.x to 1.0.0
 
-1.0.0 은 첫 안정 버전입니다. **제거된 API 는 없습니다.** 시그니처는 모두 그대로이고, 아래 항목만 동작이 달라졌으므로 해당 코드가 있는지 확인하세요.
+1.0.0 is the first stable release. **No API was removed.** All signatures are unchanged; only the items below behave differently, so check whether your code relies on them.
 
-### 동작이 바뀐 API
+### APIs with changed behavior
 
-| 이전 (0.x) | 1.0.0 | 이렇게 바꾸세요 |
+| Before (0.x) | 1.0.0 | What to do |
 |---|---|---|
-| `controller.clearMarker()` 가 클러스터러 마커까지 제거 | 일반 마커만 제거 | 클러스터러 마커도 지우려면 `clearMarkerClusterer()` 를 함께 호출 |
-| `controller.clear()` 후 클러스터 표시가 남을 수 있었음 | 클러스터러 객체와 마커까지 모두 제거 | 클러스터러만 남기려면 `clear()` 대신 `clearPolyline()` 등 개별 `clearXxx()` 조합 |
-| `controller.clearMarkerClusterer()` 가 마커를 남김 | 클러스터러를 해제하고 소속 마커도 목록에서 제거 | 마커를 다시 보이려면 `addMarker()` 재호출 |
-| `addMarker(markers: [])`, `KakaoMap(markers: [])` 는 무시됨 | 다른 오버레이와 같이 **기존 일반 마커를 모두 제거** | 기존 마커를 유지하려면 `[]` 대신 `null` 전달 |
-| 같은 ID 마커를 다시 추가하면 무시됨 | 내용이 바뀌었으면 갱신 | 유지가 목적이면 같은 ID 로 재호출하지 않기 |
-| 위젯 속성(`markers:` 등)으로 넘긴 오버레이를 `onMapCreated` 에서 직접 그려야 했음 | 지도 준비 시 자동으로 그려짐 | `onMapCreated` 안의 중복 `addMarker()` 등 제거 |
-| 검색 실패(오류 상태, `null` 결과)가 성공처럼 반환 | `Future` 가 에러로 완료 | `try/catch` 로 감싸기 |
-| 같은 종류 검색을 겹쳐 호출하면 이전 `xxxResult()` 대기가 영구 대기 | 이전 대기가 `StateError` 로 종료 | `controller.keywordSearch()` 반환값을 사용하거나 `try/catch` |
-| 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라짐 | 이동을 가로채고 `onLinkTap` 으로 알림 (콜백 없으면 무시) | `KakaoMap(onLinkTap: (url) => launchUrl(url))` |
-| 지도 문서에서 텍스트 선택·탭 하이라이트·롱프레스 메뉴·페이지 핀치 줌 가능 | 앱처럼 모두 꺼짐 | 선택이 필요한 요소에 `class="kmp-selectable"` |
+| `controller.clearMarker()` also removed clusterer markers | Removes only regular markers | Call `clearMarkerClusterer()` as well to remove clusterer markers |
+| Cluster visuals could remain after `controller.clear()` | Removes the clusterer objects and their markers too | To keep the clusterer, use individual `clearXxx()` calls such as `clearPolyline()` instead of `clear()` |
+| `controller.clearMarkerClusterer()` left the markers behind | Releases the clusterer and also removes its markers from the list | Call `addMarker()` again to show the markers |
+| `addMarker(markers: [])` and `KakaoMap(markers: [])` were ignored | **Removes all regular markers**, like the other overlays | Pass `null` instead of `[]` to keep the existing markers |
+| Re-adding a marker with the same ID was ignored | Updates it if the content changed | Do not call again with the same ID if you want it left alone |
+| Overlays passed through widget properties (`markers:`, etc.) had to be drawn manually in `onMapCreated` | Drawn automatically once the map is ready | Remove the duplicate `addMarker()` calls inside `onMapCreated` |
+| Search failures (error status, `null` result) were returned as successes | The `Future` completes with an error | Wrap in `try/catch` |
+| Overlapping calls of the same search type left the previous `xxxResult()` waiting forever | The previous wait ends with a `StateError` | Use the return value of `controller.keywordSearch()`, or `try/catch` |
+| Tapping an `<a href>` inside an info window or custom overlay navigated the WebView and the map disappeared | Navigation is intercepted and reported through `onLinkTap` (ignored when there is no callback) | `KakaoMap(onLinkTap: (url) => launchUrl(url))` |
+| Text selection, tap highlight, long-press menus, and page pinch zoom were possible in the map document | All disabled, like a native app | Add `class="kmp-selectable"` to elements that need selection |
 
 ``` dart
-// 예: 전체 초기화가 목적이던 코드
-await controller.clearMarker();            // 0.x: 클러스터러 마커까지 사라짐
+// Example: code that intended to clear everything
+await controller.clearMarker();            // 0.x: also removed the clusterer markers
 // 1.0.0
 await controller.clearMarker();
-await controller.clearMarkerClusterer();   // 클러스터러 마커까지 지우려면 추가
+await controller.clearMarkerClusterer();   // add this to also remove the clusterer markers
 
-// 예: 검색
+// Example: search
 try {
   final result = await controller.keywordSearch(KeywordSearchRequest(keyword: '카페'));
 } catch (e) {
-  // 1.0.0 부터 실패는 예외로 옵니다.
+  // From 1.0.0 on, failures arrive as exceptions.
 }
 ```
 
-### Deprecated (계속 동작하며 2.0.0 에서 제거 예정)
+### Deprecated (still working, to be removed in 2.0.0)
 
-| Deprecated | 대체 |
+| Deprecated | Replacement |
 |---|---|
-| `MapType.roadMap` | `MapType.normal` (값이 같습니다) |
-| `controller.setStyle(width, height)` | 컨테이너 크기는 Flutter 위젯으로 제어하고, 필요하면 `controller.relayout()` |
-| `controller.getDraggable()` / `getZoomable()` | `isDraggable()` / `isZoomable()` (플랫폼과 무관하게 `bool` 반환) |
-| `Marker.markerImageSrc` | `Marker.icon` + `MarkerIcon.network(url)` 등 (기존 문자열 방식도 계속 동작) |
-| `KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin` | 사용하지 않는 템플릿 클래스입니다. 참조를 제거하세요 (`KakaoMapPluginWeb` 은 Web 등록용으로 유지) |
+| `MapType.roadMap` | `MapType.normal` (same value) |
+| `controller.setStyle(width, height)` | Control the container size with Flutter widgets, and call `controller.relayout()` if needed |
+| `controller.getDraggable()` / `getZoomable()` | `isDraggable()` / `isZoomable()` (return `bool` on every platform) |
+| `Marker.markerImageSrc` | `Marker.icon` with `MarkerIcon.network(url)`, etc. (the existing string form keeps working) |
+| `KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin` | Unused template classes. Remove references to them (`KakaoMapPluginWeb` is kept for Web registration) |
 
-### 새로 추가된 것 (기존 코드 영향 없음)
+### Newly added (no impact on existing code)
 
-* Web 지원 — 카카오 개발자 콘솔에 사이트 도메인 등록이 필요합니다. 아래 [Web](#web) 절 참고.
-* 의존성 `pointer_interceptor` 추가 — Web 에서 지도 위 Flutter 위젯이 탭을 받기 위한 것으로, 모바일 동작에는 영향이 없습니다.
-* `AuthRepository.initialize(libraries:)` 로 불러올 카카오 라이브러리를 줄일 수 있습니다. 지정하지 않으면 이전과 같이 전부 불러옵니다.
-* 그 밖의 새 위젯·API 는 [CHANGELOG](CHANGELOG.md) 를 참고하세요.
+* Web support — you must register the site domain in the Kakao Developers console. See the [Web](#web) section above.
+* Added the `pointer_interceptor` dependency — it lets Flutter widgets on top of the map receive taps on Web, and has no effect on mobile behavior.
+* `AuthRepository.initialize(libraries:)` lets you reduce the Kakao libraries that get loaded. If you do not specify it, everything is loaded as before.
+* See the [CHANGELOG](CHANGELOG.md) for the other new widgets and APIs.
 
-## 예제
+## Examples
 
-[Kakao maps api](https://apis.map.kakao.com/web/sample/) 사이트에 있는 예제를 기준으로 샘플을 만들었습니다.
+The samples are based on the examples on the [Kakao maps api](https://apis.map.kakao.com/web/sample/) site.
 
-* 기본 지도 생성
+* Creating a basic map
 
     ``` dart
     Scaffold(
@@ -208,7 +208,7 @@ try {
     );
     ```
 
-* 맵 생성 callback
+* Map creation callback
 
     ``` dart
     Scaffold(
@@ -221,10 +221,10 @@ try {
     );
     ```
 
-* 마커 생성 - 지도가 생성되면 마커 추가되는 예제
+* Creating a marker — adds a marker once the map is created
 
     ``` dart
-    Set<Marker> markers = {}; // 마커 변수
+    Set<Marker> markers = {}; // marker variable
   
     Scaffold(
       body: KakaoMap(
@@ -244,7 +244,7 @@ try {
     );
     ```
 
-* 마커 클러스터 생성 - 지도가 생성되면 마커 추가되는 예제 (마커와 클러스터 함께 사용하지 마세요. 클러스터 안에 마커를 넣어서 사용하세요.)
+* Creating a marker clusterer — adds markers once the map is created (do not use markers and a clusterer together; put the markers inside the clusterer.)
 
     ``` dart
     Clusterer? clusterer;
@@ -639,7 +639,7 @@ try {
             minLevel: 6,
             gridSize: 45,
             calculator: [30, 60],
-            texts: ['적음', '보통', '많음'],
+            texts: ['Few', 'Medium', 'Many'],
             styles: [
               ClustererStyle(
                 width: 50,
@@ -679,7 +679,7 @@ try {
     );
     ```
 
-* Circle, Polyline, Polygon, Rectangle 예제
+* Circle, Polyline, Polygon, and Rectangle example
 
     ``` dart
     Set<Circle> circles = {};
@@ -767,22 +767,22 @@ try {
     );
     ```
 
-* 불러올 확장 라이브러리 선택 - 기본값은 전체(`services`, `clusterer`, `drawing`)입니다. 쓰지 않는 라이브러리를 빼면 지도 생성이 조금 빨라집니다.
+* Choosing which extension libraries to load — the default is all of them (`services`, `clusterer`, `drawing`). Dropping libraries you do not use makes map creation slightly faster.
 
     ``` dart
-    // 앱 전역 기본값
+    // App-wide default
     AuthRepository.initialize(
       appKey: 'YOUR_JAVASCRIPT_KEY',
       libraries: {KakaoMapLibrary.services},
     );
 
-    // 위젯 단위로 덮어쓰기 (clusterer 를 쓰면 자동으로 포함됩니다)
+    // Override per widget (clusterer is included automatically when you use one)
     KakaoMap(
       libraries: const {KakaoMapLibrary.services, KakaoMapLibrary.drawing},
     );
     ```
 
-* 로드뷰 생성 - `onRoadviewCreated` 로 받은 `KakaoRoadviewController` 로 파노라마 이동과 시점을 제어합니다.
+* Creating a Roadview — use the `KakaoRoadviewController` from `onRoadviewCreated` to move the panorama and control the viewpoint.
 
     ``` dart
     KakaoRoadviewController? roadviewController;
@@ -796,22 +796,22 @@ try {
           Marker(
             markerId: 'm1',
             latLng: LatLng(33.450701, 126.570667),
-            altitude: 5,   // 로드뷰에서 마커가 놓일 높이(m)
-            range: 100,    // 마커가 보이는 반경(m)
+            altitude: 5,   // Height (m) at which the marker sits in the Roadview
+            range: 100,    // Radius (m) within which the marker is visible
           ),
         ],
         onRoadviewCreated: (controller) => roadviewController = controller,
         onViewpointChange: (viewpoint) => print('pan ${viewpoint.pan}'),
-        onRoadviewNotFound: (latLng) => print('이 지점에는 로드뷰가 없습니다.'),
+        onRoadviewNotFound: (latLng) => print('No Roadview at this location.'),
       ),
     );
 
-    // 다른 위치의 가장 가까운 파노라마로 이동
+    // Move to the nearest panorama at another location
     await roadviewController?.setPanoIdNear(LatLng(37.566826, 126.9786567));
     await roadviewController?.setViewpoint(const Viewpoint(pan: 180, tilt: 0, zoom: 1));
     ```
 
-* 지도와 로드뷰 함께 쓰기 - 한 화면에서 지도 클릭으로 로드뷰를 옮기고, 지도 위 동동이(MapWalker)가 로드뷰 시점 방향을 따라갑니다.
+* Using a map and a Roadview together — move the Roadview by clicking the map on a single screen, and the MapWalker on the map follows the Roadview's viewing direction.
 
     ``` dart
     KakaoMapRoadviewController? linkController;
@@ -820,8 +820,8 @@ try {
       body: KakaoMapRoadviewView(
         center: LatLng(33.450701, 126.570667),
         initialViewMode: RoadviewViewMode.split, // map / roadview / split
-        splitRatio: 50,                          // split 일 때 지도 비율(%)
-        showRoadviewOverlay: true,               // 로드뷰 가능 도로 표시
+        splitRatio: 50,                          // Map ratio (%) in split mode
+        showRoadviewOverlay: true,               // Show roads that have Roadview coverage
         useMapWalker: true,
         onCreated: (controller) => linkController = controller,
       ),
@@ -831,7 +831,7 @@ try {
     await linkController?.setViewMode(RoadviewViewMode.roadview);
     ```
 
-* Drawing Library - 사용자가 지도 위에 마커·선·다각형·원 등을 직접 그리고, 그린 결과를 데이터로 가져옵니다.
+* Drawing Library — let users draw markers, lines, polygons, circles, and more on the map, then read the result back as data.
 
     ``` dart
     late KakaoMapController mapController;
@@ -851,37 +851,37 @@ try {
               polylineStyle: DrawingStyle(strokeColor: Colors.blue, strokeWidth: 3),
             ),
           );
-          await mapController.showDrawingToolbox(); // 카카오 기본 툴박스 UI (선택)
+          await mapController.showDrawingToolbox(); // Kakao's built-in toolbox UI (optional)
           await mapController.selectDrawingMode(DrawingOverlayType.polyline);
         }),
         onDrawingEnd: (type) async {
           final data = await mapController.getDrawingData();
           for (final line in data.polylines) {
-            print('선 좌표 ${line.points.length}개');
+            print('line points: ${line.points.length}');
           }
         },
       ),
     );
 
-    // 되돌리기 / 다시 실행 / 그리던 도형 취소
+    // Undo / redo / cancel the shape being drawn
     await mapController.undoDrawing();
     await mapController.redoDrawing();
     await mapController.cancelDrawing();
     ```
 
-* 커스텀 타일셋 - 직접 만든 타일 이미지를 기본 지도로 쓰거나 기존 지도 위에 겹칩니다.
+* Custom tilesets — use your own tile images as the base map, or overlay them on the existing map.
 
     ``` dart
-    // 1) 주소 템플릿 ({x} {y} {z} 치환)
+    // 1) URL template ({x} {y} {z} are substituted)
     await mapController.addTileset(const Tileset(
       id: 'MY_TILES',
       urlTemplate: 'https://tiles.example.com/{z}/{y}/{x}.png',
       copyright: [TilesetCopyright('© Example')],
     ));
-    await mapController.setTileset('MY_TILES');         // 기본 지도로 사용
-    await mapController.setMapTypeId(MapType.normal);   // 일반 지도로 복귀
+    await mapController.setTileset('MY_TILES');         // Use as the base map
+    await mapController.setMapTypeId(MapType.normal);   // Back to the normal map
 
-    // 2) DOM 타일 (JavaScript 함수 원문을 그대로 전달)
+    // 2) DOM tiles (pass the JavaScript function source as-is)
     await mapController.addTileset(const Tileset(
       id: 'TILE_NUMBER',
       tileFunction: '''
@@ -893,52 +893,52 @@ try {
         }
       ''',
     ));
-    await mapController.addOverlayTileset('TILE_NUMBER');    // 지도 위에 겹치기
+    await mapController.addOverlayTileset('TILE_NUMBER');    // Overlay on the map
     await mapController.removeOverlayTileset('TILE_NUMBER');
     ```
 
-    `urlFunction` / `tileFunction` 은 WebView 안에서 그대로 실행되므로 앱이 직접 작성한 문자열만 넘기세요.
+    `urlFunction` / `tileFunction` are executed verbatim inside the WebView, so only pass strings your app wrote itself.
 
-* 앱 느낌으로 만들기 - 인포윈도우 스타일, 테마, Flutter 컨트롤, 위젯 마커
+* Making it feel like an app — info window styles, themes, Flutter controls, and widget markers
 
-    카카오 SDK 가 직접 그리는 UI(인포윈도우, 줌/지도타입 컨트롤, 클러스터, 기본 마커)는 웹페이지 느낌이 납니다. 아래 기능으로 앱 디자인에 맞출 수 있습니다. 지정하지 않으면 기존 모양 그대로입니다.
+    The UI the Kakao SDK draws itself (info windows, zoom and map type controls, clusters, default markers) looks like a web page. The features below let you match your app's design. If you do not set them, the original appearance is kept.
 
     ``` dart
-    // 1) 인포윈도우 — 마커별 또는 테마로 지도 전체 기본값
+    // 1) Info window — per marker, or as a map-wide default via a theme
     Marker(
       markerId: 'm1',
       latLng: LatLng(37.5665, 126.9780),
       infoWindowContent: '<b>서울시청</b><br>02-120',
-      infoWindowStyle: const InfoWindowStyle.material(),   // .cupertino(), .dark(), 또는 직접 지정
+      infoWindowStyle: const InfoWindowStyle.material(),   // .cupertino(), .dark(), or your own
     );
 
-    // 2) 테마 — 전역(AuthRepository.initialize(theme:)) 또는 지도별
+    // 2) Theme — global (AuthRepository.initialize(theme:)) or per map
     KakaoMap(
       theme: const KakaoMapTheme(
         infoWindowStyle: InfoWindowStyle.material(),
-        backgroundColor: Color(0xFFEFF3F6),   // 타일 로딩 전 배경(SDK 기본 회색 격자 대신)
-        fontFamily: 'Pretendard, sans-serif', // 기본은 시스템 글꼴 스택
+        backgroundColor: Color(0xFFEFF3F6),   // Background before tiles load (instead of the SDK's gray grid)
+        fontFamily: 'Pretendard, sans-serif', // Defaults to the system font stack
       ),
-      copyrightPosition: CopyrightPosition.bottomLeft, // 오른쪽 아래 버튼과 겹치지 않게
+      copyrightPosition: CopyrightPosition.bottomLeft, // Keeps it clear of the bottom-right buttons
     );
 
-    // 3) Flutter 컨트롤 — SDK 컨트롤 대신 Stack 으로 올리기 (web 에서도 눌립니다)
+    // 3) Flutter controls — layer them with a Stack instead of the SDK controls (they work on web too)
     Stack(children: [
       KakaoMap(onMapCreated: (c) => setState(() => controller = c)),
       if (controller != null) KakaoMapControls(controller: controller!, showMapType: true),
     ]);
     KakaoDrawingToolbar(controller: controller!, modes: const [DrawingOverlayType.polyline, DrawingOverlayType.polygon]);
 
-    // 4) 마커 — 색만 바꾼 핀, 또는 Flutter 위젯을 그대로 그린 마커
+    // 4) Markers — a pin with a different color, or a Flutter widget rendered as a marker
     Marker(markerId: 'p', latLng: latLng, icon: MarkerIcon.pin(color: Colors.red), width: 28, height: 40, offsetX: 14, offsetY: 40);
     final tag = await MarkerIcon.fromWidget(PriceTag('12,000원'), logicalSize: const Size(96, 44));
     Marker(markerId: 't', latLng: latLng, icon: tag, width: 96, height: 44, offsetX: 48, offsetY: 44);
 
-    // 5) 클러스터 — 원형 Material 프리셋
+    // 5) Clusters — round Material preset
     Clusterer(markers: markers, styles: [ClustererStyle.material(Colors.indigo, size: 48)]);
     ```
 
-* Flutter 위젯 오버레이 - 진짜 Flutter 위젯을 지도 좌표에 붙이기
+* Flutter widget overlays — attach real Flutter widgets to map coordinates
 
     ``` dart
     KakaoMap(
@@ -946,9 +946,9 @@ try {
         KakaoMapWidgetOverlay(
           id: 'cafe',
           position: LatLng(37.5665, 126.9780),
-          anchor: Alignment.bottomCenter,           // 위젯의 아래 가운데를 좌표에 맞춤
+          anchor: Alignment.bottomCenter,           // Aligns the widget's bottom center to the coordinate
           child: GestureDetector(
-            onTap: () => showModalBottomSheet(...), // 탭하면 앱 UI 로 이어지는 패턴
+            onTap: () => showModalBottomSheet(...), // Pattern for continuing into your app's UI on tap
             child: Card(child: Padding(padding: EdgeInsets.all(8), child: Text('카페 · 4,500원'))),
           ),
         ),
@@ -956,48 +956,48 @@ try {
     )
     ```
 
-    지도를 움직이면 JS 가 픽셀 좌표를 보내 위젯이 따라옵니다(프레임당 1회). web 에서도 눌립니다. 수백 개 이상이면 `CustomOverlay` 를 쓰세요.
+    When the map moves, JS sends the pixel coordinates so the widgets follow along (once per frame). They work on web too. Use `CustomOverlay` if you need hundreds or more.
 
-* 오버레이 이벤트와 길게 누르기
+* Overlay events and long press
 
     ``` dart
     KakaoMap(
-      onPolylineTap: (id, latLng, level) {},   // 선 / 원 / 사각형 탭 (다각형은 onPolygonTap)
+      onPolylineTap: (id, latLng, level) {},   // Line / circle / rectangle taps (use onPolygonTap for polygons)
       onCircleTap: (id, latLng, level) {},
       onRectangleTap: (id, latLng, level) {},
-      onMapLongPress: (latLng) {},             // 0.5초 이상 누르기 (마우스 환경은 우클릭도)
+      onMapLongPress: (latLng) {},             // Press for 0.5s or longer (right-click too on mouse environments)
     )
     ```
 
-* 마우스 hover - **마우스 포인터가 있는 환경(데스크톱 브라우저) 전용**
+* Mouse hover — **only on environments with a mouse pointer (desktop browsers)**
 
-    터치 기기에서는 호출되지 않으므로 탭 콜백을 함께 처리하세요. 실행 환경은 `await controller.supportsHover()` 로 확인할 수 있습니다.
+    These are never called on touch devices, so handle the tap callbacks as well. You can check the runtime environment with `await controller.supportsHover()`.
 
     ``` dart
     KakaoMap(
       onMarkerMouseOver: (id, latLng, level) {},   // onMarkerMouseOut
-      onPolygonMouseOver: (id, latLng, level) {},  // onPolygonMouseMove(프레임당 1회) / onPolygonMouseOut
-      onMarkerTap: (id, latLng, level) {},         // 터치 대체
+      onPolygonMouseOver: (id, latLng, level) {},  // onPolygonMouseMove (once per frame) / onPolygonMouseOut
+      onMarkerTap: (id, latLng, level) {},         // Touch fallback
     )
     ```
 
-* 마커 옵션과 부분 갱신
+* Marker options and partial updates
 
     ``` dart
     Marker(
       markerId: 'bus', latLng: latLng,
-      opacity: 0.6, clickable: false, title: '툴팁(web)', visible: true,
-      // 스프라이트 시트에서 잘라 쓰기
+      opacity: 0.6, clickable: false, title: 'tooltip (web)', visible: true,
+      // Crop from a sprite sheet
       markerImageSrc: 'https://…/sprite.png', width: 36, height: 37,
       spriteOrigin: Point(0, 46), spriteWidth: 36, spriteHeight: 691,
     );
-    await controller.setMarkerPosition('bus', newLatLng); // 재생성 없이 이동 (실시간 위치)
+    await controller.setMarkerPosition('bus', newLatLng); // Move without recreating (live positions)
     await controller.setMarkerVisible('bus', false);
-    await controller.showInfoWindow('bus');                 // 목록 탭 → 지도 인포윈도우 열기
+    await controller.showInfoWindow('bus');                 // List tap → open the info window on the map
     await controller.hideInfoWindow('bus');
     ```
 
-* 검색 페이지 정보
+* Search pagination info
 
     ``` dart
     final r = await controller.keywordSearch(KeywordSearchRequest(keyword: '카페', size: 15, page: 1));
@@ -1006,17 +1006,17 @@ try {
     }
     ```
 
-* 카카오맵 앱으로 연결하기 (길찾기·장소·로드뷰) - URL 만 만들고 실행은 `url_launcher` 로
+* Opening the KakaoMap app (directions, places, Roadview) — the plugin only builds the URL; launch it with `url_launcher`
 
     ``` dart
-    // 웹 링크: 앱이 있으면 앱으로, 없으면 모바일 웹으로 열립니다 (권장)
+    // Web link: opens the app when installed, otherwise the mobile web (recommended)
     final uri = KakaoMapLinks.web.route(to: LatLng(37.5665, 126.9780), toName: '서울시청', mode: KakaoMapRouteMode.transit);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
-    // 앱 스킴: kakaomap:// (iOS 는 LSApplicationQueriesSchemes 에 kakaomap 추가, 없으면 KakaoMapLinks.storeUrl())
+    // App scheme: kakaomap:// (on iOS add kakaomap to LSApplicationQueriesSchemes; fall back to KakaoMapLinks.storeUrl())
     KakaoMapLinks.app.route(to: LatLng(37.5665, 126.9780), mode: KakaoMapRouteMode.car);
     ```
 
-* 정적 지도 - 움직이지 않는 지도 이미지가 필요할 때 (목록 썸네일, 공유 미리보기 등)
+* Static map — when you need a map image that does not move (list thumbnails, share previews, and so on)
 
     ``` dart
     KakaoStaticMap(
@@ -1028,49 +1028,49 @@ try {
     )
     ```
 
-* 카메라 제어와 측정
+* Camera control and measurement
 
     ``` dart
-    // 중심 + 레벨을 한 번에, 애니메이션 시간 지정
+    // Center and level at once, with an animation duration
     await mapController.jump(LatLng(37.5665, 126.9780), 5, animate: true, duration: const Duration(milliseconds: 400));
-    // 영역이 보이도록 이동 (여백 px)
+    // Move so that a bounds area is visible (padding in px)
     await mapController.panToBounds(LatLngBounds(LatLng(37.55, 126.96), LatLng(37.58, 127.0)), padding: 48);
     await mapController.fitBounds(points, padding: 48);
-    // 바텀시트가 열릴 때 지도를 위로 밀어 올리기
+    // Push the map up when a bottom sheet opens
     await mapController.panBy(0, -150);
-    // 확대 범위 제한 (rebuild 시 KakaoMap(minLevel:, maxLevel:) 변경도 반영됩니다)
+    // Limit the zoom range (changes to KakaoMap(minLevel:, maxLevel:) on rebuild are applied too)
     await mapController.setMinLevel(2);
     await mapController.setMaxLevel(10);
 
-    // SDK 가 계산한 길이(m)·면적(㎡)
+    // Length (m) and area (㎡) calculated by the SDK
     final meters = await mapController.getPolylineLength('route');
     final squareMeters = await mapController.getPolygonArea('area');
     ```
 
-* 지도 생성 옵션과 이벤트
+* Map creation options and events
 
     ``` dart
     KakaoMap(
-      mapTypeId: MapType.skyView,        // 처음부터 스카이뷰로
-      disableDoubleClickZoom: true,      // 더블탭 확대 끄기
-      onMapTypeChanged: (type) => print('지도 타입: $type'),
-      // 인포윈도우·커스텀 오버레이 안의 링크는 WebView 이동 대신 이 콜백으로 옵니다.
+      mapTypeId: MapType.skyView,        // Start in sky view
+      disableDoubleClickZoom: true,      // Turn off double-tap zoom
+      onMapTypeChanged: (type) => print('map type: $type'),
+      // Links inside info windows and custom overlays arrive in this callback instead of navigating the WebView.
       onLinkTap: (url) => launchUrl(url, mode: LaunchMode.externalApplication),
     )
     ```
 
-더 많은 카카오지도 샘플소스는 **[여기](https://github.com/johyunchol/kakao_map_plugin/tree/main/example)** 에서 확인하실 수 있습니다.
+More Kakao Map sample code is available **[here](https://github.com/johyunchol/kakao_map_plugin/tree/main/example)**.
 
 ---
 
-## 실행화면
+## Screenshots
 
 ![example](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/videos/example.gif?raw=true)
 
 ### Web
 
-같은 코드가 브라우저에서 그대로 동작합니다. (Chrome, `flutter run -d chrome`)
+The same code runs as-is in the browser. (Chrome, `flutter run -d chrome`)
 
-| 지도 | 지도 + 로드뷰(동동이) | Drawing Library |
+| Map | Map + Roadview (MapWalker) | Drawing Library |
 |---|---|---|
 | ![web map](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_map.png?raw=true) | ![web roadview](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_roadview.png?raw=true) | ![web drawing](https://github.com/johyunchol/kakao_map_plugin/blob/main/assets/images/web_drawing.png?raw=true) |
