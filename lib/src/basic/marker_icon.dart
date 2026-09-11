@@ -139,7 +139,8 @@ class MarkerIcon {
   /// ```
   ///
   /// Returns: URL을 포함하는 [MarkerIcon] 인스턴스
-  static Future<MarkerIcon> fromNetwork(String url) => Future.value(network(url));
+  static Future<MarkerIcon> fromNetwork(String url) =>
+      Future.value(network(url));
 
   /// 색만 바꿔 쓰는 기본 핀 모양 아이콘입니다. 네트워크·에셋 없이 바로 씁니다.
   ///
@@ -167,7 +168,8 @@ class MarkerIcon {
     final width = (size * 0.7).round();
     final height = size.round();
     // 24x34 뷰박스의 핀. 끝점 (12,34) 가 좌표에 놓입니다.
-    final svg = '<svg xmlns="http://www.w3.org/2000/svg" width="$width" height="$height" viewBox="0 0 24 34">'
+    final svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="$width" height="$height" viewBox="0 0 24 34">'
         '<path d="M12 1C6 1 1.5 5.6 1.5 11.4c0 7.7 9 20.4 9.6 21.2a1.2 1.2 0 0 0 1.8 0c.6-.8 9.6-13.5 9.6-21.2C22.5 5.6 18 1 12 1z" '
         'fill="$fill" stroke="$stroke" stroke-width="1.2"/>'
         '<circle cx="12" cy="11.5" r="4.2" fill="${_css(dotColor)}"/></svg>';

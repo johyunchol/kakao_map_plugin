@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 
 import '../model/lat_lng.dart';
 
@@ -55,7 +56,8 @@ class KakaoMapLinks {
 
   /// 카카오맵 앱 설치 페이지입니다. 현재 플랫폼에 맞는 스토어 주소를 돌려줍니다.
   static Uri storeUrl({TargetPlatform? platform}) {
-    final target = platform ?? (kIsWeb ? TargetPlatform.android : defaultTargetPlatform);
+    final target =
+        platform ?? (kIsWeb ? TargetPlatform.android : defaultTargetPlatform);
     if (target == TargetPlatform.iOS || target == TargetPlatform.macOS) {
       return Uri.parse('https://apps.apple.com/kr/app/id304608425');
     }
@@ -73,8 +75,8 @@ class KakaoMapWebLinks {
   static const String _base = 'https://map.kakao.com/link';
 
   /// 좌표 위치를 지도에 표시합니다. [name] 은 마커에 표시될 이름입니다.
-  Uri place(LatLng position, {String name = '위치'}) =>
-      Uri.parse('$_base/map/${Uri.encodeComponent(name)},${KakaoMapLinks._coords(position)}');
+  Uri place(LatLng position, {String name = '위치'}) => Uri.parse(
+      '$_base/map/${Uri.encodeComponent(name)},${KakaoMapLinks._coords(position)}');
 
   /// 카카오 장소 ID 로 장소 상세를 엽니다. (검색 결과의 `id`)
   Uri placeById(String placeId) => Uri.parse('$_base/map/$placeId');
@@ -87,13 +89,16 @@ class KakaoMapWebLinks {
     String fromName = '출발지',
     KakaoMapRouteMode? mode,
   }) {
-    final toPart = '${Uri.encodeComponent(toName)},${KakaoMapLinks._coords(to)}';
+    final toPart =
+        '${Uri.encodeComponent(toName)},${KakaoMapLinks._coords(to)}';
     if (mode != null && from != null) {
-      final fromPart = '${Uri.encodeComponent(fromName)},${KakaoMapLinks._coords(from)}';
+      final fromPart =
+          '${Uri.encodeComponent(fromName)},${KakaoMapLinks._coords(from)}';
       return Uri.parse('$_base/by/${mode.webValue}/$fromPart/$toPart');
     }
     if (from != null) {
-      final fromPart = '${Uri.encodeComponent(fromName)},${KakaoMapLinks._coords(from)}';
+      final fromPart =
+          '${Uri.encodeComponent(fromName)},${KakaoMapLinks._coords(from)}';
       return Uri.parse('$_base/from/$fromPart/to/$toPart');
     }
     return Uri.parse('$_base/to/$toPart');
@@ -103,10 +108,12 @@ class KakaoMapWebLinks {
   Uri routeToPlace(String placeId) => Uri.parse('$_base/to/$placeId');
 
   /// 좌표의 로드뷰를 엽니다.
-  Uri roadview(LatLng position) => Uri.parse('$_base/roadview/${KakaoMapLinks._coords(position)}');
+  Uri roadview(LatLng position) =>
+      Uri.parse('$_base/roadview/${KakaoMapLinks._coords(position)}');
 
   /// 키워드로 검색합니다.
-  Uri search(String keyword) => Uri.parse('$_base/search/${Uri.encodeComponent(keyword)}');
+  Uri search(String keyword) =>
+      Uri.parse('$_base/search/${Uri.encodeComponent(keyword)}');
 }
 
 /// `kakaomap://…` 앱 스킴입니다. 앱이 설치돼 있어야 동작합니다.
@@ -142,7 +149,8 @@ class KakaoMapAppLinks {
       );
 
   /// 카카오 장소 ID 의 상세를 엽니다.
-  Uri place(String placeId) => Uri(scheme: 'kakaomap', host: 'place', queryParameters: {'id': placeId});
+  Uri place(String placeId) =>
+      Uri(scheme: 'kakaomap', host: 'place', queryParameters: {'id': placeId});
 
   /// 카카오맵 앱을 엽니다.
   Uri open() => Uri.parse('kakaomap://open');

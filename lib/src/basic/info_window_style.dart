@@ -100,7 +100,8 @@ class InfoWindowStyle {
         'textColor': textColor.toCssColor(),
         if (borderColor != null) 'borderColor': borderColor!.toCssColor(),
         'borderRadius': borderRadius,
-        'padding': '${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px',
+        'padding':
+            '${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px',
         'fontSize': fontSize,
         if (maxWidth != null) 'maxWidth': maxWidth,
         'shadow': shadow,
@@ -125,6 +126,16 @@ class InfoWindowStyle {
       other.gap == gap;
 
   @override
-  int get hashCode => Object.hash(backgroundColor, textColor, borderColor,
-      borderRadius, padding, fontSize, maxWidth, shadow, showArrow, arrowSize, gap);
+  int get hashCode => Object.hash(
+      backgroundColor,
+      textColor,
+      borderColor,
+      borderRadius,
+      padding,
+      fontSize,
+      maxWidth,
+      shadow,
+      showArrow,
+      arrowSize,
+      gap);
 }

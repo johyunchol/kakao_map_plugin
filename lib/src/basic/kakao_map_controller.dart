@@ -44,7 +44,7 @@ import 'rectangle.dart';
 
 /// 카카오 지도를 제어하는 컨트롤러 클래스입니다.
 ///
-/// [KakaoMap] 위젯 생성 완료 후 [onMapCreated] 콜백을 통해 제공됩니다.
+/// [KakaoMap] 위젯 생성 완료 후 [KakaoMap.onMapCreated] 콜백을 통해 제공됩니다.
 /// 이 컨트롤러를 사용하여 지도의 중심 이동, 줌 레벨 변경, 오버레이 추가/제거 등의
 /// 작업을 수행할 수 있습니다.
 ///
@@ -159,10 +159,10 @@ class KakaoMapController {
   ///
   /// 같은 아이콘을 쓰는 마커 N개가 base64 를 N번 전송하던 것을 1번으로 줄입니다.
   Future<void> _registerImagesAndRewrite(
-      List<Map<String, dynamic>> payloads, {
-      required String Function(Map<String, dynamic>) srcOf,
-      required String? Function(Map<String, dynamic>) typeOf,
-      required void Function(Map<String, dynamic>, String) rewrite,
+    List<Map<String, dynamic>> payloads, {
+    required String Function(Map<String, dynamic>) srcOf,
+    required String? Function(Map<String, dynamic>) typeOf,
+    required void Function(Map<String, dynamic>, String) rewrite,
   }) async {
     final pending = <String, String>{};
     for (final p in payloads) {
@@ -180,8 +180,7 @@ class KakaoMapController {
     var chars = 0;
     Future<void> flush() async {
       if (chunk.isEmpty) return;
-      await _bridge
-          .runJavaScript('registerImages(${_jsJson(chunk)});');
+      await _bridge.runJavaScript('registerImages(${_jsJson(chunk)});');
       _registeredImageKeys.addAll(chunk.keys);
       chunk = <String, String>{};
       chars = 0;
@@ -252,7 +251,8 @@ class KakaoMapController {
     await clearPolyline(
       polylineIds: safePolylines.map((e) => e.polylineId).toList(),
     );
-    await _runBatched('addPolylines', safePolylines.map(OverlayPayload.polyline));
+    await _runBatched(
+        'addPolylines', safePolylines.map(OverlayPayload.polyline));
   }
 
   /// 지도에 원을 추가합니다.
@@ -371,8 +371,7 @@ class KakaoMapController {
       return;
     }
 
-    final markerPayloads =
-        clusterer.markers.map((m) => m.toJson()).toList();
+    final markerPayloads = clusterer.markers.map((m) => m.toJson()).toList();
     await _registerImagesAndRewrite(
       markerPayloads,
       srcOf: (p) => ((p['icon'] as Map?)?['imageSrc'] as String?) ?? '',
@@ -527,7 +526,8 @@ class KakaoMapController {
   ///
   /// 바텀시트가 열릴 때 지도 중심을 위로 밀어 올리는 등에 씁니다.
   Future<void> panBy(int dx, int dy) async {
-    await _bridge.runJavaScript('panBy(${_jsPrimitive(dx)}, ${_jsPrimitive(dy)});');
+    await _bridge
+        .runJavaScript('panBy(${_jsPrimitive(dx)}, ${_jsPrimitive(dy)});');
   }
 
   /// 중심 좌표와 확대 레벨을 한 번에 바꿉니다.
@@ -664,8 +664,8 @@ class KakaoMapController {
   ///
   /// Returns: 현재 중심 좌표 [LatLng]
   Future<LatLng> getCenter() async {
-    final center = await _bridge
-        .runJavaScriptReturningResult("getCenter();") as String;
+    final center =
+        await _bridge.runJavaScriptReturningResult("getCenter();") as String;
     return LatLng.fromJson(jsonDecode(center));
   }
 
@@ -681,8 +681,7 @@ class KakaoMapController {
     if (options == null) {
       await _bridge.runJavaScript("setLevel('$level');");
     } else {
-      await _bridge
-          .runJavaScript("setLevel('$level', ${_jsJson(options)});");
+      await _bridge.runJavaScript("setLevel('$level', ${_jsJson(options)});");
     }
   }
 
@@ -690,8 +689,8 @@ class KakaoMapController {
   ///
   /// Returns: 현재 줌 레벨
   Future<int> getLevel() async {
-    final result = await _bridge
-        .runJavaScriptReturningResult("getLevel();") as String;
+    final result =
+        await _bridge.runJavaScriptReturningResult("getLevel();") as String;
     final level = (jsonDecode(result)['level'] as num).toInt();
 
     return level;
@@ -716,8 +715,8 @@ class KakaoMapController {
   ///
   /// Returns: 현재 지도 타입 [MapType]
   Future<MapType> getMapTypeId() async {
-    final result = await _bridge
-        .runJavaScriptReturningResult("getMapTypeId();") as String;
+    final result =
+        await _bridge.runJavaScriptReturningResult("getMapTypeId();") as String;
 
     final mapTypeId = jsonDecode(result)['mapTypeId'];
     // 커스텀 타일셋이 기본 지도 타입이면 숫자가 아닌 값이 온다. 이때는
@@ -773,8 +772,8 @@ class KakaoMapController {
   ///
   /// Returns: 지도 영역의 남서(SW)와 북동(NE) 좌표를 포함하는 [LatLngBounds]
   Future<LatLngBounds> getBounds() async {
-    final bounds = await _bridge
-        .runJavaScriptReturningResult("getBounds()") as String;
+    final bounds =
+        await _bridge.runJavaScriptReturningResult("getBounds()") as String;
     return LatLngBounds.fromJson(jsonDecode(bounds));
   }
 
@@ -795,8 +794,7 @@ class KakaoMapController {
   ///
   /// [mapType]: 제거할 오버레이 타입입니다.
   Future<void> removeOverlayMapTypeId(MapType mapType) async {
-    await _bridge
-        .runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
+    await _bridge.runJavaScript("removeOverlayMapTypeId('${mapType.id}');");
   }
 
   /// 지도 드래그 가능 여부를 설정합니다.
@@ -898,8 +896,7 @@ class KakaoMapController {
   ///   ),
   /// );
   /// ```
-  Future<KeywordSearchResponse> keywordSearch(
-          KeywordSearchRequest request) =>
+  Future<KeywordSearchResponse> keywordSearch(KeywordSearchRequest request) =>
       _runSearch(KeywordSearchService(), 'keywordSearch', request);
 
   /// 카테고리로 장소를 검색합니다.
@@ -916,8 +913,7 @@ class KakaoMapController {
   /// [request]: 검색 요청 정보입니다.
   ///
   /// Returns: 검색 결과 [AddressSearchResponse]
-  Future<AddressSearchResponse> addressSearch(
-          AddressSearchRequest request) =>
+  Future<AddressSearchResponse> addressSearch(AddressSearchRequest request) =>
       _runSearch(AddressSearchService(), 'addressSearch', request);
 
   /// 좌표를 주소로 변환합니다.
@@ -925,8 +921,7 @@ class KakaoMapController {
   /// [request]: 변환 요청 정보입니다.
   ///
   /// Returns: 변환 결과 [Coord2AddressResponse]
-  Future<Coord2AddressResponse> coord2Address(
-          Coord2AddressRequest request) =>
+  Future<Coord2AddressResponse> coord2Address(Coord2AddressRequest request) =>
       _runSearch(Coord2AddressService(), 'coord2Address', request);
 
   /// 좌표를 행정구역 코드로 변환합니다.
@@ -1011,16 +1006,14 @@ class KakaoMapController {
   /// ```
   Future<void> createDrawingManager({DrawingOptions? options}) async {
     final payload = (options ?? const DrawingOptions()).toJson();
-    await _bridge
-        .runJavaScript('createDrawingManager(${_jsJson(payload)});');
+    await _bridge.runJavaScript('createDrawingManager(${_jsJson(payload)});');
   }
 
   /// 그릴 도형의 종류를 선택합니다.
   ///
   /// 선택 후 사용자가 지도를 조작하면 해당 도형이 그려집니다.
   Future<void> selectDrawingMode(DrawingOverlayType type) async {
-    await _bridge
-        .runJavaScript('selectDrawingMode(${_jsStr(type.value)});');
+    await _bridge.runJavaScript('selectDrawingMode(${_jsStr(type.value)});');
   }
 
   /// 그리는 중이던 작업을 취소합니다.
@@ -1047,8 +1040,7 @@ class KakaoMapController {
   ///
   /// 관리자를 만들지 않았거나 그린 도형이 없으면 빈 [DrawingData]를 반환합니다.
   Future<DrawingData> getDrawingData() async {
-    final raw =
-        await _bridge.runJavaScriptReturningResult('getDrawingData();');
+    final raw = await _bridge.runJavaScriptReturningResult('getDrawingData();');
     dynamic value = raw;
     if (value is String) {
       value = jsonDecode(value);
@@ -1096,8 +1088,7 @@ class KakaoMapController {
         '영문자, 숫자, 밑줄만 쓸 수 있고 숫자로 시작할 수 없습니다.',
       );
     }
-    await _bridge
-        .runJavaScript('addTileset(${_jsJson(tileset.toJson())});');
+    await _bridge.runJavaScript('addTileset(${_jsJson(tileset.toJson())});');
   }
 
   static final RegExp _tilesetIdPattern = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
@@ -1107,30 +1098,27 @@ class KakaoMapController {
   /// 일반 지도로 되돌리려면 `setMapTypeId(MapType.normal)` 을 호출하세요.
   /// 등록하지 않은 [tilesetId] 는 무시됩니다.
   Future<void> setTileset(String tilesetId) async {
-    await _bridge
-        .runJavaScript('setTileset(${_jsStr(tilesetId)});');
+    await _bridge.runJavaScript('setTileset(${_jsStr(tilesetId)});');
   }
 
   /// 등록한 타일셋을 현재 지도 위에 겹쳐 올립니다.
   ///
   /// [removeOverlayTileset] 으로 내릴 수 있습니다.
   Future<void> addOverlayTileset(String tilesetId) async {
-    await _bridge
-        .runJavaScript('addOverlayTileset(${_jsStr(tilesetId)});');
+    await _bridge.runJavaScript('addOverlayTileset(${_jsStr(tilesetId)});');
   }
 
   /// [addOverlayTileset] 으로 올린 타일셋을 내립니다.
   Future<void> removeOverlayTileset(String tilesetId) async {
-    await _bridge
-        .runJavaScript('removeOverlayTileset(${_jsStr(tilesetId)});');
+    await _bridge.runJavaScript('removeOverlayTileset(${_jsStr(tilesetId)});');
   }
 
   /// 기본 지도 타입으로 쓰고 있는 커스텀 타일셋의 ID 를 반환합니다.
   ///
   /// 일반 지도 타입([MapType])을 쓰고 있으면 null 을 반환합니다.
   Future<String?> getActiveTilesetId() async {
-    final raw = await _bridge
-        .runJavaScriptReturningResult('getActiveTilesetId();');
+    final raw =
+        await _bridge.runJavaScriptReturningResult('getActiveTilesetId();');
     final result = _decodeMapResult(raw, 'getActiveTilesetId');
     return result['tilesetId']?.toString();
   }

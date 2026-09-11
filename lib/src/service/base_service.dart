@@ -101,7 +101,7 @@ abstract class BaseService<T> {
   /// [requestId]에 해당하는 응답 [Future]를 반환합니다.
   ///
   /// [createRequest]로 발급되지 않은 ID가 전달되면 [StateError]가 발생합니다.
-   /// [requestId] 에 해당하는 응답 Future 를 반환합니다.
+  /// [requestId] 에 해당하는 응답 Future 를 반환합니다.
   ///
   /// [timeout] 안에 응답이 오지 않으면 대기 항목을 정리하고 [TimeoutException] 으로
   /// 완료합니다(WebView 파괴, 네트워크 단절 등으로 콜백이 영영 오지 않는 경우 대비).
@@ -201,7 +201,8 @@ abstract class BaseService<T> {
           _mirrorErrorToLegacy(StateError(decoded['error'].toString()));
         } else {
           try {
-            _mirrorResultToLegacy(_attachPagination(fromJson(decoded['result']), decoded));
+            _mirrorResultToLegacy(
+                _attachPagination(fromJson(decoded['result']), decoded));
           } catch (e, stackTrace) {
             _mirrorErrorToLegacy(e, stackTrace);
           }

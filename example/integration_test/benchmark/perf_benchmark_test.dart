@@ -89,7 +89,8 @@ Future<void> installCallCounter(KakaoMapController c) async {
 }
 
 Future<int> callCount(KakaoMapController c) async {
-  final raw = await c.webViewController.runJavaScriptReturningResult('window.__calls');
+  final raw =
+      await c.webViewController.runJavaScriptReturningResult('window.__calls');
   // Android 는 문자열("12"), iOS 는 숫자(12 또는 12.0)로 돌려준다.
   if (raw is num) return raw.toInt();
   return num.parse(raw.toString().replaceAll('"', '')).toInt();
@@ -185,10 +186,12 @@ void main() {
     }
 
     // A. 컨트롤러로 마커 500개 추가 (콜드)
-    await measure('A_addMarker_${markerCount}_cold', () => c.addMarker(markers: makeMarkers()));
+    await measure('A_addMarker_${markerCount}_cold',
+        () => c.addMarker(markers: makeMarkers()));
 
     // A2. 동일 마커 500개 재추가 (내용 동일)
-    await measure('A2_addMarker_${markerCount}_same', () => c.addMarker(markers: makeMarkers()));
+    await measure('A2_addMarker_${markerCount}_same',
+        () => c.addMarker(markers: makeMarkers()));
 
     await c.clearMarker();
     await pumpFor(tester, const Duration(milliseconds: 500));
@@ -215,7 +218,9 @@ void main() {
     // C. 500개 중 1개만 좌표 변경 후 rebuild
     final changed = makeMarkers();
     changed[0] = Marker(
-        markerId: 'b0', latLng: LatLng(37.60, 127.10), infoWindowContent: 'moved');
+        markerId: 'b0',
+        latLng: LatLng(37.60, 127.10),
+        infoWindowContent: 'moved');
     await measure('C_rebuild_1_of_${markerCount}_changed', () async {
       markers.value = changed;
       await tester.pump();
@@ -231,7 +236,9 @@ void main() {
     markers.value = null;
     await tester.pump();
     await pumpFor(tester, const Duration(milliseconds: 500));
-    await measure('E_polyline_${polylinePoints}pts_rebuild_x${rebuildCount}_total', () async {
+    await measure(
+        'E_polyline_${polylinePoints}pts_rebuild_x${rebuildCount}_total',
+        () async {
       for (var i = 0; i < rebuildCount; i++) {
         tick.value++;
         await tester.pump();

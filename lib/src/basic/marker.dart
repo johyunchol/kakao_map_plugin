@@ -247,7 +247,9 @@ class Marker {
       'visible': visible,
       'clickable': clickable,
       'title': title,
-      'spriteOrigin': spriteOrigin == null ? null : {'x': spriteOrigin!.x, 'y': spriteOrigin!.y},
+      'spriteOrigin': spriteOrigin == null
+          ? null
+          : {'x': spriteOrigin!.x, 'y': spriteOrigin!.y},
       'spriteWidth': spriteWidth,
       'spriteHeight': spriteHeight,
     };

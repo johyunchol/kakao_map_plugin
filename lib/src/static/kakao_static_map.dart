@@ -37,7 +37,8 @@ class KakaoStaticMap extends StatefulWidget {
   State<KakaoStaticMap> createState() => _KakaoStaticMapState();
 }
 
-class _KakaoStaticMapState extends State<KakaoStaticMap> with WidgetsBindingObserver {
+class _KakaoStaticMapState extends State<KakaoStaticMap>
+    with WidgetsBindingObserver {
   String json = '';
   List<Map<String, dynamic>> mapList = [];
   late final KakaoMapBridge _bridge;

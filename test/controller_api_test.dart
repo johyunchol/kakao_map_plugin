@@ -51,8 +51,7 @@ void main() {
   });
 
   group('isDraggable / isZoomable', () {
-    test('Android 의 문자열 "true" 와 iOS 의 bool true 를 모두 true 로 정규화한다',
-        () async {
+    test('Android 의 문자열 "true" 와 iOS 의 bool true 를 모두 true 로 정규화한다', () async {
       fake.returningResult = 'true';
       expect(await controller.isDraggable(), isTrue);
 
@@ -118,7 +117,8 @@ void main() {
       expect(payload['id'], 'MY_TILES');
       expect(payload['width'], 256);
       expect(payload['height'], 256);
-      expect(payload['urlTemplate'], 'https://tiles.example.com/{z}/{y}/{x}.png');
+      expect(
+          payload['urlTemplate'], 'https://tiles.example.com/{z}/{y}/{x}.png');
       expect(payload.containsKey('urlFunction'), isFalse);
       expect(payload.containsKey('tileFunction'), isFalse);
       expect(payload['copyright'], [
@@ -140,7 +140,13 @@ void main() {
     });
 
     test('규칙에 맞지 않는 ID 는 ArgumentError 를 던지고 JS 를 보내지 않는다', () async {
-      for (final bad in ['__proto__.x', 'has space', '1STARTS_WITH_DIGIT', 'a-b', '한글']) {
+      for (final bad in [
+        '__proto__.x',
+        'has space',
+        '1STARTS_WITH_DIGIT',
+        'a-b',
+        '한글'
+      ]) {
         await expectLater(
           controller.addTileset(Tileset(id: bad, urlTemplate: 'a')),
           throwsArgumentError,
@@ -150,8 +156,10 @@ void main() {
       expect(fake.scripts, isEmpty);
 
       // 규칙에 맞는 ID 는 통과한다 (__proto__ 자체는 JS 쪽 null-prototype 레지스트리가 처리)
-      await controller.addTileset(const Tileset(id: '__proto__', urlTemplate: 'a'));
-      await controller.addTileset(const Tileset(id: 'my_tiles2', urlTemplate: 'a'));
+      await controller
+          .addTileset(const Tileset(id: '__proto__', urlTemplate: 'a'));
+      await controller
+          .addTileset(const Tileset(id: 'my_tiles2', urlTemplate: 'a'));
       expect(fake.scripts, hasLength(2));
     });
 
@@ -165,7 +173,8 @@ void main() {
           throwsA(isA<AssertionError>()));
     });
 
-    test('setTileset / addOverlayTileset / removeOverlayTileset 는 ID 를 문자열 리터럴로 보낸다',
+    test(
+        'setTileset / addOverlayTileset / removeOverlayTileset 는 ID 를 문자열 리터럴로 보낸다',
         () async {
       await controller.setTileset('A');
       await controller.addOverlayTileset('B');
@@ -177,8 +186,7 @@ void main() {
       ]);
     });
 
-    test('getActiveTilesetId 는 Android 객체 결과와 iOS 문자열 결과를 모두 파싱한다',
-        () async {
+    test('getActiveTilesetId 는 Android 객체 결과와 iOS 문자열 결과를 모두 파싱한다', () async {
       fake.returningResult = '{"tilesetId":"MY_TILES"}';
       expect(await controller.getActiveTilesetId(), 'MY_TILES');
 
@@ -216,7 +224,11 @@ void main() {
           .map((s) => RegExp(r'jump\(.*, 5, (.*)\);$').firstMatch(s)!.group(1)!)
           .map((s) => jsonDecode(jsonDecode(s) as String))
           .toList();
-      expect(opts, [false, true, {'duration': 300}]);
+      expect(opts, [
+        false,
+        true,
+        {'duration': 300}
+      ]);
     });
 
     test('panToBounds 는 sw/ne 와 padding 을 전달한다', () async {
@@ -246,7 +258,9 @@ void main() {
     });
   });
   group('마커 옵션 / 인포윈도우 제어 (3차)', () {
-    test('setMarkerPosition / setMarkerVisible / showInfoWindow / hideInfoWindow', () async {
+    test(
+        'setMarkerPosition / setMarkerVisible / showInfoWindow / hideInfoWindow',
+        () async {
       await controller.setMarkerPosition('m1', LatLng(37.5, 127.0));
       await controller.setMarkerVisible('m1', false);
       await controller.showInfoWindow("m'1");
@@ -273,9 +287,11 @@ void main() {
         spriteHeight: 200,
       );
       await controller.addMarker(markers: [base, styled]);
-      final script = fake.scripts.firstWhere((s) => s.startsWith('addMarkers('));
+      final script =
+          fake.scripts.firstWhere((s) => s.startsWith('addMarkers('));
       final payload = jsonDecode(jsonDecode(
-          RegExp(r'^addMarkers\((".*")\);$').firstMatch(script)!.group(1)!) as String) as List;
+              RegExp(r'^addMarkers\((".*")\);$').firstMatch(script)!.group(1)!)
+          as String) as List;
       expect(payload[0]['extra'], isEmpty);
       expect(payload[1]['extra'], {
         'opacity': 0.5,

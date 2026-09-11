@@ -75,7 +75,8 @@ void main() {
       final registers =
           fake.scripts.where((s) => s.startsWith('registerImages(')).toList();
       expect(registers, hasLength(1));
-      final registered = decodePayload(registers.single, 'registerImages') as Map;
+      final registered =
+          decodePayload(registers.single, 'registerImages') as Map;
       expect(registered.values.single, base64);
 
       final batch = decodePayload(
@@ -86,7 +87,11 @@ void main() {
         expect(m['imageType'], 'file');
       }
       // 배치 스크립트에 base64 원문이 들어 있으면 안 된다
-      expect(fake.scripts.where((s) => s.startsWith('addMarkers(')).any((s) => s.contains(base64)), isFalse);
+      expect(
+          fake.scripts
+              .where((s) => s.startsWith('addMarkers('))
+              .any((s) => s.contains(base64)),
+          isFalse);
     });
 
     test('500개 마커는 200개 단위로 나뉘어 전송된다', () async {
@@ -126,8 +131,7 @@ void main() {
   });
 
   group('JS 인젝션 방지', () {
-    test('따옴표/줄바꿈/백슬래시/script 태그가 포함된 콘텐츠가 원형 그대로 왕복한다',
-        () async {
+    test('따옴표/줄바꿈/백슬래시/script 태그가 포함된 콘텐츠가 원형 그대로 왕복한다', () async {
       const content =
           '<div onclick="x()">He said "hi" & \'bye\'\n\\path\t</script>\u2028</div>';
 
@@ -139,7 +143,8 @@ void main() {
         ),
       ]);
       await controller.addCustomOverlay(customOverlays: [
-        CustomOverlay(customOverlayId: 'c1', latLng: LatLng(1, 2), content: content),
+        CustomOverlay(
+            customOverlayId: 'c1', latLng: LatLng(1, 2), content: content),
       ]);
 
       final markerPayload = decodePayload(
@@ -174,7 +179,8 @@ void main() {
       expect(int.parse(match.group(2)!), greaterThan(0));
     });
 
-    test('keywordSearch 는 레거시 completer 를 초기화해 xxxResult() 경로도 살아 있다', () async {
+    test('keywordSearch 는 레거시 completer 를 초기화해 xxxResult() 경로도 살아 있다',
+        () async {
       // 이전 요청이 완료된 상태를 만든다.
       KeywordSearchService().resetCompleter();
       KeywordSearchService.keywordSearchCallback('[]');
@@ -195,7 +201,8 @@ void main() {
   });
 
   group('도형 배치 전송', () {
-    test('polyline / circle / rectangle / polygon / customOverlay 가 각각 1회 배치로 전송된다',
+    test(
+        'polyline / circle / rectangle / polygon / customOverlay 가 각각 1회 배치로 전송된다',
         () async {
       await controller.addPolyline(polylines: [
         Polyline(

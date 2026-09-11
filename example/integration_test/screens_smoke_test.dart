@@ -119,28 +119,37 @@ final Map<String, Widget Function()> screens = {
   'Map24CustomTilesetScreen': () => const Map24CustomTilesetScreen(),
   'Map25GetTileScreen': () => const Map25GetTileScreen(),
   'Map26FlutterControlsScreen': () => const Map26FlutterControlsScreen(),
-  'Overlay28StyledInfoWindowScreen': () => const Overlay28StyledInfoWindowScreen(),
+  'Overlay28StyledInfoWindowScreen': () =>
+      const Overlay28StyledInfoWindowScreen(),
   'Overlay29WidgetMarkerScreen': () => const Overlay29WidgetMarkerScreen(),
   'Overlay30WidgetOverlayScreen': () => const Overlay30WidgetOverlayScreen(),
   'Overlay1MarkerScreen': () => const Overlay1MarkerScreen(),
   'Overlay26MarkerTrackerScreen': () => const Overlay26MarkerTrackerScreen(),
-  'Overlay25DragCustomOverlayScreen': () => const Overlay25DragCustomOverlayScreen(),
-  'Overlay24ImageMarkerCustomOverlayScreen': () => const Overlay24ImageMarkerCustomOverlayScreen(),
-  'Overlay23RemovableCustomOverlayScreen': () => const Overlay23RemovableCustomOverlayScreen(),
+  'Overlay25DragCustomOverlayScreen': () =>
+      const Overlay25DragCustomOverlayScreen(),
+  'Overlay24ImageMarkerCustomOverlayScreen': () =>
+      const Overlay24ImageMarkerCustomOverlayScreen(),
+  'Overlay23RemovableCustomOverlayScreen': () =>
+      const Overlay23RemovableCustomOverlayScreen(),
   'Overlay20CircleRadiusScreen': () => const Overlay20CircleRadiusScreen(),
   'Overlay19PolygonEvent2Screen': () => const Overlay19PolygonEvent2Screen(),
   'Overlay18PolygonEvent1Screen': () => const Overlay18PolygonEvent1Screen(),
   'Overlay17PolygonAreaScreen': () => const Overlay17PolygonAreaScreen(),
   'Overlay13MarkersEvent2Screen': () => const Overlay13MarkersEvent2Screen(),
-  'Overlay9MarkerGeolocatorScreen': () => const Overlay9MarkerGeolocatorScreen(),
-  'Overlay8MarkerDraggableEventScreen': () => const Overlay8MarkerDraggableEventScreen(),
-  'Overlay7MarkerMouseEventScreen': () => const Overlay7MarkerMouseEventScreen(),
+  'Overlay9MarkerGeolocatorScreen': () =>
+      const Overlay9MarkerGeolocatorScreen(),
+  'Overlay8MarkerDraggableEventScreen': () =>
+      const Overlay8MarkerDraggableEventScreen(),
+  'Overlay7MarkerMouseEventScreen': () =>
+      const Overlay7MarkerMouseEventScreen(),
   'Overlay2MarkerDraggableScreen': () => const Overlay2MarkerDraggableScreen(),
   'Overlay3MarkerImageScreen': () => const Overlay3MarkerImageScreen(),
   'Overlay4InfoWindowScreen': () => const Overlay4InfoWindowScreen(),
-  'Overlay5MarkerInfoWindowScreen': () => const Overlay5MarkerInfoWindowScreen(),
+  'Overlay5MarkerInfoWindowScreen': () =>
+      const Overlay5MarkerInfoWindowScreen(),
   'Overlay6MarkerClickScreen': () => const Overlay6MarkerClickScreen(),
-  'Overlay10MarkersPresentationScreen': () => const Overlay10MarkersPresentationScreen(),
+  'Overlay10MarkersPresentationScreen': () =>
+      const Overlay10MarkersPresentationScreen(),
   'Overlay11MarkersControlScreen': () => const Overlay11MarkersControlScreen(),
   'Overlay12MarkersEvent1Screen': () => const Overlay12MarkersEvent1Screen(),
   'Overlay14MarkersImage2Screen': () => const Overlay14MarkersImage2Screen(),
@@ -162,7 +171,8 @@ final Map<String, Widget Function()> screens = {
   'Static2MarkerScreen': () => const Static2MarkerScreen(),
   'Static3MarkerTextScreen': () => const Static3MarkerTextScreen(),
   'Library1KeywordScreen': () => const Library1KeywordScreen(),
-  'Library16DrawingUndoRedoScreen': () => const Library16DrawingUndoRedoScreen(),
+  'Library16DrawingUndoRedoScreen': () =>
+      const Library16DrawingUndoRedoScreen(),
   'Library15DrawingToolboxScreen': () => const Library15DrawingToolboxScreen(),
   'Library14DrawingGetDataScreen': () => const Library14DrawingGetDataScreen(),
   'Library13DrawingLibraryScreen': () => const Library13DrawingLibraryScreen(),
@@ -173,10 +183,14 @@ final Map<String, Widget Function()> screens = {
   'Library6CoordsToAddressScreen': () => const Library6CoordsToAddressScreen(),
   'Library7transCoordsScreen': () => const Library7transCoordsScreen(),
   'Library8MarkerClustererScreen': () => const Library8MarkerClustererScreen(),
-  'Library9MarkerClustererClickEventScreen': () => const Library9MarkerClustererClickEventScreen(),
-  'Library10MarkerClustererTextScreen': () => const Library10MarkerClustererTextScreen(),
-  'Library11ClustererCustomOverlayScreen': () => const Library11ClustererCustomOverlayScreen(),
-  'Library12MarkerClustererCustomImageScreen': () => const Library12MarkerClustererCustomImageScreen(),
+  'Library9MarkerClustererClickEventScreen': () =>
+      const Library9MarkerClustererClickEventScreen(),
+  'Library10MarkerClustererTextScreen': () =>
+      const Library10MarkerClustererTextScreen(),
+  'Library11ClustererCustomOverlayScreen': () =>
+      const Library11ClustererCustomOverlayScreen(),
+  'Library12MarkerClustererCustomImageScreen': () =>
+      const Library12MarkerClustererCustomImageScreen(),
 };
 
 Future<void> pumpFor(WidgetTester tester, Duration duration) async {
@@ -203,8 +217,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(home: entry.value()));
       // 지도 로드 + onMapCreated 이후 setState 경로까지 실행될 시간을 준다.
       await pumpFor(tester, const Duration(seconds: 4));
-      expect(tester.takeException(), isNull,
-          reason: '${entry.key} 표시 중 예외 발생');
+      expect(tester.takeException(), isNull, reason: '${entry.key} 표시 중 예외 발생');
 
       // 화면을 내려 dispose 경로도 검증한다.
       await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));

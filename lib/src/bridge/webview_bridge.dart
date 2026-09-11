@@ -95,7 +95,8 @@ class WebViewBridge implements KakaoMapBridge {
   }
 
   @override
-  Future<void> runJavaScript(String script) => _controller.runJavaScript(script);
+  Future<void> runJavaScript(String script) =>
+      _controller.runJavaScript(script);
 
   @override
   Future<Object?> runJavaScriptReturningResult(String script) =>
@@ -105,7 +106,8 @@ class WebViewBridge implements KakaoMapBridge {
   void addJavaScriptChannel(String name, BridgeMessageHandler onMessage) {
     _controller.addJavaScriptChannel(
       name,
-      onMessageReceived: (JavaScriptMessage message) => onMessage(message.message),
+      onMessageReceived: (JavaScriptMessage message) =>
+          onMessage(message.message),
     );
   }
 

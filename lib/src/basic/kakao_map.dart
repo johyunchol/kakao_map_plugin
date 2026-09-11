@@ -494,8 +494,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     _widgetOverlayPixels.dispose();
     // WebView 가 먼저 파괴된 경우 JS 실행이 실패할 수 있으므로 오류를 무시합니다.
     unawaited(_mapController.dispose().catchError((_) {}).whenComplete(
-      () => _bridge.dispose().catchError((_) {}),
-    ));
+          () => _bridge.dispose().catchError((_) {}),
+        ));
     super.dispose();
   }
 
@@ -531,9 +531,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final size = constraints.biggest;
-        if (_isMapReady &&
-            _lastLayoutSize != null &&
-            _lastLayoutSize != size) {
+        if (_isMapReady && _lastLayoutSize != null && _lastLayoutSize != size) {
           // 제약이 실제로 바뀐 경우(회전, 부모 위젯 리사이즈 등)에는 디바운스 없이
           // 다음 프레임에 즉시 relayout 합니다.
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -594,15 +592,15 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
   /// [KakaoMap.clusterer]가 있으면 클러스터러를 자동으로 포함합니다.
   Set<KakaoMapLibrary> get _effectiveLibraries {
     final base = widget.libraries ?? AuthRepository.instance.libraries;
-    if (widget.clusterer != null &&
-        !base.contains(KakaoMapLibrary.clusterer)) {
+    if (widget.clusterer != null && !base.contains(KakaoMapLibrary.clusterer)) {
       return {...base, KakaoMapLibrary.clusterer};
     }
     return base;
   }
 
   String _loadMap() {
-    return htmlWrapper(libraries: _effectiveLibraries, theme: _effectiveTheme, '''<script>
+    return htmlWrapper(
+        libraries: _effectiveLibraries, theme: _effectiveTheme, '''<script>
     ${JsGlobalVariables.getScript()}
     ${JsMapInit.getScript(
       center: widget.center,
@@ -743,8 +741,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
     final overlays = widget.widgetOverlays;
     final sig = overlays == null
         ? null
-        : Object.hashAll(overlays.map(
-            (o) => Object.hash(o.id, o.position.latitude, o.position.longitude)));
+        : Object.hashAll(overlays.map((o) =>
+            Object.hash(o.id, o.position.latitude, o.position.longitude)));
     if (sig == _widgetOverlaysSig) return;
     _widgetOverlaysSig = sig;
     if (overlays == null || overlays.isEmpty) {
@@ -821,8 +819,7 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       }
     }
 
-    final rectanglesSig =
-        OverlayPayload.rectanglesSignature(widget.rectangles);
+    final rectanglesSig = OverlayPayload.rectanglesSignature(widget.rectangles);
     if (rectanglesSig != _rectanglesSig) {
       final previousSig = _rectanglesSig;
       _rectanglesSig = rectanglesSig;
@@ -1074,7 +1071,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
       ..addJavaScriptChannel('onDrawingEnd', (String result) {
         _handleChannel<DrawingOverlayType?>(
           result,
-          (json) => DrawingOverlayType.fromValue(json['type']?.toString() ?? ''),
+          (json) =>
+              DrawingOverlayType.fromValue(json['type']?.toString() ?? ''),
           (type) => widget.onDrawingEnd?.call(type),
         );
       })
@@ -1118,8 +1116,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
             if (raw is Map) {
               raw.forEach((key, value) {
                 if (value is List && value.length >= 2) {
-                  out[key.toString()] = Offset(
-                      (value[0] as num).toDouble(), (value[1] as num).toDouble());
+                  out[key.toString()] = Offset((value[0] as num).toDouble(),
+                      (value[1] as num).toDouble());
                 }
               });
             }
@@ -1132,7 +1130,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         _handleChannel<_ShapeTapEventData>(
           result,
           (json) => _ShapeTapEventData.fromJson(json, 'markerId'),
-          (d) => widget.onMarkerMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
+          (d) =>
+              widget.onMarkerMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
         );
       })
       ..addJavaScriptChannel('onMarkerMouseOut', (String result) {
@@ -1146,21 +1145,24 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         _handleChannel<_ShapeTapEventData>(
           result,
           (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
-          (d) => widget.onPolygonMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
+          (d) =>
+              widget.onPolygonMouseOver?.call(d.id, d.toLatLng(), d.zoomLevel),
         );
       })
       ..addJavaScriptChannel('onPolygonMouseMove', (String result) {
         _handleChannel<_ShapeTapEventData>(
           result,
           (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
-          (d) => widget.onPolygonMouseMove?.call(d.id, d.toLatLng(), d.zoomLevel),
+          (d) =>
+              widget.onPolygonMouseMove?.call(d.id, d.toLatLng(), d.zoomLevel),
         );
       })
       ..addJavaScriptChannel('onPolygonMouseOut', (String result) {
         _handleChannel<_ShapeTapEventData>(
           result,
           (json) => _ShapeTapEventData.fromJson(json, 'polygonId'),
-          (d) => widget.onPolygonMouseOut?.call(d.id, d.toLatLng(), d.zoomLevel),
+          (d) =>
+              widget.onPolygonMouseOut?.call(d.id, d.toLatLng(), d.zoomLevel),
         );
       })
       ..addJavaScriptChannel('onPolylineTap', (String result) {
@@ -1309,8 +1311,8 @@ class _KakaoMapState extends State<KakaoMap> with WidgetsBindingObserver {
         _handleChannel<_DragEventData>(
           result,
           _DragEventData.fromJson,
-          (data) =>
-              widget.onTilesLoadedCallback?.call(data.toLatLng(), data.zoomLevel),
+          (data) => widget.onTilesLoadedCallback
+              ?.call(data.toLatLng(), data.zoomLevel),
         );
       })
       ..addJavaScriptChannel('keywordSearchCallback', (String result) {
@@ -1613,9 +1615,11 @@ class _ShapeTapEventData {
   final double longitude;
   final int zoomLevel;
 
-  const _ShapeTapEventData(this.id, this.latitude, this.longitude, this.zoomLevel);
+  const _ShapeTapEventData(
+      this.id, this.latitude, this.longitude, this.zoomLevel);
 
-  factory _ShapeTapEventData.fromJson(Map<String, dynamic> json, String idKey) =>
+  factory _ShapeTapEventData.fromJson(
+          Map<String, dynamic> json, String idKey) =>
       _ShapeTapEventData(
         json[idKey] as String,
         (json['latitude'] as num).toDouble(),

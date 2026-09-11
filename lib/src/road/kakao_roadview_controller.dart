@@ -51,8 +51,7 @@ class KakaoRoadviewController {
   /// 배치 전송 시 한 번의 JS 호출에 담을 최대 항목 수입니다.
   static const int _batchMaxItems = 200;
 
-  Future<void> _run(String script) =>
-      _bridge.runJavaScript(script);
+  Future<void> _run(String script) => _bridge.runJavaScript(script);
 
   Future<String> _runReturning(String script) async {
     final raw = await _bridge.runJavaScriptReturningResult(script);

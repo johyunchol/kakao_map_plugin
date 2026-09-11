@@ -104,15 +104,13 @@ class KakaoMapRoadviewController {
 
   /// 로드뷰의 현재 시점을 반환합니다.
   Future<Viewpoint> getViewpoint() async {
-    final raw =
-        await _bridge.runJavaScriptReturningResult('getViewpoint();');
+    final raw = await _bridge.runJavaScriptReturningResult('getViewpoint();');
     return Viewpoint.fromJson(_decode(raw));
   }
 
   /// 로드뷰의 현재 좌표를 반환합니다.
   Future<LatLng> getPosition() async {
-    final raw =
-        await _bridge.runJavaScriptReturningResult('getPosition();');
+    final raw = await _bridge.runJavaScriptReturningResult('getPosition();');
     return LatLng.fromJson(_decode(raw));
   }
 
@@ -277,8 +275,7 @@ class _KakaoMapRoadviewViewState extends State<KakaoMapRoadviewView>
         _isReady = true;
         // 초기 표시 모드를 적용한 뒤 사용자 콜백을 호출합니다.
         unawaited(_controller!
-            .setViewMode(widget.initialViewMode,
-                splitRatio: widget.splitRatio)
+            .setViewMode(widget.initialViewMode, splitRatio: widget.splitRatio)
             .then((_) {
           if (mounted) widget.onCreated?.call(_controller!);
         }).catchError((_) {}));

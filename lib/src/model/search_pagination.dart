@@ -33,7 +33,8 @@ class SearchPagination {
   });
 
   /// JS 에서 전달된 Map 으로부터 만듭니다. 값이 없으면 안전한 기본값을 씁니다.
-  factory SearchPagination.fromJson(Map<String, dynamic> json) => SearchPagination(
+  factory SearchPagination.fromJson(Map<String, dynamic> json) =>
+      SearchPagination(
         totalCount: (json['totalCount'] as num?)?.toInt() ?? 0,
         current: (json['current'] as num?)?.toInt() ?? 1,
         hasNextPage: json['hasNextPage'] == true,

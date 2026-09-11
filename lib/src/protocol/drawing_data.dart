@@ -128,8 +128,8 @@ class DrawingCircleShape extends DrawingShape {
   /// JSON 으로부터 생성합니다.
   factory DrawingCircleShape.fromJson(Map<String, dynamic> json) =>
       DrawingCircleShape(
-        center:
-            DrawingShape._latLng(Map<String, dynamic>.from(json['center'] as Map)),
+        center: DrawingShape._latLng(
+            Map<String, dynamic>.from(json['center'] as Map)),
         radius: (json['radius'] as num).toDouble(),
         style: DrawingShape._style(json['options']),
       );
@@ -156,8 +156,8 @@ class DrawingEllipseShape extends DrawingShape {
   /// JSON 으로부터 생성합니다.
   factory DrawingEllipseShape.fromJson(Map<String, dynamic> json) =>
       DrawingEllipseShape(
-        center:
-            DrawingShape._latLng(Map<String, dynamic>.from(json['center'] as Map)),
+        center: DrawingShape._latLng(
+            Map<String, dynamic>.from(json['center'] as Map)),
         rx: (json['rx'] as num).toDouble(),
         ry: (json['ry'] as num).toDouble(),
         style: DrawingShape._style(json['options']),

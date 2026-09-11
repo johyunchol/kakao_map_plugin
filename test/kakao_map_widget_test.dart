@@ -116,7 +116,8 @@ void main() {
     await mapReady(tester);
 
     final channel = fake().channels['mapTypeChanged']!;
-    channel.onMessageReceived(const JavaScriptMessage(message: '{"mapTypeId":2}'));
+    channel
+        .onMessageReceived(const JavaScriptMessage(message: '{"mapTypeId":2}'));
     channel.onMessageReceived(
         const JavaScriptMessage(message: '{"mapTypeId":"MY_TILES"}'));
     expect(received, [MapType.skyView, MapType.normal]);
@@ -124,8 +125,7 @@ void main() {
     expect(fake().lastHtml, contains("'maptypeid_changed'"));
   });
 
-  testWidgets('기본 HTML 에 앱 느낌용 스타일과 링크 가로채기 스크립트가 들어간다',
-      (tester) async {
+  testWidgets('기본 HTML 에 앱 느낌용 스타일과 링크 가로채기 스크립트가 들어간다', (tester) async {
     await tester.pumpWidget(host(KakaoMap()));
     final html = fake().lastHtml!;
     expect(html, contains('<html lang="ko">'));
@@ -136,8 +136,7 @@ void main() {
     expect(html, contains("'contextmenu'"));
   });
 
-  testWidgets('KakaoStaticMap 은 마커 텍스트의 </script> 를 이스케이프한다',
-      (tester) async {
+  testWidgets('KakaoStaticMap 은 마커 텍스트의 </script> 를 이스케이프한다', (tester) async {
     await tester.pumpWidget(host2(KakaoStaticMap(
       markers: [
         Marker(

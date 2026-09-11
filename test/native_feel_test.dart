@@ -38,14 +38,16 @@ void main() {
     });
 
     test('프리셋은 const 이고 값이 같으면 동등하다', () {
-      expect(const InfoWindowStyle.material(), const InfoWindowStyle.material());
+      expect(
+          const InfoWindowStyle.material(), const InfoWindowStyle.material());
       expect(const InfoWindowStyle.material(),
           isNot(equals(const InfoWindowStyle.dark())));
       expect(const InfoWindowStyle.cupertino().borderColor, isNotNull);
     });
 
     test('마커 payload 와 hash 에 스타일이 반영된다', () {
-      final plain = Marker(markerId: 'm', latLng: LatLng(37.5, 127.0), infoWindowContent: 'x');
+      final plain = Marker(
+          markerId: 'm', latLng: LatLng(37.5, 127.0), infoWindowContent: 'x');
       final styled = Marker(
         markerId: 'm',
         latLng: LatLng(37.5, 127.0),
@@ -54,13 +56,15 @@ void main() {
       );
       expect(OverlayPayload.marker(plain)['infoWindowStyle'], isNull);
       expect(OverlayPayload.marker(styled)['infoWindowStyle'], isA<Map>());
-      expect(OverlayPayload.markerHash(plain), isNot(OverlayPayload.markerHash(styled)));
+      expect(OverlayPayload.markerHash(plain),
+          isNot(OverlayPayload.markerHash(styled)));
     });
   });
 
   group('ClustererStyle', () {
     test('material 프리셋은 원형 + 테두리 + 그림자 CSS 를 만든다', () {
-      final json = ClustererStyle.material(const Color(0xFF3366FF), size: 48).toJson();
+      final json =
+          ClustererStyle.material(const Color(0xFF3366FF), size: 48).toJson();
       expect(json['width'], '48px');
       expect(json['height'], '48px');
       expect(json['borderRadius'], '24px');
@@ -73,7 +77,10 @@ void main() {
     test('반투명 배경은 CSS 가 이해하는 rgba() 로 나간다', () {
       final json = ClustererStyle(background: const Color(0x803366FF)).toJson();
       expect(json['background'], 'rgba(51, 102, 255, 0.502)');
-      expect(ClustererStyle(background: const Color(0xFF3366FF)).toJson()['background'], '#3366ff');
+      expect(
+          ClustererStyle(background: const Color(0xFF3366FF))
+              .toJson()['background'],
+          '#3366ff');
     });
 
     test('새 필드는 지정했을 때만 JSON 에 들어간다 (하위호환)', () {
@@ -94,8 +101,7 @@ void main() {
       expect(svg, contains('width="28" height="40"'));
     });
 
-    testWidgets('fromWidget 은 위젯을 PNG 로 렌더링해 base64 아이콘을 만든다',
-        (tester) async {
+    testWidgets('fromWidget 은 위젯을 PNG 로 렌더링해 base64 아이콘을 만든다', (tester) async {
       final icon = (await tester.runAsync(() => MarkerIcon.fromWidget(
             Container(color: const Color(0xFF00FF00)),
             logicalSize: const Size(20, 10),
@@ -106,7 +112,8 @@ void main() {
       // PNG 시그니처
       expect(bytes.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
       // IHDR 의 너비 = 20 * 2
-      final width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+      final width =
+          (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
       expect(width, 40);
     });
   });
@@ -140,7 +147,10 @@ void main() {
       expect(html, contains('body { font-family: MyFont; }'));
       expect(html, contains('#map { background: #112233 !important; }'));
       expect(html, contains('.my { color: red; }'));
-      expect(html, contains('const __defaultInfoWindowStyle = {"backgroundColor":"#1c1c1e"'));
+      expect(
+          html,
+          contains(
+              'const __defaultInfoWindowStyle = {"backgroundColor":"#1c1c1e"'));
       expect(html, contains('CopyrightPosition.BOTTOMLEFT, true'));
     });
 
@@ -201,7 +211,8 @@ void main() {
     testWidgets('KakaoRoadMap(disableZoomControl:) 은 Roadview 옵션에 들어간다',
         (tester) async {
       await tester.pumpWidget(host(KakaoRoadMap(disableZoomControl: true)));
-      expect(platform.lastController!.lastHtml, contains('disableZoomControl: true'));
+      expect(platform.lastController!.lastHtml,
+          contains('disableZoomControl: true'));
     });
   });
 }

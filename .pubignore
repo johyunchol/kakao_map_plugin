@@ -1,0 +1,67 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+# Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.packages
+build/
+lib/generated/
+
+# AI 코딩 도구 관련 (개인 설정/세션 상태 — 저장소 및 배포 패키지에 포함하지 않음)
+# 지침 파일
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+GEMINI.md
+.cursorrules
+.windsurfrules
+# 도구 상태/캐시 디렉터리
+.claude/
+.omc/
+.omo/
+.sisyphus/
+.playwright-mcp/
+.specify/
+.cursor/
+specs/
+
+# --- pub.dev 배포 전용 제외 (README 는 GitHub raw URL 로 이미지를 참조하므로 패키지에 넣지 않음) ---
+assets/images/
+assets/videos/
+# 앱 키 등 로컬 설정
+.env
+**/.env
+# 예제 빌드 산출물·플랫폼 IDE 파일
+example/build/
+example/.metadata
+example/ios/Pods/
+example/ios/.symlinks/
+example/android/.gradle/
+example/android/local.properties
+example/android/key.properties
+# 스크린샷/스크래치
+*.png.bak
+web-home.png

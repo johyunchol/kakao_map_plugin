@@ -208,7 +208,9 @@ class IframeBridge implements KakaoMapBridge {
 
     // iframe 을 문서에 붙일 때 브라우저가 먼저 알리는 초기 about:blank 로드는 건너뜁니다.
     // 여기에 써 넣으면 곧이어 빈 문서 탐색이 시작되면서 지도가 지워집니다.
-    if (_frameUrl != 'about:blank' && win.location.href == 'about:blank') return;
+    if (_frameUrl != 'about:blank' && win.location.href == 'about:blank') {
+      return;
+    }
 
     doc.open();
     doc.write(_html!.toJS);

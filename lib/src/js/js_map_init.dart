@@ -38,16 +38,19 @@ class JsMapInit {
       extraOptions.write(',\n            mapTypeId: $initialMapTypeId');
     }
     if (disableDoubleClick != null) {
-      extraOptions.write(',\n            disableDoubleClick: $disableDoubleClick');
+      extraOptions
+          .write(',\n            disableDoubleClick: $disableDoubleClick');
     }
     if (disableDoubleClickZoom != null) {
-      extraOptions.write(',\n            disableDoubleClickZoom: $disableDoubleClickZoom');
+      extraOptions.write(
+          ',\n            disableDoubleClickZoom: $disableDoubleClickZoom');
     }
     if (scrollwheel != null) {
       extraOptions.write(',\n            scrollwheel: $scrollwheel');
     }
     if (keyboardShortcuts != null) {
-      extraOptions.write(',\n            keyboardShortcuts: $keyboardShortcuts');
+      extraOptions
+          .write(',\n            keyboardShortcuts: $keyboardShortcuts');
     }
     return '''
     window.onload = function () {

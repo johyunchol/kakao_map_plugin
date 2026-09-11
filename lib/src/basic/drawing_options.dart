@@ -63,7 +63,9 @@ class DrawingStyle {
         strokeColor: _parseColor(json['strokeColor']),
         strokeWidth: (json['strokeWeight'] as num?)?.toInt(),
         strokeStyle: json['strokeStyle'] is String
-            ? StrokeStyle.values.where((e) => e.name == json['strokeStyle']).firstOrNull
+            ? StrokeStyle.values
+                .where((e) => e.name == json['strokeStyle'])
+                .firstOrNull
             : null,
         strokeOpacity: (json['strokeOpacity'] as num?)?.toDouble(),
         fillColor: _parseColor(json['fillColor']),
@@ -150,7 +152,8 @@ class DrawingOptions {
         if (guideTooltip != null) 'guideTooltip': guideTooltip,
         if (markerStyle != null) 'markerOptions': markerStyle!.toJson(),
         if (polylineStyle != null) 'polylineOptions': polylineStyle!.toJson(),
-        if (rectangleStyle != null) 'rectangleOptions': rectangleStyle!.toJson(),
+        if (rectangleStyle != null)
+          'rectangleOptions': rectangleStyle!.toJson(),
         if (circleStyle != null) 'circleOptions': circleStyle!.toJson(),
         if (ellipseStyle != null) 'ellipseOptions': ellipseStyle!.toJson(),
         if (polygonStyle != null) 'polygonOptions': polygonStyle!.toJson(),

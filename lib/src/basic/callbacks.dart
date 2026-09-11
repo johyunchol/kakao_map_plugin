@@ -212,7 +212,8 @@ typedef OnPolylineTap = void Function(
     String polylineId, LatLng latLng, int zoomLevel);
 
 /// 지도 위 원을 탭했을 때 호출됩니다.
-typedef OnCircleTap = void Function(String circleId, LatLng latLng, int zoomLevel);
+typedef OnCircleTap = void Function(
+    String circleId, LatLng latLng, int zoomLevel);
 
 /// 지도 위 사각형을 탭했을 때 호출됩니다.
 typedef OnRectangleTap = void Function(

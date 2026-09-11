@@ -18,9 +18,17 @@ void main() {
 
       // 응답 순서가 뒤바뀌어 도착해도 올바르게 매칭되어야 한다.
       service.handleMessage(
-          jsonEncode({'requestId': id2, 'result': ['two']}), fromJson);
+          jsonEncode({
+            'requestId': id2,
+            'result': ['two']
+          }),
+          fromJson);
       service.handleMessage(
-          jsonEncode({'requestId': id1, 'result': ['one']}), fromJson);
+          jsonEncode({
+            'requestId': id1,
+            'result': ['one']
+          }),
+          fromJson);
 
       expect(await f1, ['one']);
       expect(await f2, ['two']);
@@ -42,7 +50,8 @@ void main() {
       final id = service.createRequest();
       final future = service.requestFuture(id);
 
-      expect(() => service.handleMessage('not json', fromJson), returnsNormally);
+      expect(
+          () => service.handleMessage('not json', fromJson), returnsNormally);
       expect(
         () => service.handleMessage(
             jsonEncode({'requestId': id, 'result': 'not a list'}), fromJson),
@@ -72,7 +81,11 @@ void main() {
       final modern = service.requestFuture(id);
 
       service.handleMessage(
-          jsonEncode({'requestId': id, 'result': ['both']}), fromJson);
+          jsonEncode({
+            'requestId': id,
+            'result': ['both']
+          }),
+          fromJson);
 
       expect(await modern, ['both']);
       expect(await legacy, ['both']);
@@ -84,7 +97,8 @@ void main() {
       final future = service.requestFuture(id);
       service.failRequest(id, Exception('bridge failure'));
       await expectLater(future, throwsA(isA<Exception>()));
-      expect(() => service.failRequest(id, Exception('twice')), returnsNormally);
+      expect(
+          () => service.failRequest(id, Exception('twice')), returnsNormally);
     });
   });
 

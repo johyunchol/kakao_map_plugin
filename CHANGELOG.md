@@ -46,7 +46,7 @@
 * 지도 문서에 시스템 글꼴(`-apple-system`, Roboto, Noto Sans KR …)을 기본 적용하고, 탭 하이라이트·텍스트 선택·롱프레스 콜아웃/컨텍스트 메뉴·페이지 핀치 줌·오버스크롤 글로우/바운스·스크롤바·포커스 링을 껐습니다. 선택 가능해야 하는 요소에는 `kmp-selectable` 클래스를 주세요. iOS 에서는 링크 미리보기도 끕니다.
 * 인포윈도우·커스텀 오버레이 안의 `<a href>` 를 탭하면 WebView 가 이동해 지도가 사라지던 문제를 수정했습니다. 링크 이동은 가로채고 `KakaoMap(onLinkTap:)`(로드뷰 위젯도 동일)으로 알립니다. 콜백이 없으면 무시됩니다.
 
-### 3차 — 오버레이 이벤트 · 마커 · 위젯 오버레이 · 검색 · 링크
+### 오버레이 이벤트 · 마커 · Flutter 위젯 오버레이 · 검색 · 링크
 * `KakaoMapWidgetOverlay` 와 `KakaoMap(widgetOverlays:)` 를 추가했습니다. 진짜 Flutter 위젯을 지도 좌표에 붙이고, 지도가 움직이면 JS 가 보내는 픽셀 좌표를 따라 이동합니다(프레임당 1회). web 에서도 눌립니다.
 * 선/원/사각형 탭 콜백 `onPolylineTap`, `onCircleTap`, `onRectangleTap` 과 길게 누르기 `onMapLongPress`(마우스 환경은 우클릭 포함)를 추가했습니다.
 * 마우스 hover 콜백 `onMarkerMouseOver / onMarkerMouseOut / onPolygonMouseOver / onPolygonMouseMove / onPolygonMouseOut` 과 `supportsHover()` 를 추가했습니다. **마우스 포인터 환경 전용**이며 터치 기기에서는 호출되지 않습니다. 예제 "마커에 마우스 이벤트 등록하기", "다각형에 이벤트 등록하기 1·2" 를 공식 샘플대로 복원하고 터치 대체 동작을 함께 넣었습니다.
@@ -126,7 +126,7 @@
 ### Deprecated
 * `MapType.roadMap` 은 `MapType.normal` 과 값이 동일하여 `@Deprecated` 되었습니다. `normal` 을 사용하세요.
 * `setStyle()` 을 `@Deprecated` 처리했습니다.
-* 사용되지 않는 웹 플랫폼 템플릿 클래스(`KakaoMapPluginWeb`, `KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin`)를 `@Deprecated` 처리했습니다. 다음 메이저 버전에서 제거될 예정입니다.
+* 사용되지 않는 플랫폼 템플릿 클래스(`KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin`)를 `@Deprecated` 처리했습니다. 다음 메이저 버전에서 제거될 예정입니다. (`KakaoMapPluginWeb` 은 web 플랫폼 등록 클래스로 계속 사용됩니다.)
 
 ### 기타
 * `dart:io` 의존성을 제거했습니다.

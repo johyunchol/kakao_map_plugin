@@ -119,7 +119,8 @@ Future<void> oldStyleUsage(KakaoMapController controller) async {
   await controller.setCenter(LatLng(37.5, 127.0));
   final LatLng center = await controller.getCenter();
   await controller.setLevel(3);
-  await controller.setLevel(3, options: LevelOptions(animate: Animate(duration: 300)));
+  await controller.setLevel(3,
+      options: LevelOptions(animate: Animate(duration: 300)));
   final int level = await controller.getLevel();
   await controller.setMapTypeId(MapType.normal);
   final MapType mapType = await controller.getMapTypeId();
@@ -139,16 +140,16 @@ Future<void> oldStyleUsage(KakaoMapController controller) async {
   // --- 검색 (반환 타입 포함) ---
   final KeywordSearchResponse kw =
       await controller.keywordSearch(KeywordSearchRequest(keyword: '카페'));
-  final CategorySearchResponse ct = await controller
-      .categorySearch(CategorySearchRequest(categoryGroupCode: CategoryType.ce7));
+  final CategorySearchResponse ct = await controller.categorySearch(
+      CategorySearchRequest(categoryGroupCode: CategoryType.ce7));
   final AddressSearchResponse ad =
       await controller.addressSearch(AddressSearchRequest(addr: '서울'));
   final Coord2AddressResponse c2a =
       await controller.coord2Address(Coord2AddressRequest(x: 127.0, y: 37.5));
   final Coord2RegionCodeResponse c2r = await controller
       .coord2RegionCode(Coord2RegionCodeRequest(x: 127.0, y: 37.5));
-  final TransCoordResponse tc =
-      await controller.transCoord(TransCoordRequest(x: 127.0, y: 37.5, inputCoord: Coords.wgs84, outputCoord: Coords.wtm));
+  final TransCoordResponse tc = await controller.transCoord(TransCoordRequest(
+      x: 127.0, y: 37.5, inputCoord: Coords.wgs84, outputCoord: Coords.wtm));
 
   // 내부 WebView 컨트롤러 접근
   final webView = controller.webViewController;
@@ -163,7 +164,8 @@ Future<void> oldStyleStatics() async {
 
   // MarkerIcon: 0.4.x 는 두 팩토리 모두 Future 였다
   final Future<MarkerIcon> a = MarkerIcon.fromAsset('assets/a.png');
-  final Future<MarkerIcon> b = MarkerIcon.fromNetwork('https://example.com/a.png');
+  final Future<MarkerIcon> b =
+      MarkerIcon.fromNetwork('https://example.com/a.png');
   final MarkerIcon icon = await b;
   final String src = icon.imageSrc;
   final ImageType? type = icon.imageType;
@@ -213,9 +215,11 @@ Future<void> oldStyleStatics() async {
   const images = [ImageType.file, ImageType.url];
 
   // 모델 JSON 왕복
-  final LatLng ll = LatLng.fromJson(const {'latitude': 37.5, 'longitude': 127.0});
+  final LatLng ll =
+      LatLng.fromJson(const {'latitude': 37.5, 'longitude': 127.0});
   final Map<String, dynamic> llJson = ll.toJson();
-  final LatLngBounds lb = LatLngBounds(LatLng(37.4, 126.9), LatLng(37.6, 127.1));
+  final LatLngBounds lb =
+      LatLngBounds(LatLng(37.4, 126.9), LatLng(37.6, 127.1));
   final LatLng sw = lb.getSouthWest();
   final LatLng ne = lb.getNorthEast();
 }
@@ -230,8 +234,7 @@ Widget oldStyleWidget() {
     onMarkerClustererTap:
         (LatLng latLng, int zoomLevel, List<Marker> markers) {},
     onCustomOverlayTap: (String overlayId, LatLng latLng) {},
-    onDragChangeCallback:
-        (LatLng latLng, int zoomLevel, DragType dragType) {},
+    onDragChangeCallback: (LatLng latLng, int zoomLevel, DragType dragType) {},
     onMarkerDragChangeCallback: (String markerId, LatLng latLng, int zoomLevel,
         MarkerDragType dragType) {},
     onCameraIdle: (LatLng latLng, int zoomLevel) {},

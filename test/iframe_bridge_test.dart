@@ -50,7 +50,8 @@ void main() {
   });
 
   test('runJavaScript 는 iframe 전역 스코프에서 실행된다', () async {
-    await bridge.loadHtml(html('window.count = 0; function inc() { count++; }'));
+    await bridge
+        .loadHtml(html('window.count = 0; function inc() { count++; }'));
 
     await bridge.runJavaScript('inc(); inc();');
     expect(await bridge.runJavaScriptReturningResult('count'), '2');
