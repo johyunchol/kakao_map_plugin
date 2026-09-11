@@ -1,5 +1,15 @@
 ## 0.5.0
 
+### ⚠️ BREAKING (동작 변경)
+* `controller.clearMarker()` 는 이제 **클러스터러가 관리하는 마커를 제외**하고 일반 마커만 제거합니다. 마이그레이션: 클러스터러 마커까지 지우려면 `clearMarkerClusterer()` 를 함께 호출하세요.
+* `controller.clear()` 는 이제 클러스터러 객체와 클러스터러 마커까지 함께 제거합니다(이전에는 마커만 숨겨지고 클러스터 표시가 남을 수 있었음). 마이그레이션: 클러스터러만 남기고 싶다면 `clear()` 대신 개별 `clearXxx()` 메서드를 조합해서 호출하세요.
+* `controller.clearMarkerClusterer()` 는 클러스터러 객체를 해제하고(`null`) 소속 마커를 전역 목록에서 제거합니다. 마이그레이션: 클러스터러 해제 후 마커를 다시 표시하려면 `addMarker()` 를 다시 호출하세요.
+* 진행 중인 검색 요청이 있는 상태에서 같은 종류의 새 검색을 시작하면, 이전 요청의 레거시 `xxxResult()` 대기가 영구 대기 대신 `StateError('새 요청으로 대체되었습니다.')` 로 종료됩니다. 마이그레이션: 레거시 정적 결과 경로를 쓰고 있다면 `await` 지점을 `try/catch` 로 감싸거나, 요청별로 결과를 받는 `controller.keywordSearch()` 반환값을 사용하세요.
+* `controller.addMarker(markers: [])` 및 `KakaoMap(markers: [])` 는 이제 다른 오버레이와 동일하게 **기존 일반 마커를 모두 제거**합니다(이전에는 무시됨). `null` 은 여전히 무시됩니다. 마이그레이션: 기존 마커를 유지하려면 빈 리스트(`[]`) 대신 `null` 을 전달하세요.
+* 같은 ID 의 마커를 다른 내용으로 다시 추가하면 갱신됩니다(이전에는 무시됨). 마이그레이션: 기존 마커를 유지하고 싶다면 동일한 ID 로 재호출하지 마세요.
+* `KakaoMap` 위젯 속성으로 넘긴 오버레이는 지도 준비(`onMapCreated`) 시점에 자동으로 그려집니다. 마이그레이션: `onMapCreated` 콜백에서 별도로 오버레이를 그리던 코드는 중복 호출이 되지 않도록 제거하세요.
+
+
 ### 성능
 * 오버레이(마커, 폴리라인, 원, 사각형, 다각형, 커스텀 오버레이)를 요소별 개별 호출 대신 **배치 1회 호출**로 전송합니다. 마커 N개 기준 N+1회 → 1~3회 브릿지 왕복.
 * `didUpdateWidget` 에서 오버레이 종류별 **내용 시그니처를 비교**해 실제로 바뀐 종류만 재전송합니다. 부모 위젯의 무관한 rebuild 로 인한 전량 재생성이 사라집니다.
@@ -104,15 +114,6 @@
 * 카카오 공식 샘플 77개를 모두 예제 앱에서 확인할 수 있습니다. 로드뷰 9개, 오버레이 12개, Drawing 4개, 커스텀 타일셋 2개 화면을 추가했습니다. (마커 mouseover/mouseout 은 모바일에 hover 개념이 없어 안내 화면으로 대체)
 * 라이브러리 예제 파일 번호 중복(`library_11_*` 3개)을 정리했습니다.
 
-### ⚠️ BREAKING (동작 변경)
-* `controller.clearMarker()` 는 이제 **클러스터러가 관리하는 마커를 제외**하고 일반 마커만 제거합니다. 마이그레이션: 클러스터러 마커까지 지우려면 `clearMarkerClusterer()` 를 함께 호출하세요.
-* `controller.clear()` 는 이제 클러스터러 객체와 클러스터러 마커까지 함께 제거합니다(이전에는 마커만 숨겨지고 클러스터 표시가 남을 수 있었음). 마이그레이션: 클러스터러만 남기고 싶다면 `clear()` 대신 개별 `clearXxx()` 메서드를 조합해서 호출하세요.
-* `controller.clearMarkerClusterer()` 는 클러스터러 객체를 해제하고(`null`) 소속 마커를 전역 목록에서 제거합니다. 마이그레이션: 클러스터러 해제 후 마커를 다시 표시하려면 `addMarker()` 를 다시 호출하세요.
-* 진행 중인 검색 요청이 있는 상태에서 같은 종류의 새 검색을 시작하면, 이전 요청의 레거시 `xxxResult()` 대기가 영구 대기 대신 `StateError('새 요청으로 대체되었습니다.')` 로 종료됩니다. 마이그레이션: 레거시 정적 결과 경로를 쓰고 있다면 `await` 지점을 `try/catch` 로 감싸거나, 요청별로 결과를 받는 `controller.keywordSearch()` 반환값을 사용하세요.
-* `controller.addMarker(markers: [])` 및 `KakaoMap(markers: [])` 는 이제 다른 오버레이와 동일하게 **기존 일반 마커를 모두 제거**합니다(이전에는 무시됨). `null` 은 여전히 무시됩니다. 마이그레이션: 기존 마커를 유지하려면 빈 리스트(`[]`) 대신 `null` 을 전달하세요.
-* 같은 ID 의 마커를 다른 내용으로 다시 추가하면 갱신됩니다(이전에는 무시됨). 마이그레이션: 기존 마커를 유지하고 싶다면 동일한 ID 로 재호출하지 마세요.
-* `KakaoMap` 위젯 속성으로 넘긴 오버레이는 지도 준비(`onMapCreated`) 시점에 자동으로 그려집니다. 마이그레이션: `onMapCreated` 콜백에서 별도로 오버레이를 그리던 코드는 중복 호출이 되지 않도록 제거하세요.
-
 ### API 추가 (하위호환 유지)
 * `KakaoMapLibrary` 열거형과 `AuthRepository.initialize(libraries:)`, `KakaoMap(libraries:)` 를 추가했습니다. 지정하지 않으면 기존과 동일하게 전체를 불러오며, `clusterer` 를 사용하면 자동으로 포함됩니다.
 * `MarkerIcon.network(url)` 동기 생성자를 추가했습니다. 기존 `MarkerIcon.fromNetwork` 는 `Future<MarkerIcon>` 을 그대로 반환합니다.
@@ -129,6 +130,7 @@
 * 사용되지 않는 플랫폼 템플릿 클래스(`KakaoMapPluginPlatform`, `MethodChannelKakaoMapPlugin`)를 `@Deprecated` 처리했습니다. 다음 메이저 버전에서 제거될 예정입니다. (`KakaoMapPluginWeb` 은 web 플랫폼 등록 클래스로 계속 사용됩니다.)
 
 ### 기타
+* web 지원을 위해 `pointer_interceptor` 의존성을 추가했습니다(모바일 동작에는 영향 없음).
 * `dart:io` 의존성을 제거했습니다.
 * `flutter_lints` 를 적용해 정적 분석 규칙을 강화했습니다.
 
