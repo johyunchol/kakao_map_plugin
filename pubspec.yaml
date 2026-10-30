@@ -6,8 +6,8 @@ repository: https://github.com/johyunchol/kakao_map_plugin
 issue_tracker: https://github.com/johyunchol/kakao_map_plugin/issues
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
-  flutter: ">=3.19.0"
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:
