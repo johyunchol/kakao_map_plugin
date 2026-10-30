@@ -12,7 +12,7 @@ Android and iOS run through `webview_flutter`, and Web runs through an iframe. M
 
 |             | Android        | iOS  | Web                                                    |
 |-------------|----------------|------|--------------------------------------------------------|
-| **Support** | SDK 19+ or 20+ | 9.0+ | Supported (site domain registration required, see below) |
+| **Support** | SDK 24+ | iOS 13.0+ | Supported (site domain registration required, see below) |
 
 ---
 
